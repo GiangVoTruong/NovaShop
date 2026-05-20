@@ -6,7 +6,7 @@
 
 | Thư mục | Mô tả |
 |--------|--------|
-| `FrontEnd/` | Giao diện khách & quản trị (Vite + React + TypeScript) |
+| `frontend/` | Giao diện khách & quản trị (Vite + React + TypeScript) |
 | `backend/` | REST API (Spring Boot) |
 | `db/` | `schema.sql` — khởi tạo schema PostgreSQL |
 
@@ -37,13 +37,13 @@
 ### 1. Frontend
 
 ```bash
-cd FrontEnd
+cd frontend
 pnpm install
 pnpm dev
 ```
 
 - Dev server mặc định của Vite: `http://localhost:5173`  
-- Build production: `pnpm build` — output trong `FrontEnd/dist/`  
+- Build production: `pnpm build` — output trong `frontend/dist/`  
 - Lint: `pnpm lint`
 
 ### 2. Backend
