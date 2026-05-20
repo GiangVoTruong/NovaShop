@@ -1,0 +1,53 @@
+---
+description: Quy ước React 19 + TypeScript cho file .ts/.tsx
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# React 19 + TypeScript
+
+## TypeScript
+- Bật strict-mode rồi → **không dùng** `any`. Dùng `unknown` + type-guard hoặc khai báo type cụ thể.
+- Type-only import phải dùng `import type` (project bật `verbatimModuleSyntax`):
+  ```ts
+  import type { FC, ReactNode } from 'react'
+  import { useState } from 'react'
+  ```
+- KHÔNG dùng `enum` và `namespace` (project bật `erasableSyntaxOnly`). Thay bằng:
+  ```ts
+  // ✅
+  export const Status = { Idle: 'idle', Loading: 'loading' } as const
+  export type Status = typeof Status[keyof typeof Status]
+  ```
+- Ưu tiên `type` cho union/intersection, `interface` cho shape có thể mở rộng.
+- Không dùng non-null assertion `!` trừ khi đã chứng minh không thể null (kèm comment lý do).
+
+## Component
+- Chỉ dùng **function component**, không dùng class component.
+- Không cần `React.FC`; khai báo prop trực tiếp:
+  ```tsx
+  type ButtonProps = { label: string; onClick?: () => void }
+  export function Button({ label, onClick }: ButtonProps) { ... }
+  ```
+- Mỗi file `.tsx` export **một component chính** (default hoặc named, nhất quán trong project).
+- Tách component con khi JSX > ~80 dòng hoặc khi có thể tái dùng.
+
+## Hooks
+- Tuân thủ Rules of Hooks — không gọi trong vòng lặp/điều kiện.
+- Khai báo đầy đủ dependency của `useEffect` (ESLint `react-hooks` đã bật).
+- Custom hook bắt đầu bằng `use`, đặt trong `src/hooks/`.
+- Side effect chỉ dùng `useEffect` khi đồng bộ với external system.
+- **React 19**: mặc định **không** dùng `useMemo` / `useCallback` / `memo` — tính toán dẫn xuất viết như biến/hàm thường trong component. Chỉ memo khi đã đo/ chứng minh cần (xem `code-quality.mdc`).
+
+## JSX
+- Key trong list phải là **id ổn định**, KHÔNG dùng index trừ khi danh sách bất biến.
+- Bắt buộc `alt` cho `<img>` (rỗng `alt=""` nếu trang trí).
+- Link mở tab mới phải có `rel="noopener noreferrer"`:
+  ```tsx
+  <a href="..." target="_blank" rel="noopener noreferrer">...</a>
+  ```
+- Inline handler đơn giản OK; logic > 1-2 dòng → tách ra hàm có tên.
+
+## State
+- Chia state nhỏ thay vì một object khổng lồ.
+- State server-side (fetch data) → dùng thư viện chuyên (React Query/SWR) khi được thêm; không tự viết cache thủ công lặp đi lặp lại.

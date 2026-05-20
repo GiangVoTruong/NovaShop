@@ -1,0 +1,128 @@
+---
+description: Tiêu chuẩn tối ưu và chất lượng code chung
+alwaysApply: true
+---
+
+# Tối ưu code
+
+## Nguyên tắc chung
+- **DRY** (Don't Repeat Yourself): đoạn logic lặp ≥ 2 lần → tách hàm/hook/component.
+- **YAGNI**: không viết code "phòng khi cần", chỉ giải quyết yêu cầu hiện tại.
+- **KISS**: ưu tiên giải pháp đơn giản, dễ đọc hơn là "thông minh".
+- Hàm/component lý tưởng **< 50 dòng**, file lý tưởng **< 300 dòng**. Vượt ngưỡng → cân nhắc tách.
+
+## Cô đọng code — "100 dòng → 30 dòng"
+- LUÔN cân nhắc viết lại ngắn hơn nếu **giảm được ≥ 50% số dòng** mà KHÔNG mất:
+  - Khả năng đọc (readability).
+  - Hiệu năng (không thay O(n) thành O(n²)).
+  - Khả năng debug (vẫn báo lỗi rõ ràng, vẫn type-safe).
+- Khi áp dụng: viết phiên bản ngắn rồi tự hỏi *"6 tháng sau đọc lại có hiểu ngay không?"*. Nếu không → giữ bản dài.
+- Kỹ thuật rút gọn ưu tiên:
+  - Mảng/object: `map` / `filter` / `reduce` / `find` thay cho `for` + biến tạm.
+  - Destructuring + default value thay cho nhiều dòng gán/kiểm tra.
+  - Optional chaining `?.` và nullish coalescing `??` thay cho chuỗi `if (a && a.b && a.b.c)`.
+  - Early return thay cho `if/else` lồng nhau sâu.
+  - Tách helper/custom hook khi cùng pattern lặp lại ở nhiều nơi.
+  - Object lookup table thay cho `switch`/`if-else` dài cho mapping thuần dữ liệu.
+
+```typescript
+// ❌ 12 dòng
+function getDiscount(type: string) {
+  if (type === 'vip') return 0.3
+  else if (type === 'member') return 0.15
+  else if (type === 'guest') return 0.05
+  else return 0
+}
+
+// ✅ 3 dòng, dễ mở rộng
+const DISCOUNT = { vip: 0.3, member: 0.15, guest: 0.05 } as const
+type DiscountKey = keyof typeof DISCOUNT
+const getDiscount = (type: string) => DISCOUNT[type as DiscountKey] ?? 0
+```
+
+- **KHÔNG** rút gọn bằng cách:
+  - Nhồi nhiều biểu thức vào 1 dòng dài > 120 ký tự.
+  - Lạm dụng ternary lồng `a ? b ? c : d : e`.
+  - Dùng tên biến 1 ký tự để tiết kiệm dòng.
+
+## Performance & React 19 — không memo thủ công mặc định
+- Project dùng **React 19** — ưu tiên code đơn giản; **KHÔNG** thêm `useMemo` / `useCallback` / `memo` cho logic thường hoặc "phòng hờ".
+- React 19 (và React Compiler khi bật) tự tối ưu re-render tốt hơn — memo thủ công dễ thêm nhiễu, dependency sai, khó đọc mà không có lợi rõ.
+
+```tsx
+// ❌ Không cần — handler đơn giản, không có bằng chứng re-render chậm
+const handleClick = useCallback(() => {
+  setCount((count) => count + 1)
+}, [])
+
+const filtered = useMemo(() => items.filter((item) => item.active), [items])
+
+// ✅ Viết thẳng
+const handleClick = () => setCount((count) => count + 1)
+const filtered = items.filter((item) => item.active)
+```
+
+**Chỉ dùng `useMemo` / `useCallback` / `memo` khi có lý do cụ thể:**
+- Tính toán **thật sự nặng** (profile/đo được), không phải filter/map vài phần tử.
+- Cần **reference ổn định** cho API bên thứ ba hoặc `useEffect` dependency có chủ đích.
+- Con bọc `memo` **và** đã xác nhận re-render thừa gây vấn đề.
+
+**KHÔNG** dùng chỉ vì: truyền callback xuống con, "best practice cũ", hoặc tránh warning ESLint dependency.
+
+- Tránh tính toán nặng trong render — nếu nặng thật: tách logic ra ngoài render hoặc defer (`useDeferredValue`, lazy init) trước khi cân nhắc `useMemo`.
+- Import có chọn lọc: `import { x } from 'lib'` thay vì `import * as lib`.
+- Ảnh tĩnh đặt trong `src/assets/` để được Vite hash; ảnh public không cần xử lý đặt trong `public/`.
+
+## Tránh code thừa
+- Xóa `console.log` debug trước khi commit (giữ lại `console.warn` / `console.error` có chủ đích).
+- Không để code bị comment-out — Git đã lưu lịch sử.
+- Không thêm comment kiểu "// tăng biến đếm" — chỉ comment khi giải thích **vì sao** hoặc ràng buộc khó thấy.
+- Xóa import, biến, prop không dùng (ESLint đã bật `noUnusedLocals` / `noUnusedParameters`).
+
+## Xử lý lỗi
+```typescript
+// ❌ Nuốt lỗi
+try { await fetchData() } catch {}
+
+// ✅ Log có ngữ cảnh và ném lại nếu không xử lý được
+try {
+  await fetchData()
+} catch (err) {
+  console.error('[fetchData] thất bại:', err)
+  throw err
+}
+```
+
+## Đặt tên
+- `camelCase`: biến, hàm, prop.
+- `PascalCase`: component, type, interface, enum-like const object.
+- `SCREAMING_SNAKE_CASE`: hằng số toàn cục (`MAX_RETRIES`).
+- Tên phải nói lên **ý định**, không nói cấu trúc: `userList` ✅ thay vì `arr` ❌.
+
+### Không viết tắt tên biến / tham số
+- **KHÔNG** dùng tên 1–2 ký tự hoặc viết tắt khó đoán: `m`, `res`, `cb`, `fn`, `usr`, `idx` (trừ `i` trong vòng `for` index thuần túy nếu thật sự cần).
+- Callback, `.then`, `.map`, destructuring — vẫn phải đặt tên đầy đủ theo ngữ cảnh.
+
+```typescript
+// ❌
+import('./HomePage.tsx').then((m) => ({ Component: m.default }))
+
+// ✅
+import('./HomePage.tsx').then((homePageModule) => ({
+  Component: homePageModule.default,
+}))
+```
+
+```typescript
+// ❌
+users.map((u) => u.name)
+
+// ✅
+users.map((user) => user.name)
+```
+
+- Ngoại lệ duy nhất: `_` cho tham số bắt buộc nhưng không dùng (ESLint `noUnusedParameters`).
+
+## Trước khi kết thúc task
+- Chạy `ReadLints` trên file đã sửa.
+- Sửa hết lỗi/warning mới do mình tạo ra (KHÔNG sửa warning có sẵn nếu không liên quan).
