@@ -1,0 +1,43 @@
+package com.backend.dto.users;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CreateUserRequestDto {
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    private String email;
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
+    private String password;
+
+    @NotBlank(message = "Full name is required")
+    @Size(min = 3, max = 100, message = "Full name must be between 3 and 100 characters")
+    private String fullName;
+
+    @NotBlank(message = "Phone is required")
+    @Size(min = 10, max = 15, message = "Phone must be between 10 and 15 characters")
+    private String phone;
+
+    @NotBlank(message = "Role is required")
+    @Pattern(regexp = "ADMIN|SELLER|CUSTOMER", message = "Role must be ADMIN, SELLER, or CUSTOMER")
+    private String role;
+
+    @NotNull(message = "Is active is required")
+    private Boolean isActive;
+}
