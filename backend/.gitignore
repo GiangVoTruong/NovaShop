@@ -36,4 +36,5 @@ build/
 src/main/resources/application-local.properties
 .env
 .env.*
-!.env.example
+**/.env
+**/.env.*

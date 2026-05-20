@@ -29,10 +29,11 @@ backend/.mvn/wrapper/maven-wrapper.jar
 *.sw?
 .DS_Store
 
-# Secrets & local config
+# Secrets & local config (không commit bất kỳ file .env*, kể cả .env.example)
 .env
 .env.*
-!.env.example
+**/.env
+**/.env.*
 backend/src/main/resources/application-local.properties
 
 # Database scripts (chạy local / Supabase — không đưa lên GitHub)
