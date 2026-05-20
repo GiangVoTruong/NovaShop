@@ -51,7 +51,7 @@ export default function CustomerFooter() {
       <div className="mt-16 bg-slate-950 text-slate-300">
         <div className="mx-auto max-w-[1440px] px-4 py-16 sm:px-6 lg:px-10 xl:px-14">
           <div className="grid gap-10 lg:grid-cols-12">
-            <div className="lg:col-span-4">
+            <div className="lg:col-span-3">
               <div className="flex items-center gap-2">
                 <span className="grid size-10 place-items-center rounded-2xl bg-linear-to-br from-fuchsia-500 via-purple-500 to-indigo-500 text-white">
                   <Sparkles className="size-5" />
@@ -104,7 +104,7 @@ export default function CustomerFooter() {
               </div>
             ))}
 
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-1">
               <p className="text-sm font-bold uppercase tracking-wider text-white">Theo dõi</p>
               <div className="mt-5 flex gap-2">
                 {CUSTOMER_SOCIAL_LINKS.map((entry) => (

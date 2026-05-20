@@ -28,6 +28,15 @@ export const CUSTOMER_FOOTER_COLS = [
       { label: 'Chính sách', to: '#' },
     ],
   },
+  {
+    title: 'Tài khoản',
+    links: [
+      { label: 'Đăng nhập', to: PATHS.LOGIN },
+      { label: 'Đăng ký', to: PATHS.REGISTER },
+      { label: 'Đơn hàng', to: PATHS.ORDERS },
+      { label: 'Hồ sơ', to: PATHS.PROFILE },
+    ],
+  },
 ]
 
 export const CUSTOMER_SOCIAL_LINKS = [

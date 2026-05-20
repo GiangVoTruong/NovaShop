@@ -101,10 +101,16 @@ export default function CustomerHeader() {
           </Link>
           <Link
             to={PATHS.LOGIN}
-            className="ml-1 hidden h-10 items-center gap-2 rounded-xl bg-linear-to-r from-fuchsia-500 via-purple-500 to-indigo-500 px-4 text-sm font-semibold text-white shadow-[0_8px_24px_-10px_rgba(217,70,239,0.6)] transition-all hover:scale-[1.03] active:scale-[0.98] sm:inline-flex"
+            className="ml-1 hidden h-10 items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:border-fuchsia-300 hover:text-fuchsia-600 sm:inline-flex"
           >
             <User className="size-4" />
             Đăng nhập
+          </Link>
+          <Link
+            to={PATHS.REGISTER}
+            className="hidden h-10 items-center gap-2 rounded-xl bg-linear-to-r from-fuchsia-500 via-purple-500 to-indigo-500 px-4 text-sm font-semibold text-white shadow-[0_8px_24px_-10px_rgba(217,70,239,0.6)] transition-all hover:scale-[1.03] active:scale-[0.98] sm:inline-flex"
+          >
+            Đăng ký
           </Link>
         </div>
       </div>
@@ -146,6 +152,22 @@ export default function CustomerHeader() {
               </NavLink>
             ))}
           </nav>
+          <div className="mt-auto flex flex-col gap-2 border-t border-white/40 pt-6">
+            <Link
+              to={PATHS.LOGIN}
+              onClick={() => setMobileOpen(false)}
+              className="rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700"
+            >
+              Đăng nhập
+            </Link>
+            <Link
+              to={PATHS.REGISTER}
+              onClick={() => setMobileOpen(false)}
+              className="rounded-2xl bg-linear-to-r from-fuchsia-500 via-purple-500 to-indigo-500 px-4 py-3 text-center text-sm font-semibold text-white shadow-md"
+            >
+              Đăng ký
+            </Link>
+          </div>
         </div>
       </Drawer>
     </header>

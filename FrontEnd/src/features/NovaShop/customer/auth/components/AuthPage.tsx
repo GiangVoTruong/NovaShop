@@ -1,6 +1,6 @@
 import { PATHS } from '@/router/paths'
 import { message } from 'antd'
-import { Eye, EyeOff, Lock, Mail, Sparkles, User } from 'lucide-react'
+import { Eye, EyeOff, Lock, Mail, Phone, Sparkles, User } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../../../shared/ui/Button'
@@ -12,10 +12,32 @@ interface AuthPageProps {
 export default function AuthPage({ mode }: AuthPageProps) {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState<boolean>(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false)
   const isLogin = mode === 'login'
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+
+    if (!isLogin) {
+      const password = String(formData.get('password') ?? '')
+      const confirmPassword = String(formData.get('confirmPassword') ?? '')
+      const phone = String(formData.get('phone') ?? '').trim()
+
+      if (password.length < 8) {
+        message.error('Mật khẩu phải có ít nhất 8 ký tự')
+        return
+      }
+      if (password !== confirmPassword) {
+        message.error('Mật khẩu xác nhận không khớp')
+        return
+      }
+      if (phone.length < 10) {
+        message.error('Số điện thoại phải có ít nhất 10 chữ số')
+        return
+      }
+    }
+
     message.success(isLogin ? 'Đăng nhập thành công' : 'Đăng ký thành công')
     navigate(PATHS.HOME)
   }
@@ -103,23 +125,45 @@ export default function AuthPage({ mode }: AuthPageProps) {
             <form onSubmit={handleSubmit} className="mt-8 space-y-4">
               {!isLogin && (
                 <FieldGroup icon={User}>
-                  <input required placeholder="Họ và tên" className="auth-input" />
+                  <input
+                    required
+                    name="fullName"
+                    minLength={3}
+                    placeholder="Họ và tên"
+                    className="auth-input"
+                  />
                 </FieldGroup>
               )}
               <FieldGroup icon={Mail}>
                 <input
                   required
+                  name="email"
                   type="email"
                   placeholder="Email"
                   className="auth-input"
                   defaultValue={isLogin ? 'minhanh@nova.shop' : ''}
                 />
               </FieldGroup>
+              {!isLogin && (
+                <FieldGroup icon={Phone}>
+                  <input
+                    required
+                    name="phone"
+                    type="tel"
+                    minLength={10}
+                    maxLength={15}
+                    placeholder="Số điện thoại"
+                    className="auth-input"
+                  />
+                </FieldGroup>
+              )}
               <FieldGroup icon={Lock}>
                 <input
                   required
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Mật khẩu"
+                  minLength={isLogin ? undefined : 8}
+                  placeholder={isLogin ? 'Mật khẩu' : 'Mật khẩu (tối thiểu 8 ký tự)'}
                   className="auth-input pr-12"
                 />
                 <button
@@ -131,6 +175,50 @@ export default function AuthPage({ mode }: AuthPageProps) {
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
               </FieldGroup>
+              {!isLogin && (
+                <FieldGroup icon={Lock}>
+                  <input
+                    required
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    minLength={8}
+                    placeholder="Xác nhận mật khẩu"
+                    className="auth-input pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((value) => !value)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    aria-label="Hiện mật khẩu xác nhận"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </button>
+                </FieldGroup>
+              )}
+
+              {!isLogin && (
+                <label className="flex items-start gap-3 text-sm leading-relaxed text-slate-600">
+                  <input
+                    required
+                    type="checkbox"
+                    className="mt-0.5 size-4 shrink-0 rounded border-slate-300 text-fuchsia-600"
+                  />
+                  <span>
+                    Tôi đồng ý với{' '}
+                    <a href="#" className="font-semibold text-fuchsia-600 hover:underline">
+                      Điều khoản dịch vụ
+                    </a>{' '}
+                    và{' '}
+                    <a href="#" className="font-semibold text-fuchsia-600 hover:underline">
+                      Chính sách bảo mật
+                    </a>
+                  </span>
+                </label>
+              )}
 
               {isLogin && (
                 <div className="flex items-center justify-between text-sm">
