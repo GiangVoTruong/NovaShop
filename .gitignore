@@ -35,5 +35,8 @@ backend/.mvn/wrapper/maven-wrapper.jar
 !.env.example
 backend/src/main/resources/application-local.properties
 
+# Database scripts (chạy local / Supabase — không đưa lên GitHub)
+db/
+
 # OS
 Thumbs.db
