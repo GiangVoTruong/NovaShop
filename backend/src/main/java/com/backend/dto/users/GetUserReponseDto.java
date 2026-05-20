@@ -1,6 +1,7 @@
 package com.backend.dto.users;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 import com.backend.enums.UserRole;
 
@@ -17,7 +18,7 @@ import lombok.Setter;
 @Builder
 public class GetUserReponseDto {
 
-    private Long id;
+    private UUID id;
     private String email;
     private String fullName;
     private String phone;

@@ -1,16 +1,16 @@
 package com.backend.entity;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import com.backend.enums.UserRole;
+import com.github.f4b6a3.uuid.UuidCreator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -29,8 +29,9 @@ import lombok.Setter;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    @Builder.Default
+    private UUID id = UuidCreator.getTimeOrderedEpoch();
 
     @Column(nullable = false, length = 255)
     private String email;
@@ -63,4 +64,5 @@ public class User {
     @Column(name = "updated_at")
     @Builder.Default
     private OffsetDateTime updatedAt = OffsetDateTime.now();
+
 }

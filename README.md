@@ -49,10 +49,13 @@ pnpm dev
 ### 2. Backend
 
 1. Tạo database và chạy script trong `db/schema.sql` (SQL Editor hoặc `psql`).  
-2. Cấu hình kết nối DB và mật khẩu **không commit** vào Git:  
-   - Sao chép gợi ý từ `backend/.env.example` (nếu có) hoặc tạo `backend/src/main/resources/application-local.properties` (file này đã được `.gitignore`).  
-   - Hoặc đặt biến môi trường theo `application.properties` (ví dụ mật khẩu DB qua biến được project đọc).  
-3. Chạy ứng dụng:
+2. Tạo `backend/.env` (file này **không** commit — đã có trong `.gitignore`):
+
+   ```env
+   SUPABASE_DB_PASSWORD=mat_khau_supabase_cua_ban
+   ```
+
+3. Chạy ứng dụng (từ thư mục `backend/` để đọc đúng `.env`):
 
 ```bash
 cd backend
@@ -79,7 +82,7 @@ cd NovaShop
 
 ## Lưu ý bảo mật
 
-- Không commit `.env`, `application-local.properties`, hoặc mật khẩu database.  
+- Không commit `backend/.env`, `application-local.properties`, hoặc mật khẩu database.  
 - Chỉ dùng `application.properties` / biến môi trường phù hợp với môi trường deploy của bạn.
 
 ## Giấy phép

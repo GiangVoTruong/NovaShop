@@ -2,8 +2,8 @@ package com.backend.mapper;
 
 import java.util.List;
 
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import com.backend.dto.users.CreateUserRequestDto;
@@ -17,8 +17,6 @@ public interface UserMapper {
 
     List<GetUserReponseDto> toDtoList(List<User> users);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "avatarUrl", ignore = true)
-    @Mapping(target = "passwordHash", ignore = true)
+    @BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
     User toEntity(CreateUserRequestDto request);
 }

@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Secrets & local config (không push lên GitHub)
+.env
+.env.*
+**/.env
+**/.env.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +28,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Keys & certs
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+**/secrets/
