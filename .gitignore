@@ -18,6 +18,9 @@ lerna-debug.log*
 # Maven
 backend/.mvn/wrapper/maven-wrapper.jar
 
+# Cursor rules (AI context local — không push lên repo)
+**/.cursor/rules/
+
 # IDE
 .idea/
 .vscode/*
