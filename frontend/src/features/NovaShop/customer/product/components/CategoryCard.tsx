@@ -1,5 +1,6 @@
 import { PATHS } from '@/router/paths'
 import { ArrowUpRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import type { Category } from '../../../shared/types'
 import { CATEGORY_GLOW } from '../../../shared/ui/categoryTokens'
@@ -18,6 +19,8 @@ export default function CategoryCard({
   variant = 'square',
   fill = false,
 }: CategoryCardProps) {
+  const { t } = useTranslation()
+
   return (
     <Link
       to={`${PATHS.PRODUCTS}?cat=${category.slug}`}
@@ -39,7 +42,7 @@ export default function CategoryCard({
 
       <div className="relative flex h-full flex-col justify-end p-5 text-white">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
-          {category.productCount} sản phẩm
+          {t('product.categoryCard.productCount', { count: category.productCount })}
         </p>
         <div className="mt-1 flex items-center justify-between gap-3">
           <p className="text-xl font-extrabold tracking-tight">{category.name}</p>

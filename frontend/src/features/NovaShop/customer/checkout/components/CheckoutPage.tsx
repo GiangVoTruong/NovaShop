@@ -10,6 +10,7 @@ import {
   Truck,
   Zap,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { PATHS } from '@/router/paths'
 import { PRODUCTS } from '../../../shared/data/products'
@@ -23,32 +24,24 @@ type PaymentMethod = 'card' | 'momo' | 'bank' | 'cod'
 
 const DELIVERIES: {
   id: DeliveryMethod
-  title: string
-  desc: string
   price: number
   icon: typeof Truck
   grad: string
 }[] = [
   {
     id: 'standard',
-    title: 'Giao hàng tiêu chuẩn',
-    desc: '3 - 5 ngày làm việc',
     price: 30000,
     icon: Truck,
     grad: 'from-cyan-400 to-blue-500',
   },
   {
     id: 'express',
-    title: 'Giao 2 giờ ⚡',
-    desc: 'Trong nội thành TP.HCM & HN',
     price: 60000,
     icon: Zap,
     grad: 'from-fuchsia-500 to-purple-500',
   },
   {
     id: 'pickup',
-    title: 'Nhận tại cửa hàng',
-    desc: 'Sẵn sàng sau 30 phút',
     price: 0,
     icon: CheckCircle2,
     grad: 'from-emerald-400 to-teal-500',
@@ -57,42 +50,36 @@ const DELIVERIES: {
 
 const PAYMENTS: {
   id: PaymentMethod
-  title: string
-  desc: string
   icon: typeof CreditCard
   grad: string
 }[] = [
   {
     id: 'card',
-    title: 'Thẻ tín dụng / ghi nợ',
-    desc: 'Visa, Mastercard, JCB',
     icon: CreditCard,
     grad: 'from-fuchsia-500 to-purple-500',
   },
   {
     id: 'momo',
-    title: 'Ví MoMo',
-    desc: 'Thanh toán nhanh qua MoMo',
     icon: Smartphone,
     grad: 'from-pink-500 to-rose-500',
   },
   {
     id: 'bank',
-    title: 'Chuyển khoản',
-    desc: 'Internet Banking / QR Code',
     icon: Banknote,
     grad: 'from-emerald-400 to-teal-500',
   },
   {
     id: 'cod',
-    title: 'COD - Tiền mặt',
-    desc: 'Thanh toán khi nhận hàng',
     icon: Truck,
     grad: 'from-amber-400 to-orange-500',
   },
 ]
 
+const CHECKOUT_CITIES = ['hcm', 'hanoi', 'danang'] as const
+const CHECKOUT_DISTRICTS = ['q1', 'q3', 'q7'] as const
+
 export default function CheckoutPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { cart, clearCart } = useShop()
   const [delivery, setDelivery] = useState<DeliveryMethod>('standard')
@@ -120,7 +107,7 @@ export default function CheckoutPage() {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
-    message.success('🎉 Đặt hàng thành công! Mã đơn: NS-2026-99999')
+    message.success(t('checkout.messages.success'))
     clearCart()
     navigate(PATHS.ORDERS)
   }
@@ -128,15 +115,11 @@ export default function CheckoutPage() {
   if (lines.length === 0) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <h1 className="text-3xl font-extrabold text-slate-900">
-          Giỏ hàng trống
-        </h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Thêm sản phẩm vào giỏ trước khi thanh toán.
-        </p>
+        <h1 className="text-3xl font-extrabold text-slate-900">{t('checkout.empty.title')}</h1>
+        <p className="mt-2 text-sm text-slate-500">{t('checkout.empty.description')}</p>
         <Link to={PATHS.PRODUCTS}>
           <Button className="mt-6" glow>
-            Mua sắm ngay
+            {t('checkout.empty.shopNow')}
           </Button>
         </Link>
       </div>
@@ -149,58 +132,63 @@ export default function CheckoutPage() {
         to={PATHS.CART}
         className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-slate-500 hover:text-fuchsia-600"
       >
-        <ChevronLeft className="size-4" /> Quay lại giỏ hàng
+        <ChevronLeft className="size-4" /> {t('checkout.backToCart')}
       </Link>
       <header className="mb-8">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-gradient">
-          Checkout step 2/2
+          {t('checkout.stepLabel')}
         </p>
         <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-          Thanh toán <span className="text-gradient">đơn hàng</span>
+          {t('checkout.title')}{' '}
+          <span className="text-gradient">{t('checkout.titleHighlight')}</span>
         </h1>
       </header>
 
       <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <SectionCard step="1" title="Địa chỉ giao hàng">
+          <SectionCard step="1" title={t('checkout.sections.address')}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Họ và tên" required>
+              <Field label={t('checkout.fields.fullName')} required>
                 <input
                   required
                   defaultValue="Nguyễn Minh Anh"
                   className="checkout-input"
                 />
               </Field>
-              <Field label="Số điện thoại" required>
+              <Field label={t('checkout.fields.phone')} required>
                 <input
                   required
                   defaultValue="0901 234 567"
                   className="checkout-input"
                 />
               </Field>
-              <Field label="Email" className="sm:col-span-2">
+              <Field label={t('checkout.fields.email')} className="sm:col-span-2">
                 <input
                   type="email"
                   defaultValue="minhanh@nova.shop"
                   className="checkout-input"
                 />
               </Field>
-              <Field label="Tỉnh / Thành phố" required>
+              <Field label={t('checkout.fields.city')} required>
                 <select required className="checkout-input">
-                  <option>TP. Hồ Chí Minh</option>
-                  <option>Hà Nội</option>
-                  <option>Đà Nẵng</option>
+                  {CHECKOUT_CITIES.map((city) => (
+                    <option key={city} value={city}>
+                      {t(`checkout.cities.${city}`)}
+                    </option>
+                  ))}
                 </select>
               </Field>
-              <Field label="Quận / Huyện" required>
+              <Field label={t('checkout.fields.district')} required>
                 <select required className="checkout-input">
-                  <option>Quận 1</option>
-                  <option>Quận 3</option>
-                  <option>Quận 7</option>
+                  {CHECKOUT_DISTRICTS.map((district) => (
+                    <option key={district} value={district}>
+                      {t(`checkout.districts.${district}`)}
+                    </option>
+                  ))}
                 </select>
               </Field>
               <Field
-                label="Địa chỉ chi tiết"
+                label={t('checkout.fields.address')}
                 required
                 className="sm:col-span-2"
               >
@@ -210,17 +198,17 @@ export default function CheckoutPage() {
                   className="checkout-input"
                 />
               </Field>
-              <Field label="Ghi chú đơn hàng" className="sm:col-span-2">
+              <Field label={t('checkout.fields.note')} className="sm:col-span-2">
                 <textarea
                   rows={3}
-                  placeholder="Ghi chú cho người giao hàng…"
+                  placeholder={t('checkout.fields.notePlaceholder')}
                   className="checkout-input min-h-[88px] py-2.5"
                 />
               </Field>
             </div>
           </SectionCard>
 
-          <SectionCard step="2" title="Phương thức giao hàng">
+          <SectionCard step="2" title={t('checkout.sections.delivery')}>
             <div className="grid gap-3 sm:grid-cols-3">
               {DELIVERIES.map((option) => (
                 <label
@@ -248,12 +236,14 @@ export default function CheckoutPage() {
                     <option.icon className="size-5" />
                   </span>
                   <p className="text-sm font-bold text-slate-900">
-                    {option.title}
+                    {t(`checkout.delivery.${option.id}.title`)}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">{option.desc}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {t(`checkout.delivery.${option.id}.desc`)}
+                  </p>
                   <p className="mt-3 text-base font-extrabold text-slate-900">
                     {option.price === 0 ? (
-                      <span className="text-emerald-600">Miễn phí</span>
+                      <span className="text-emerald-600">{t('checkout.order.free')}</span>
                     ) : (
                       formatCurrency(option.price)
                     )}
@@ -263,7 +253,7 @@ export default function CheckoutPage() {
             </div>
           </SectionCard>
 
-          <SectionCard step="3" title="Phương thức thanh toán">
+          <SectionCard step="3" title={t('checkout.sections.payment')}>
             <div className="grid gap-3 sm:grid-cols-2">
               {PAYMENTS.map((option) => (
                 <label
@@ -292,9 +282,11 @@ export default function CheckoutPage() {
                   </span>
                   <div className="flex-1">
                     <p className="text-sm font-bold text-slate-900">
-                      {option.title}
+                      {t(`checkout.payment.${option.id}.title`)}
                     </p>
-                    <p className="text-xs text-slate-500">{option.desc}</p>
+                    <p className="text-xs text-slate-500">
+                      {t(`checkout.payment.${option.id}.desc`)}
+                    </p>
                   </div>
                   <span
                     className={cx(
@@ -313,19 +305,19 @@ export default function CheckoutPage() {
             </div>
             {payment === 'card' && (
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <Field label="Số thẻ" className="sm:col-span-2">
+                <Field label={t('checkout.fields.cardNumber')} className="sm:col-span-2">
                   <input
                     placeholder="•••• •••• •••• ••••"
                     className="checkout-input font-mono tracking-widest"
                   />
                 </Field>
-                <Field label="Tên chủ thẻ">
+                <Field label={t('checkout.fields.cardHolder')}>
                   <input
                     placeholder="NGUYEN MINH ANH"
                     className="checkout-input"
                   />
                 </Field>
-                <Field label="Ngày hết hạn">
+                <Field label={t('checkout.fields.cardExpiry')}>
                   <input placeholder="MM/YY" className="checkout-input" />
                 </Field>
               </div>
@@ -338,7 +330,7 @@ export default function CheckoutPage() {
             <div className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl glow-purple">
               <div className="absolute -right-10 -top-10 size-32 rounded-full bg-fuchsia-300/30 blur-2xl" />
               <h2 className="relative text-lg font-extrabold tracking-tight text-slate-900">
-                Đơn hàng của bạn
+                {t('checkout.order.title')}
               </h2>
               <ul className="relative mt-4 space-y-3">
                 {lines.map((line) => (
@@ -370,29 +362,29 @@ export default function CheckoutPage() {
 
               <dl className="relative mt-6 space-y-2 border-t border-dashed border-slate-200 pt-4 text-sm">
                 <div className="flex justify-between text-slate-500">
-                  <dt>Tạm tính</dt>
+                  <dt>{t('checkout.order.subtotal')}</dt>
                   <dd className="font-medium text-slate-900">
                     {formatCurrency(subtotal)}
                   </dd>
                 </div>
                 <div className="flex justify-between text-slate-500">
-                  <dt>Phí giao hàng</dt>
+                  <dt>{t('checkout.order.shipping')}</dt>
                   <dd className="font-medium text-slate-900">
                     {shipping === 0 ? (
-                      <span className="text-emerald-600">Miễn phí</span>
+                      <span className="text-emerald-600">{t('checkout.order.free')}</span>
                     ) : (
                       formatCurrency(shipping)
                     )}
                   </dd>
                 </div>
                 <div className="flex justify-between text-slate-500">
-                  <dt>Thuế (5%)</dt>
+                  <dt>{t('checkout.order.tax')}</dt>
                   <dd className="font-medium text-slate-900">
                     {formatCurrency(tax)}
                   </dd>
                 </div>
                 <div className="flex items-baseline justify-between border-t border-dashed border-slate-200 pt-3">
-                  <dt className="font-bold text-slate-900">Tổng cộng</dt>
+                  <dt className="font-bold text-slate-900">{t('checkout.order.total')}</dt>
                   <dd className="text-2xl font-extrabold tracking-tight text-gradient">
                     {formatCurrency(total)}
                   </dd>
@@ -407,14 +399,14 @@ export default function CheckoutPage() {
                 className="relative mt-6"
                 leftIcon={<Sparkles className="size-4" />}
               >
-                Đặt hàng ngay
+                {t('checkout.order.placeOrder')}
               </Button>
               <p className="relative mt-3 text-center text-xs text-slate-500">
-                Khi đặt hàng bạn đồng ý với{' '}
+                {t('checkout.order.termsPrefix')}{' '}
                 <a href="#" className="text-fuchsia-600 hover:underline">
-                  Điều khoản
+                  {t('checkout.order.terms')}
                 </a>{' '}
-                của NovaShop
+                {t('checkout.order.termsSuffix')}
               </p>
             </div>
           </div>

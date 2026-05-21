@@ -1,5 +1,7 @@
 import { Line } from '@ant-design/charts'
 import { ArrowUpRight, Plus } from 'lucide-react'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { PATHS } from '@/router/paths'
 import { ANALYTICS } from '../../../shared/data/analytics'
@@ -14,34 +16,48 @@ import {
   DASHBOARD_STATS,
 } from '../constants/dashboard.constants'
 
-const chartData = ANALYTICS.slice(-6).flatMap((point) => [
-  { month: point.month, value: point.revenue / 1_000_000, type: 'Doanh thu (triệu)' },
-  { month: point.month, value: point.orders, type: 'Đơn hàng' },
-])
-
 export default function DashboardPage() {
+  const { t } = useTranslation()
   const recentOrders = ORDERS.slice(0, 5)
+
+  const chartData = useMemo(
+    () =>
+      ANALYTICS.slice(-6).flatMap((point) => [
+        {
+          month: point.month,
+          value: point.revenue / 1_000_000,
+          type: t('admin.dashboard.chart.revenueSeries'),
+        },
+        {
+          month: point.month,
+          value: point.orders,
+          type: t('admin.dashboard.chart.ordersSeries'),
+        },
+      ]),
+    [t],
+  )
 
   return (
     <div className="mx-auto max-w-[1440px]">
       <AdminPageHeader
-        eyebrow="Bảng điều khiển"
+        eyebrow={t('admin.dashboard.eyebrow')}
         title={
           <>
-            Xin chào, <span className="text-gradient">Admin</span>
+            {t('admin.dashboard.title')}{' '}
+            <span className="text-gradient">{t('admin.dashboard.titleHighlight')}</span>
           </>
         }
-        description="Tổng quan hoạt động cửa hàng NovaShop trong thời gian thực."
+        description={t('admin.dashboard.description')}
         actions={
           <>
             <Link to={PATHS.ADMIN_PRODUCTS}>
               <Button variant="outline" size="sm" leftIcon={<Plus className="size-4" />}>
-                Thêm sản phẩm
+                {t('admin.dashboard.addProduct')}
               </Button>
             </Link>
             <Link to={PATHS.ADMIN_ANALYTICS}>
               <Button size="sm" rightIcon={<ArrowUpRight className="size-4" />}>
-                Xem phân tích
+                {t('admin.dashboard.viewAnalytics')}
               </Button>
             </Link>
           </>
@@ -51,10 +67,14 @@ export default function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {DASHBOARD_STATS.map((stat) => (
           <StatCard
-            key={stat.label}
-            label={stat.label}
+            key={stat.labelKey}
+            label={t(stat.labelKey)}
             value={stat.value}
-            change={stat.change}
+            change={
+              'changeKey' in stat
+                ? t(stat.changeKey, stat.changeParams)
+                : stat.change
+            }
             icon={<stat.icon className="size-5" />}
             tone={stat.tone}
           />
@@ -65,8 +85,10 @@ export default function DashboardPage() {
         <section className="glass-dark rounded-3xl p-6 ring-1 ring-white/10 xl:col-span-8">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-white">Doanh thu & đơn hàng</h2>
-              <p className="text-sm text-slate-400">6 tháng gần nhất</p>
+              <h2 className="text-lg font-bold text-white">
+                {t('admin.dashboard.chart.title')}
+              </h2>
+              <p className="text-sm text-slate-400">{t('admin.dashboard.chart.subtitle')}</p>
             </div>
           </div>
           <Line
@@ -85,14 +107,24 @@ export default function DashboardPage() {
         </section>
 
         <section className="glass-dark rounded-3xl p-6 ring-1 ring-white/10 xl:col-span-4">
-          <h2 className="text-lg font-bold text-white">Hoạt động gần đây</h2>
+          <h2 className="text-lg font-bold text-white">
+            {t('admin.dashboard.activity.title')}
+          </h2>
           <ul className="mt-5 space-y-4">
             {DASHBOARD_ACTIVITY.map((activity) => (
               <li key={activity.id} className="flex gap-3">
                 <span className="mt-1.5 size-2 shrink-0 rounded-full bg-fuchsia-400" />
                 <div>
-                  <p className="text-sm text-slate-200">{activity.text}</p>
-                  <p className="mt-0.5 text-xs text-slate-500">{activity.time}</p>
+                  <p className="text-sm text-slate-200">
+                    {'textParams' in activity && activity.textParams
+                      ? t(activity.textKey, activity.textParams)
+                      : t(activity.textKey)}
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    {'timeParams' in activity && activity.timeParams
+                      ? t(activity.timeKey, activity.timeParams)
+                      : t(activity.timeKey)}
+                  </p>
                 </div>
               </li>
             ))}
@@ -103,12 +135,16 @@ export default function DashboardPage() {
       <section className="glass-dark mt-6 rounded-3xl p-6 ring-1 ring-white/10">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-white">Đơn hàng mới nhất</h2>
-            <p className="text-sm text-slate-400">5 đơn gần nhất cần theo dõi</p>
+            <h2 className="text-lg font-bold text-white">
+              {t('admin.dashboard.recentOrders.title')}
+            </h2>
+            <p className="text-sm text-slate-400">
+              {t('admin.dashboard.recentOrders.subtitle')}
+            </p>
           </div>
           <Link to={PATHS.ADMIN_ORDERS}>
             <Button variant="ghost" size="sm" rightIcon={<ArrowUpRight className="size-4" />}>
-              Xem tất cả
+              {t('admin.dashboard.recentOrders.viewAll')}
             </Button>
           </Link>
         </div>
@@ -117,11 +153,21 @@ export default function DashboardPage() {
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead>
               <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-slate-500">
-                <th className="pb-3 pr-4 font-semibold">Mã đơn</th>
-                <th className="pb-3 pr-4 font-semibold">Khách hàng</th>
-                <th className="pb-3 pr-4 font-semibold">Tổng tiền</th>
-                <th className="pb-3 pr-4 font-semibold">Trạng thái</th>
-                <th className="pb-3 font-semibold">Thời gian</th>
+                <th className="pb-3 pr-4 font-semibold">
+                  {t('admin.dashboard.recentOrders.columns.code')}
+                </th>
+                <th className="pb-3 pr-4 font-semibold">
+                  {t('admin.dashboard.recentOrders.columns.customer')}
+                </th>
+                <th className="pb-3 pr-4 font-semibold">
+                  {t('admin.dashboard.recentOrders.columns.total')}
+                </th>
+                <th className="pb-3 pr-4 font-semibold">
+                  {t('admin.dashboard.recentOrders.columns.status')}
+                </th>
+                <th className="pb-3 font-semibold">
+                  {t('admin.dashboard.recentOrders.columns.time')}
+                </th>
               </tr>
             </thead>
             <tbody>

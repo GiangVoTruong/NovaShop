@@ -1,9 +1,10 @@
 package com.backend.dto.users;
 
+import com.backend.enums.UserRole;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,10 +35,6 @@ public class CreateUserRequestDto {
     @Size(min = 10, max = 15, message = "Phone must be between 10 and 15 characters")
     private String phone;
 
-    @NotBlank(message = "Role is required")
-    @Pattern(regexp = "ADMIN|SELLER|CUSTOMER", message = "Role must be ADMIN, SELLER, or CUSTOMER")
-    private String role;
-
-    @NotNull(message = "Is active is required")
-    private Boolean isActive;
+    @NotNull(message = "Role is required")
+    private UserRole role;
 }

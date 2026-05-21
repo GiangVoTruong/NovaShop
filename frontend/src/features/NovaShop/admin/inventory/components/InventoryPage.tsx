@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Input, Table } from 'antd'
 import { AlertTriangle, PackagePlus, Search } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { PRODUCTS } from '../../../shared/data/products'
 import { formatNumber } from '../../../shared/format'
 import type { Product } from '../../../shared/types'
@@ -12,6 +13,7 @@ import StatCard from '../../layout/components/StatCard'
 const LOW_STOCK_THRESHOLD = 20
 
 export default function InventoryPage() {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
 
   const inventoryProducts = useMemo(() => {
@@ -35,7 +37,7 @@ export default function InventoryPage() {
 
   const columns = [
     {
-      title: 'Sản phẩm',
+      title: t('admin.inventory.columns.product'),
       key: 'product',
       render: (_: unknown, product: Product) => (
         <div className="flex items-center gap-3">
@@ -52,7 +54,7 @@ export default function InventoryPage() {
       ),
     },
     {
-      title: 'Tồn kho',
+      title: t('admin.inventory.columns.stock'),
       dataIndex: 'stock',
       key: 'stock',
       render: (stock: number) => (
@@ -68,21 +70,21 @@ export default function InventoryPage() {
       ),
     },
     {
-      title: 'Trạng thái',
+      title: t('admin.inventory.columns.status'),
       dataIndex: 'status',
       key: 'status',
       render: (status: Product['status']) => <ProductStatusBadge status={status} />,
     },
     {
-      title: 'Cảnh báo',
+      title: t('admin.inventory.columns.alert'),
       key: 'alert',
       render: (_: unknown, product: Product) =>
         product.stock <= LOW_STOCK_THRESHOLD ? (
           <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600">
-            <AlertTriangle className="size-3.5" /> Sắp hết
+            <AlertTriangle className="size-3.5" /> {t('admin.inventory.columns.lowStock')}
           </span>
         ) : (
-          <span className="text-xs text-slate-400">Ổn định</span>
+          <span className="text-xs text-slate-400">{t('admin.inventory.columns.stable')}</span>
         ),
     },
     {
@@ -90,7 +92,7 @@ export default function InventoryPage() {
       key: 'actions',
       render: () => (
         <Button variant="ghost" size="sm" leftIcon={<PackagePlus className="size-4" />}>
-          Nhập kho
+          {t('admin.inventory.restock')}
         </Button>
       ),
     },
@@ -99,33 +101,36 @@ export default function InventoryPage() {
   return (
     <div className="mx-auto max-w-[1440px]">
       <AdminPageHeader
-        eyebrow="Quản lý kho"
+        eyebrow={t('admin.inventory.eyebrow')}
         title={
           <>
-            Kho hàng <span className="text-gradient">& tồn kho</span>
+            {t('admin.inventory.title')}{' '}
+            <span className="text-gradient">{t('admin.inventory.titleHighlight')}</span>
           </>
         }
-        description="Theo dõi mức tồn kho và cảnh báo sản phẩm sắp hết hàng."
+        description={t('admin.inventory.description')}
         actions={
-          <Button leftIcon={<PackagePlus className="size-4" />}>Nhập kho mới</Button>
+          <Button leftIcon={<PackagePlus className="size-4" />}>
+            {t('admin.inventory.import')}
+          </Button>
         }
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <StatCard
-          label="Tổng tồn kho"
+          label={t('admin.inventory.stats.totalStock')}
           value={formatNumber(totalStock)}
           icon={<PackagePlus className="size-5" />}
           tone="cyan"
         />
         <StatCard
-          label="Sắp hết hàng"
+          label={t('admin.inventory.stats.lowStock')}
           value={formatNumber(lowStockCount)}
           icon={<AlertTriangle className="size-5" />}
           tone="amber"
         />
         <StatCard
-          label="Hết hàng"
+          label={t('admin.inventory.stats.outOfStock')}
           value={formatNumber(outOfStockCount)}
           icon={<AlertTriangle className="size-5" />}
           tone="rose"
@@ -135,7 +140,7 @@ export default function InventoryPage() {
       <div className="glass mb-6 rounded-3xl p-4">
         <Input
           prefix={<Search className="size-4 text-slate-400" />}
-          placeholder="Tìm sản phẩm hoặc SKU…"
+          placeholder={t('admin.inventory.searchPlaceholder')}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           allowClear

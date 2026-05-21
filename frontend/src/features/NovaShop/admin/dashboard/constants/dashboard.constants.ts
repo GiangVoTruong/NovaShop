@@ -15,54 +15,59 @@ const activeProducts = PRODUCTS.filter((product) => product.status === 'active')
 
 export const DASHBOARD_STATS = [
   {
-    label: 'Doanh thu tháng này',
+    labelKey: 'admin.dashboard.stats.monthlyRevenue',
     value: formatCurrency(412000000),
     change: '+12.4%',
     icon: DollarSign,
     tone: 'fuchsia' as const,
   },
   {
-    label: 'Đơn hàng',
+    labelKey: 'admin.dashboard.stats.orders',
     value: formatNumber(ORDERS.length),
     change: '+8.2%',
     icon: ShoppingCart,
     tone: 'cyan' as const,
   },
   {
-    label: 'Khách hàng',
+    labelKey: 'admin.dashboard.stats.customers',
     value: formatNumber(CUSTOMERS.length),
     change: '+5.1%',
     icon: Users,
     tone: 'indigo' as const,
   },
   {
-    label: 'Sản phẩm đang bán',
+    labelKey: 'admin.dashboard.stats.activeProducts',
     value: formatNumber(activeProducts),
-    change: `${pendingOrders} chờ xử lý`,
+    changeKey: 'admin.dashboard.stats.pendingSuffix',
+    changeParams: { count: pendingOrders },
     icon: Package,
     tone: 'emerald' as const,
   },
-]
+] as const
 
 export const DASHBOARD_ACTIVITY = [
   {
     id: '1',
-    text: 'Đơn NS-2026-00132 vừa được xác nhận',
-    time: '2 phút trước',
+    textKey: 'admin.dashboard.activity.items.orderConfirmed',
+    timeKey: 'admin.dashboard.activity.time.minutesAgo',
+    timeParams: { count: 2 },
   },
   {
     id: '2',
-    text: 'Sản phẩm "Tai nghe Nova Pro Max" sắp hết hàng (còn 42)',
-    time: '15 phút trước',
+    textKey: 'admin.dashboard.activity.items.lowStock',
+    timeKey: 'admin.dashboard.activity.time.minutesAgo',
+    timeParams: { count: 15 },
   },
   {
     id: '3',
-    text: 'Khách hàng mới: Đỗ Khánh Linh',
-    time: '1 giờ trước',
+    textKey: 'admin.dashboard.activity.items.newCustomer',
+    timeKey: 'admin.dashboard.activity.time.hourAgo',
   },
   {
     id: '4',
-    text: `Doanh thu tuần đạt ${formatCurrency(totalRevenue)}`,
-    time: '3 giờ trước',
+    textKey: 'admin.dashboard.activity.items.weeklyRevenue',
+    textParams: { amount: formatCurrency(totalRevenue) },
+    timeKey: 'admin.dashboard.activity.time.hoursAgo',
+    timeParams: { count: 3 },
   },
-]
+] as const

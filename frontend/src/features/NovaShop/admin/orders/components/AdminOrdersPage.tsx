@@ -1,15 +1,25 @@
 import { useMemo, useState } from 'react'
 import { Input, Select, Table } from 'antd'
 import { Download, Search } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { ORDERS } from '../../../shared/data/orders'
 import { formatCurrency, formatDateTime } from '../../../shared/format'
 import type { Order, OrderStatus } from '../../../shared/types'
 import Button from '../../../shared/ui/Button'
 import { OrderStatusBadge } from '../../../shared/ui/StatusBadge'
-import { ORDER_STATUS_LABEL } from '../../../shared/ui/statusBadge.constants'
 import AdminPageHeader from '../../layout/components/AdminPageHeader'
 
+const ORDER_STATUS_FILTER_VALUES = [
+  'pending',
+  'confirmed',
+  'packing',
+  'shipping',
+  'delivered',
+  'cancelled',
+] as const satisfies readonly OrderStatus[]
+
 export default function AdminOrdersPage() {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
@@ -26,9 +36,17 @@ export default function AdminOrdersPage() {
     })
   }, [search, statusFilter])
 
+  const statusFilterOptions = [
+    { value: 'all', label: t('admin.orders.filterAll') },
+    ...ORDER_STATUS_FILTER_VALUES.map((status) => ({
+      value: status,
+      label: t(`status.order.${status}`),
+    })),
+  ]
+
   const columns = [
     {
-      title: 'Mã đơn',
+      title: t('admin.orders.columns.code'),
       dataIndex: 'code',
       key: 'code',
       render: (code: string) => (
@@ -36,7 +54,7 @@ export default function AdminOrdersPage() {
       ),
     },
     {
-      title: 'Khách hàng',
+      title: t('admin.orders.columns.customer'),
       key: 'customer',
       render: (_: unknown, order: Order) => (
         <div className="flex items-center gap-2">
@@ -53,27 +71,29 @@ export default function AdminOrdersPage() {
       ),
     },
     {
-      title: 'Sản phẩm',
+      title: t('admin.orders.columns.items'),
       key: 'items',
       render: (_: unknown, order: Order) => (
-        <span className="text-slate-600">{order.items.length} mặt hàng</span>
+        <span className="text-slate-600">
+          {t('admin.orders.columns.itemsCount', { count: order.items.length })}
+        </span>
       ),
     },
     {
-      title: 'Tổng tiền',
+      title: t('admin.orders.columns.total'),
       key: 'total',
       render: (_: unknown, order: Order) => (
         <span className="font-bold text-fuchsia-600">{formatCurrency(order.total)}</span>
       ),
     },
     {
-      title: 'Trạng thái',
+      title: t('admin.orders.columns.status'),
       dataIndex: 'status',
       key: 'status',
       render: (status: OrderStatus) => <OrderStatusBadge status={status} />,
     },
     {
-      title: 'Ngày đặt',
+      title: t('admin.orders.columns.createdAt'),
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (createdAt: string) => (
@@ -85,7 +105,7 @@ export default function AdminOrdersPage() {
       key: 'actions',
       render: () => (
         <Button variant="ghost" size="sm">
-          Chi tiết
+          {t('admin.orders.detail')}
         </Button>
       ),
     },
@@ -94,16 +114,17 @@ export default function AdminOrdersPage() {
   return (
     <div className="mx-auto max-w-[1440px]">
       <AdminPageHeader
-        eyebrow="Quản lý đơn hàng"
+        eyebrow={t('admin.orders.eyebrow')}
         title={
           <>
-            Đơn hàng <span className="text-gradient">toàn cửa hàng</span>
+            {t('admin.orders.title')}{' '}
+            <span className="text-gradient">{t('admin.orders.titleHighlight')}</span>
           </>
         }
-        description="Theo dõi, lọc và xử lý đơn hàng từ khách hàng."
+        description={t('admin.orders.description')}
         actions={
           <Button variant="outline" leftIcon={<Download className="size-4" />}>
-            Xuất CSV
+            {t('admin.orders.exportCsv')}
           </Button>
         }
       />
@@ -111,7 +132,7 @@ export default function AdminOrdersPage() {
       <div className="glass mb-6 flex flex-col gap-3 rounded-3xl p-4 sm:flex-row sm:items-center">
         <Input
           prefix={<Search className="size-4 text-slate-400" />}
-          placeholder="Tìm mã đơn, tên hoặc email khách…"
+          placeholder={t('admin.orders.searchPlaceholder')}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           className="sm:flex-1"
@@ -121,13 +142,7 @@ export default function AdminOrdersPage() {
           value={statusFilter}
           onChange={setStatusFilter}
           className="w-full sm:w-52"
-          options={[
-            { value: 'all', label: 'Tất cả trạng thái' },
-            ...Object.entries(ORDER_STATUS_LABEL).map(([value, label]) => ({
-              value,
-              label,
-            })),
-          ]}
+          options={statusFilterOptions}
         />
       </div>
 

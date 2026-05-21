@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Input, Select, Table } from 'antd'
 import { Mail, Search, UserPlus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { CUSTOMERS } from '../../../shared/data/customers'
 import { formatCurrency, formatDate } from '../../../shared/format'
 import type { Customer } from '../../../shared/types'
@@ -8,7 +9,10 @@ import Badge from '../../../shared/ui/Badge'
 import Button from '../../../shared/ui/Button'
 import AdminPageHeader from '../../layout/components/AdminPageHeader'
 
+const CUSTOMER_STATUS_FILTER_VALUES = ['active', 'inactive'] as const
+
 export default function CustomersPage() {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
@@ -25,9 +29,20 @@ export default function CustomersPage() {
     })
   }, [search, statusFilter])
 
+  const statusFilterOptions = [
+    { value: 'all', label: t('admin.customers.filterAll') },
+    ...CUSTOMER_STATUS_FILTER_VALUES.map((status) => ({
+      value: status,
+      label:
+        status === 'inactive'
+          ? t('status.customer.inactiveFull')
+          : t(`status.customer.${status}`),
+    })),
+  ]
+
   const columns = [
     {
-      title: 'Khách hàng',
+      title: t('admin.customers.columns.customer'),
       key: 'customer',
       render: (_: unknown, customer: Customer) => (
         <div className="flex items-center gap-3">
@@ -44,12 +59,12 @@ export default function CustomersPage() {
       ),
     },
     {
-      title: 'Số điện thoại',
+      title: t('admin.customers.columns.phone'),
       dataIndex: 'phone',
       key: 'phone',
     },
     {
-      title: 'Đơn hàng',
+      title: t('admin.customers.columns.orders'),
       dataIndex: 'totalOrders',
       key: 'totalOrders',
       render: (totalOrders: number) => (
@@ -57,7 +72,7 @@ export default function CustomersPage() {
       ),
     },
     {
-      title: 'Chi tiêu',
+      title: t('admin.customers.columns.spent'),
       dataIndex: 'totalSpent',
       key: 'totalSpent',
       render: (totalSpent: number) => (
@@ -65,18 +80,18 @@ export default function CustomersPage() {
       ),
     },
     {
-      title: 'Ngày tham gia',
+      title: t('admin.customers.columns.joinedAt'),
       dataIndex: 'joinedAt',
       key: 'joinedAt',
       render: (joinedAt: string) => formatDate(joinedAt),
     },
     {
-      title: 'Trạng thái',
+      title: t('admin.customers.columns.status'),
       dataIndex: 'status',
       key: 'status',
       render: (status: Customer['status']) => (
         <Badge tone={status === 'active' ? 'emerald' : 'rose'} dot>
-          {status === 'active' ? 'Hoạt động' : 'Ngưng'}
+          {t(`status.customer.${status}`)}
         </Badge>
       ),
     },
@@ -85,7 +100,7 @@ export default function CustomersPage() {
       key: 'actions',
       render: () => (
         <Button variant="ghost" size="sm" leftIcon={<Mail className="size-4" />}>
-          Liên hệ
+          {t('admin.customers.contact')}
         </Button>
       ),
     },
@@ -94,22 +109,23 @@ export default function CustomersPage() {
   return (
     <div className="mx-auto max-w-[1440px]">
       <AdminPageHeader
-        eyebrow="Quản lý khách hàng"
+        eyebrow={t('admin.customers.eyebrow')}
         title={
           <>
-            Khách hàng <span className="text-gradient">thân thiết</span>
+            {t('admin.customers.title')}{' '}
+            <span className="text-gradient">{t('admin.customers.titleHighlight')}</span>
           </>
         }
-        description="Theo dõi hành vi mua sắm và thông tin liên hệ khách hàng."
+        description={t('admin.customers.description')}
         actions={
-          <Button leftIcon={<UserPlus className="size-4" />}>Thêm khách hàng</Button>
+          <Button leftIcon={<UserPlus className="size-4" />}>{t('admin.customers.add')}</Button>
         }
       />
 
       <div className="glass mb-6 flex flex-col gap-3 rounded-3xl p-4 sm:flex-row sm:items-center">
         <Input
           prefix={<Search className="size-4 text-slate-400" />}
-          placeholder="Tìm tên, email hoặc số điện thoại…"
+          placeholder={t('admin.customers.searchPlaceholder')}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           className="sm:flex-1"
@@ -119,11 +135,7 @@ export default function CustomersPage() {
           value={statusFilter}
           onChange={setStatusFilter}
           className="w-full sm:w-44"
-          options={[
-            { value: 'all', label: 'Tất cả' },
-            { value: 'active', label: 'Hoạt động' },
-            { value: 'inactive', label: 'Ngưng hoạt động' },
-          ]}
+          options={statusFilterOptions}
         />
       </div>
 

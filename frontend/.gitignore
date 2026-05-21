@@ -15,8 +15,10 @@ dist-ssr
 # Secrets & local config (không push lên GitHub)
 .env
 .env.*
+!/.env.example
 **/.env
 **/.env.*
+!**/.env.example
 
 # Editor directories and files
 .vscode/*

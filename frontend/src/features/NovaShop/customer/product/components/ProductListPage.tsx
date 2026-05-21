@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Pagination, Slider } from 'antd'
 import { Filter, Grid2X2, List, Search, SlidersHorizontal } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import {
   COLLECTION_DEFAULT_CATEGORIES,
-  LISTING_META,
   SORT_OPTIONS,
   type ListingMode,
 } from '../constants/product.constants'
@@ -20,12 +20,18 @@ const BRANDS = Array.from(new Set(PRODUCTS.map((entry) => entry.brand)))
 
 const PAGE_SIZE = 8
 
+function listingModeKey(mode: ListingMode) {
+  return mode === 'flash-sale' ? 'flashSale' : mode
+}
+
 interface ProductListPageProps {
   mode?: ListingMode
 }
 
 export default function ProductListPage({ mode = 'products' }: ProductListPageProps) {
+  const { t } = useTranslation()
   const [params] = useSearchParams()
+  const modeKey = listingModeKey(mode)
   const initialCategory = params.get('cat') as CategorySlug | null
   const presetCategories =
     mode === 'collections' ? COLLECTION_DEFAULT_CATEGORIES : []
@@ -113,13 +119,16 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
     <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 xl:px-14">
       <header className="mb-8">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-gradient">
-          {LISTING_META[mode].eyebrow}
+          {t(`product.listing.${modeKey}.eyebrow`)}
         </p>
         <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-          {LISTING_META[mode].title}
+          {t(`product.listing.${modeKey}.title`)}
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          {filtered.length} sản phẩm — {LISTING_META[mode].subtitle}
+          {t('product.listing.productCount', {
+            count: filtered.length,
+            subtitle: t(`product.listing.${modeKey}.subtitle`),
+          })}
         </p>
       </header>
 
@@ -132,7 +141,7 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
                 <span className="grid size-7 place-items-center rounded-lg bg-linear-to-br from-fuchsia-500 to-purple-500 text-white">
                   <SlidersHorizontal className="size-3.5" />
                 </span>
-                Bộ lọc
+                {t('product.filters.title')}
               </h2>
               <button
                 type="button"
@@ -146,11 +155,11 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
                 }}
                 className="text-xs font-semibold text-fuchsia-600 hover:underline"
               >
-                Reset
+                {t('product.filters.reset')}
               </button>
             </div>
 
-            <FilterSection title="Danh mục">
+            <FilterSection title={t('product.filters.category')}>
               <div className="space-y-2">
                 {CATEGORIES.map((category) => (
                   <label
@@ -174,7 +183,7 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
               </div>
             </FilterSection>
 
-            <FilterSection title="Thương hiệu">
+            <FilterSection title={t('product.filters.brand')}>
               <div className="space-y-2">
                 {BRANDS.map((brand) => (
                   <label
@@ -193,7 +202,7 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
               </div>
             </FilterSection>
 
-            <FilterSection title="Khoảng giá">
+            <FilterSection title={t('product.filters.priceRange')}>
               <Slider
                 range
                 min={0}
@@ -215,7 +224,7 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
               </div>
             </FilterSection>
 
-            <FilterSection title="Đánh giá">
+            <FilterSection title={t('product.filters.rating')}>
               <div className="space-y-2">
                 {[5, 4, 3, 0].map((value) => (
                   <label
@@ -230,14 +239,16 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
                       className="size-4 border-slate-300 text-fuchsia-600 focus:ring-fuchsia-500"
                     />
                     <span className="text-sm text-slate-700">
-                      {value === 0 ? 'Tất cả' : `Từ ${value} sao`}
+                      {value === 0
+                        ? t('product.filters.ratingAll')
+                        : t('product.filters.ratingFrom', { value })}
                     </span>
                   </label>
                 ))}
               </div>
             </FilterSection>
 
-            <FilterSection title="Tồn kho" last>
+            <FilterSection title={t('product.filters.stock')} last>
               <label className="flex cursor-pointer items-center gap-2 rounded-xl p-1 transition-colors hover:bg-fuchsia-50">
                 <input
                   type="checkbox"
@@ -245,7 +256,7 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
                   onChange={(event) => setInStock(event.target.checked)}
                   className="size-4 rounded border-slate-300 text-fuchsia-600 focus:ring-fuchsia-500"
                 />
-                <span className="text-sm text-slate-700">Chỉ còn hàng</span>
+                <span className="text-sm text-slate-700">{t('product.filters.inStockOnly')}</span>
               </label>
             </FilterSection>
           </div>
@@ -262,7 +273,7 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
                   setSearch(event.target.value)
                   setPage(1)
                 }}
-                placeholder="Tìm trong kết quả…"
+                placeholder={t('product.filters.searchPlaceholder')}
                 className="h-10 flex-1 bg-transparent text-sm focus:outline-none"
               />
             </div>
@@ -274,7 +285,7 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
               >
                 {SORT_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {t(option.labelKey)}
                   </option>
                 ))}
               </select>
@@ -288,7 +299,7 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
                       ? 'bg-linear-to-br from-fuchsia-500 to-purple-500 text-white shadow'
                       : 'text-slate-500',
                   )}
-                  aria-label="Lưới"
+                  aria-label={t('product.filters.gridView')}
                 >
                   <Grid2X2 className="size-4" />
                 </button>
@@ -301,7 +312,7 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
                       ? 'bg-linear-to-br from-fuchsia-500 to-purple-500 text-white shadow'
                       : 'text-slate-500',
                   )}
-                  aria-label="Danh sách"
+                  aria-label={t('product.filters.listView')}
                 >
                   <List className="size-4" />
                 </button>
@@ -309,7 +320,7 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
               <button
                 type="button"
                 className="grid size-10 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-600 lg:hidden"
-                aria-label="Bộ lọc"
+                aria-label={t('product.filters.mobileFilters')}
               >
                 <Filter className="size-4" />
               </button>
@@ -318,8 +329,8 @@ export default function ProductListPage({ mode = 'products' }: ProductListPagePr
 
           {pageItems.length === 0 ? (
             <EmptyState
-              title="Không có sản phẩm nào"
-              description="Thử điều chỉnh bộ lọc hoặc đặt lại để xem nhiều kết quả hơn."
+              title={t('product.empty.title')}
+              description={t('product.empty.description')}
             />
           ) : (
             <div

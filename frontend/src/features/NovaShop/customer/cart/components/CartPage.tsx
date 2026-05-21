@@ -10,6 +10,7 @@ import {
   Trash2,
   Truck,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { PATHS, productDetailPath } from '@/router/paths'
 import { PRODUCTS } from '../../../shared/data/products'
@@ -19,6 +20,7 @@ import Button from '../../../shared/ui/Button'
 import EmptyState from '../../../shared/ui/EmptyState'
 
 export default function CartPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { cart, removeFromCart, updateQuantity, clearCart } = useShop()
   const [couponCode, setCouponCode] = useState<string>('')
@@ -48,9 +50,9 @@ export default function CartPage() {
     if (!couponCode) return
     if (couponCode.toUpperCase() === 'NOVA20') {
       setAppliedCoupon('NOVA20')
-      message.success('Đã áp dụng mã NOVA20 — giảm 20%')
+      message.success(t('cart.messages.applied'))
     } else {
-      message.error('Mã giảm giá không hợp lệ')
+      message.error(t('cart.messages.invalid'))
     }
   }
 
@@ -59,12 +61,12 @@ export default function CartPage() {
       <div className="mx-auto max-w-3xl px-4 py-16">
         <EmptyState
           icon={<ShoppingBag className="size-7" />}
-          title="Giỏ hàng trống"
-          description="Bạn chưa có sản phẩm nào trong giỏ hàng. Khám phá ngay những món đồ thú vị nào!"
+          title={t('cart.empty.title')}
+          description={t('cart.empty.description')}
           action={
             <Link to={PATHS.PRODUCTS}>
               <Button rightIcon={<ArrowRight className="size-4" />} glow>
-                Tiếp tục mua sắm
+                {t('cart.empty.continueShopping')}
               </Button>
             </Link>
           }
@@ -77,13 +79,13 @@ export default function CartPage() {
     <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 xl:px-14">
       <header className="mb-8">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-gradient">
-          Checkout step 1/2
+          {t('cart.stepLabel')}
         </p>
         <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-          Giỏ hàng <span className="text-gradient">của bạn</span>
+          {t('cart.title')} <span className="text-gradient">{t('cart.titleHighlight')}</span>
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          Bạn có {lines.length} sản phẩm — kiểm tra trước khi thanh toán nhé
+          {t('cart.subtitle', { count: lines.length })}
         </p>
       </header>
 
@@ -124,7 +126,7 @@ export default function CartPage() {
                     type="button"
                     onClick={() => removeFromCart(line.productId)}
                     className="grid size-9 place-items-center rounded-xl text-slate-400 hover:bg-rose-50 hover:text-rose-500"
-                    aria-label="Xóa"
+                    aria-label={t('cart.remove')}
                   >
                     <Trash2 className="size-4" />
                   </button>
@@ -137,7 +139,7 @@ export default function CartPage() {
                         updateQuantity(line.productId, line.quantity - 1)
                       }
                       className="grid size-8 place-items-center rounded-xl text-slate-600 hover:bg-slate-100"
-                      aria-label="Giảm"
+                      aria-label={t('cart.decrease')}
                     >
                       <Minus className="size-4" />
                     </button>
@@ -150,7 +152,7 @@ export default function CartPage() {
                         updateQuantity(line.productId, line.quantity + 1)
                       }
                       className="grid size-8 place-items-center rounded-xl text-slate-600 hover:bg-slate-100"
-                      aria-label="Tăng"
+                      aria-label={t('cart.increase')}
                     >
                       <Plus className="size-4" />
                     </button>
@@ -167,14 +169,14 @@ export default function CartPage() {
               to={PATHS.PRODUCTS}
               className="font-semibold text-fuchsia-600 hover:underline"
             >
-              ← Tiếp tục mua sắm
+              {t('cart.continueShopping')}
             </Link>
             <button
               type="button"
               onClick={clearCart}
               className="font-medium text-slate-500 hover:text-rose-500"
             >
-              Xóa toàn bộ
+              {t('cart.clearAll')}
             </button>
           </div>
         </div>
@@ -184,20 +186,20 @@ export default function CartPage() {
             <div className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl glow-purple">
               <div className="absolute -right-10 -top-10 size-32 rounded-full bg-fuchsia-300/30 blur-2xl" />
               <h2 className="relative text-lg font-extrabold tracking-tight text-slate-900">
-                Tóm tắt đơn hàng
+                {t('cart.summary.title')}
               </h2>
               <dl className="relative mt-4 space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-slate-500">Tạm tính</dt>
+                  <dt className="text-slate-500">{t('cart.summary.subtotal')}</dt>
                   <dd className="font-bold text-slate-900">
                     {formatCurrency(subtotal)}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-slate-500">Phí vận chuyển</dt>
+                  <dt className="text-slate-500">{t('cart.summary.shipping')}</dt>
                   <dd className="font-bold text-slate-900">
                     {shipping === 0 ? (
-                      <span className="text-emerald-600">Miễn phí</span>
+                      <span className="text-emerald-600">{t('cart.summary.free')}</span>
                     ) : (
                       formatCurrency(shipping)
                     )}
@@ -205,13 +207,15 @@ export default function CartPage() {
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-emerald-600">
-                    <dt>Giảm giá ({appliedCoupon})</dt>
+                    <dt>
+                      {t('cart.summary.discount')} ({appliedCoupon})
+                    </dt>
                     <dd className="font-bold">-{formatCurrency(discount)}</dd>
                   </div>
                 )}
                 <div className="border-t border-dashed border-slate-200 pt-3" />
                 <div className="flex items-baseline justify-between">
-                  <dt className="font-bold text-slate-900">Tổng cộng</dt>
+                  <dt className="font-bold text-slate-900">{t('cart.summary.total')}</dt>
                   <dd className="text-2xl font-extrabold tracking-tight text-gradient">
                     {formatCurrency(total)}
                   </dd>
@@ -225,10 +229,10 @@ export default function CartPage() {
                 onClick={() => navigate(PATHS.CHECKOUT)}
                 rightIcon={<ArrowRight className="size-4" />}
               >
-                Thanh toán
+                {t('cart.summary.checkout')}
               </Button>
               <p className="relative mt-3 flex items-center justify-center gap-2 text-xs text-slate-500">
-                <Truck className="size-3.5" /> Miễn phí ship đơn từ 500K
+                <Truck className="size-3.5" /> {t('cart.summary.freeShippingNote')}
               </p>
             </div>
 
@@ -237,25 +241,25 @@ export default function CartPage() {
                 <span className="grid size-7 place-items-center rounded-lg bg-linear-to-br from-amber-400 to-orange-500 text-white">
                   <Tag className="size-3.5" />
                 </span>
-                Mã giảm giá
+                {t('cart.coupon.title')}
               </p>
               <div className="mt-3 flex gap-2">
                 <input
                   value={couponCode}
                   onChange={(event) => setCouponCode(event.target.value)}
-                  placeholder="Nhập mã (vd: NOVA20)"
+                  placeholder={t('cart.coupon.placeholder')}
                   className="h-11 flex-1 rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
                 />
                 <Button onClick={handleApplyCoupon} size="md">
-                  Áp dụng
+                  {t('cart.coupon.apply')}
                 </Button>
               </div>
               <p className="mt-3 flex items-center gap-1 text-xs text-slate-500">
-                <Sparkles className="size-3" /> Thử mã{' '}
+                <Sparkles className="size-3" /> {t('cart.coupon.hint')}{' '}
                 <code className="rounded bg-fuchsia-100 px-1.5 py-0.5 font-mono font-bold text-fuchsia-700">
                   NOVA20
                 </code>{' '}
-                để giảm 20%
+                {t('cart.coupon.hintSuffix')}
               </p>
             </div>
           </div>

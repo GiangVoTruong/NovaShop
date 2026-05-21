@@ -2,6 +2,7 @@ import { PATHS } from '@/router/paths'
 import { message } from 'antd'
 import { CreditCard, MapPin, Pencil, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { CUSTOMERS } from '../../../shared/data/customers'
 import Button from '../../../shared/ui/Button'
@@ -9,6 +10,7 @@ import { cx } from '../../../shared/ui/cx'
 import { PROFILE_TABS } from '../constants/profile.constants'
 
 export default function ProfilePage() {
+  const { t } = useTranslation()
   const profile = CUSTOMERS[0]
   const [tab, setTab] = useState<string>('profile')
 
@@ -26,15 +28,20 @@ export default function ProfilePage() {
           />
           <div className="flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/70">
-              Thành viên Gold ⭐
+              {t('profile.memberBadge')}
             </p>
-            <h1 className="text-3xl font-extrabold tracking-tight">Xin chào, {profile.name}!</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight">
+              {t('profile.greeting', { name: profile.name })}
+            </h1>
             <p className="mt-1 text-sm text-white/80">
-              {profile.totalOrders} đơn hàng · Tham gia từ {profile.joinedAt}
+              {t('profile.meta', {
+                orders: profile.totalOrders,
+                joinedAt: profile.joinedAt,
+              })}
             </p>
           </div>
           <Button variant="white" leftIcon={<Pencil className="size-4" />}>
-            Chỉnh sửa
+            {t('profile.edit')}
           </Button>
         </div>
       </header>
@@ -62,7 +69,7 @@ export default function ProfilePage() {
                 >
                   <entry.icon className="size-3.5" />
                 </span>
-                {entry.label}
+                {t(entry.labelKey)}
               </button>
             ))}
           </nav>
@@ -72,11 +79,13 @@ export default function ProfilePage() {
           {tab === 'profile' && <ProfileForm profile={profile} />}
           {tab === 'orders' && (
             <div className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl">
-              <h2 className="text-xl font-extrabold tracking-tight">Đơn hàng gần đây</h2>
+              <h2 className="text-xl font-extrabold tracking-tight">
+                {t('profile.ordersTab.title')}
+              </h2>
               <p className="mt-2 text-sm text-slate-500">
-                Xem chi tiết tại trang{' '}
+                {t('profile.ordersTab.descriptionPrefix')}{' '}
                 <Link to={PATHS.ORDERS} className="font-bold text-fuchsia-600 hover:underline">
-                  Đơn hàng
+                  {t('profile.ordersTab.ordersLink')}
                 </Link>
                 .
               </p>
@@ -84,11 +93,13 @@ export default function ProfilePage() {
           )}
           {tab === 'wishlist' && (
             <div className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl">
-              <h2 className="text-xl font-extrabold tracking-tight">Sản phẩm yêu thích</h2>
+              <h2 className="text-xl font-extrabold tracking-tight">
+                {t('profile.wishlistTab.title')}
+              </h2>
               <p className="mt-2 text-sm text-slate-500">
-                Xem chi tiết tại{' '}
+                {t('profile.wishlistTab.descriptionPrefix')}{' '}
                 <Link to={PATHS.WISHLIST} className="font-bold text-fuchsia-600 hover:underline">
-                  Danh sách yêu thích
+                  {t('profile.wishlistTab.wishlistLink')}
                 </Link>
                 .
               </p>
@@ -105,26 +116,30 @@ export default function ProfilePage() {
 }
 
 function ProfileForm({ profile }: { profile: (typeof CUSTOMERS)[number] }) {
+  const { t } = useTranslation()
+
   return (
     <form
       onSubmit={(event) => {
         event.preventDefault()
-        message.success('Cập nhật thông tin thành công')
+        message.success(t('profile.form.success'))
       }}
       className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl"
     >
-      <h2 className="text-xl font-extrabold tracking-tight text-slate-900">Thông tin cá nhân</h2>
-      <p className="text-sm text-slate-500">Cập nhật thông tin để bảo vệ tài khoản</p>
+      <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
+        {t('profile.form.title')}
+      </h2>
+      <p className="text-sm text-slate-500">{t('profile.form.subtitle')}</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {[
-          { label: 'Họ và tên', value: profile.name },
-          { label: 'Email', value: profile.email },
-          { label: 'Số điện thoại', value: profile.phone },
-          { label: 'Ngày tham gia', value: profile.joinedAt },
+          { labelKey: 'profile.form.fullName', value: profile.name },
+          { labelKey: 'profile.form.email', value: profile.email },
+          { labelKey: 'profile.form.phone', value: profile.phone },
+          { labelKey: 'profile.form.joinedAt', value: profile.joinedAt },
         ].map((field) => (
-          <div key={field.label}>
-            <p className="mb-1.5 text-sm font-semibold text-slate-700">{field.label}</p>
+          <div key={field.labelKey}>
+            <p className="mb-1.5 text-sm font-semibold text-slate-700">{t(field.labelKey)}</p>
             <input
               defaultValue={field.value}
               className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
@@ -133,33 +148,37 @@ function ProfileForm({ profile }: { profile: (typeof CUSTOMERS)[number] }) {
         ))}
       </div>
       <Button type="submit" className="mt-6" glow>
-        Lưu thay đổi
+        {t('profile.form.save')}
       </Button>
     </form>
   )
 }
 
 function AddressSection() {
+  const { t } = useTranslation()
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-extrabold tracking-tight text-slate-900">Sổ địa chỉ</h2>
-        <Button glow>+ Thêm địa chỉ</Button>
+        <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
+          {t('profile.address.title')}
+        </h2>
+        <Button glow>{t('profile.address.add')}</Button>
       </div>
       {[
         {
-          name: 'Nhà riêng',
+          nameKey: 'profile.address.entries.home',
           address: '12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP. HCM',
           default: true,
         },
         {
-          name: 'Văn phòng',
+          nameKey: 'profile.address.entries.office',
           address: '88 Nguyễn Văn Trỗi, Q. Phú Nhuận, TP. HCM',
           default: false,
         },
       ].map((entry) => (
         <article
-          key={entry.name}
+          key={entry.nameKey}
           className="flex items-start justify-between gap-4 rounded-3xl border border-white/60 bg-white/85 p-5 backdrop-blur-xl"
         >
           <div className="flex items-start gap-3">
@@ -168,10 +187,10 @@ function AddressSection() {
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <p className="font-bold text-slate-900">{entry.name}</p>
+                <p className="font-bold text-slate-900">{t(entry.nameKey)}</p>
                 {entry.default && (
                   <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">
-                    Mặc định
+                    {t('profile.address.default')}
                   </span>
                 )}
               </div>
@@ -179,7 +198,7 @@ function AddressSection() {
             </div>
           </div>
           <Button variant="ghost" size="sm">
-            Sửa
+            {t('profile.address.edit')}
           </Button>
         </article>
       ))}
@@ -188,13 +207,15 @@ function AddressSection() {
 }
 
 function PaymentSection() {
+  const { t } = useTranslation()
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
-          Phương thức thanh toán
+          {t('profile.payment.title')}
         </h2>
-        <Button glow>+ Thêm thẻ</Button>
+        <Button glow>{t('profile.payment.add')}</Button>
       </div>
       {[
         {
@@ -231,7 +252,7 @@ function PaymentSection() {
             </div>
           </div>
           <Button variant="ghost" size="sm">
-            Xoá
+            {t('profile.payment.delete')}
           </Button>
         </article>
       ))}
@@ -239,22 +260,28 @@ function PaymentSection() {
   )
 }
 
+const NOTIFICATION_ITEM_KEYS = [
+  'profile.notifications.items.orderEmail',
+  'profile.notifications.items.promoEmail',
+  'profile.notifications.items.securitySms',
+  'profile.notifications.items.deliveryPush',
+] as const
+
 function NotificationSection() {
+  const { t } = useTranslation()
+
   return (
     <div className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl">
-      <h2 className="text-xl font-extrabold tracking-tight text-slate-900">Cài đặt thông báo</h2>
+      <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
+        {t('profile.notifications.title')}
+      </h2>
       <ul className="mt-4 space-y-3">
-        {[
-          'Email — Thông báo đơn hàng mới',
-          'Email — Khuyến mãi & ưu đãi',
-          'SMS — Cảnh báo bảo mật',
-          'Push — Cập nhật trạng thái giao hàng',
-        ].map((label) => (
+        {NOTIFICATION_ITEM_KEYS.map((labelKey) => (
           <li
-            key={label}
+            key={labelKey}
             className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3"
           >
-            <span className="text-sm text-slate-700">{label}</span>
+            <span className="text-sm text-slate-700">{t(labelKey)}</span>
             <input type="checkbox" defaultChecked className="size-5 accent-fuchsia-600" />
           </li>
         ))}
@@ -264,6 +291,8 @@ function NotificationSection() {
 }
 
 function SecuritySection() {
+  const { t } = useTranslation()
+
   return (
     <div className="space-y-4">
       <div className="rounded-3xl border border-emerald-100 bg-linear-to-br from-emerald-50 to-teal-50 p-6">
@@ -272,27 +301,29 @@ function SecuritySection() {
             <ShieldCheck className="size-5" />
           </span>
           <div>
-            <p className="font-bold text-slate-900">Bảo mật 2 lớp đã bật</p>
-            <p className="text-sm text-slate-600">Xác thực qua Google Authenticator</p>
+            <p className="font-bold text-slate-900">{t('profile.security.twoFactorTitle')}</p>
+            <p className="text-sm text-slate-600">{t('profile.security.twoFactorDesc')}</p>
           </div>
         </div>
       </div>
       <div className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl">
-        <h2 className="text-xl font-extrabold tracking-tight text-slate-900">Đổi mật khẩu</h2>
+        <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
+          {t('profile.security.changePassword')}
+        </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <input
             type="password"
-            placeholder="Mật khẩu hiện tại"
+            placeholder={t('profile.security.currentPassword')}
             className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
           />
           <input
             type="password"
-            placeholder="Mật khẩu mới"
+            placeholder={t('profile.security.newPassword')}
             className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
           />
         </div>
         <Button className="mt-4" glow>
-          Cập nhật mật khẩu
+          {t('profile.security.updatePassword')}
         </Button>
       </div>
     </div>

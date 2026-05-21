@@ -1,0 +1,37 @@
+export const cart = {
+  stepLabel: 'Checkout step 1/2',
+  title: 'Giỏ hàng',
+  titleHighlight: 'của bạn',
+  subtitle: 'Bạn có {{count}} sản phẩm — kiểm tra trước khi thanh toán nhé',
+  empty: {
+    title: 'Giỏ hàng trống',
+    description: 'Bạn chưa có sản phẩm nào trong giỏ hàng. Khám phá ngay những món đồ thú vị nào!',
+    continueShopping: 'Tiếp tục mua sắm',
+  },
+  remove: 'Xóa',
+  decrease: 'Giảm',
+  increase: 'Tăng',
+  continueShopping: '← Tiếp tục mua sắm',
+  clearAll: 'Xóa toàn bộ',
+  summary: {
+    title: 'Tóm tắt đơn hàng',
+    subtotal: 'Tạm tính',
+    shipping: 'Phí vận chuyển',
+    discount: 'Giảm giá',
+    total: 'Tổng cộng',
+    free: 'Miễn phí',
+    checkout: 'Thanh toán',
+    freeShippingNote: 'Miễn phí ship đơn từ 500K',
+  },
+  coupon: {
+    title: 'Mã giảm giá',
+    placeholder: 'Nhập mã (vd: NOVA20)',
+    apply: 'Áp dụng',
+    hint: 'Thử mã',
+    hintSuffix: 'để giảm 20%',
+  },
+  messages: {
+    applied: 'Đã áp dụng mã NOVA20 — giảm 20%',
+    invalid: 'Mã giảm giá không hợp lệ',
+  },
+} as const

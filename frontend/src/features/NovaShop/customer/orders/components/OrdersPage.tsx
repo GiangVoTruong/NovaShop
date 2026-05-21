@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronRight, Package, Search } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { PATHS, productDetailPath } from '@/router/paths'
 import { CUSTOMER_ORDER_TABS } from '../constants/orders.constants'
@@ -11,6 +12,7 @@ import { OrderStatusBadge } from '../../../shared/ui/StatusBadge'
 import { cx } from '../../../shared/ui/cx'
 
 export default function OrdersPage() {
+  const { t } = useTranslation()
   const [tab, setTab] = useState<'all' | OrderStatus>('all')
   const [search, setSearch] = useState<string>('')
 
@@ -31,14 +33,13 @@ export default function OrdersPage() {
     <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 xl:px-14">
       <header className="mb-8">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-gradient">
-          Lịch sử đặt hàng
+          {t('orders.eyebrow')}
         </p>
         <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-          Đơn hàng <span className="text-gradient">của tôi</span>
+          {t('orders.title')}{' '}
+          <span className="text-gradient">{t('orders.titleHighlight')}</span>
         </h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Theo dõi và quản lý các đơn hàng đã đặt
-        </p>
+        <p className="mt-2 text-sm text-slate-500">{t('orders.subtitle')}</p>
       </header>
 
       <div className="mb-6 flex flex-col gap-3 rounded-3xl border border-white/60 bg-white/85 p-3 backdrop-blur-xl sm:flex-row sm:items-center">
@@ -55,7 +56,7 @@ export default function OrdersPage() {
                   : 'text-slate-600 hover:bg-slate-100',
               )}
             >
-              {entry.label}
+              {t(entry.labelKey)}
             </button>
           ))}
         </div>
@@ -64,7 +65,7 @@ export default function OrdersPage() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Tìm mã đơn hoặc sản phẩm…"
+            placeholder={t('orders.searchPlaceholder')}
             className="h-10 flex-1 bg-transparent text-sm focus:outline-none"
           />
         </div>
@@ -73,8 +74,8 @@ export default function OrdersPage() {
       {filtered.length === 0 ? (
         <EmptyState
           icon={<Package className="size-7" />}
-          title="Chưa có đơn hàng"
-          description="Bạn chưa có đơn hàng nào trong mục này. Hãy bắt đầu mua sắm nào!"
+          title={t('orders.empty.title')}
+          description={t('orders.empty.description')}
         />
       ) : (
         <div className="space-y-4">
@@ -86,7 +87,7 @@ export default function OrdersPage() {
               <header className="flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-slate-200 pb-4">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Mã đơn
+                    {t('orders.orderCode')}
                   </p>
                   <p className="font-mono text-sm font-bold text-slate-900">
                     {order.code}
@@ -94,7 +95,7 @@ export default function OrdersPage() {
                 </div>
                 <OrderStatusBadge status={order.status} />
                 <p className="text-xs text-slate-500">
-                  Đặt lúc {formatDateTime(order.createdAt)}
+                  {t('orders.placedAt')} {formatDateTime(order.createdAt)}
                 </p>
               </header>
 
@@ -122,7 +123,7 @@ export default function OrdersPage() {
                         {item.productName}
                       </Link>
                       <p className="text-xs text-slate-500">
-                        Số lượng: {item.quantity}
+                        {t('orders.quantity')}: {item.quantity}
                       </p>
                     </div>
                     <p className="font-bold text-slate-900">
@@ -134,7 +135,7 @@ export default function OrdersPage() {
 
               <footer className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-slate-200 pt-4">
                 <div className="text-sm">
-                  <span className="text-slate-500">Tổng tiền: </span>
+                  <span className="text-slate-500">{t('orders.total')}: </span>
                   <span className="text-lg font-extrabold tracking-tight text-gradient">
                     {formatCurrency(order.total)}
                   </span>
@@ -143,7 +144,7 @@ export default function OrdersPage() {
                   to={PATHS.ORDERS}
                   className="inline-flex items-center gap-1 text-sm font-bold text-fuchsia-600 hover:underline"
                 >
-                  Xem chi tiết <ChevronRight className="size-3.5" />
+                  {t('orders.viewDetail')} <ChevronRight className="size-3.5" />
                 </Link>
               </footer>
             </article>

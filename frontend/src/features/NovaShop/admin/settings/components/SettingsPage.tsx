@@ -1,5 +1,6 @@
 import { Form, Input, Select, Switch, message } from 'antd'
 import { Save } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import Button from '../../../shared/ui/Button'
 import AdminPageHeader from '../../layout/components/AdminPageHeader'
 
@@ -13,30 +14,32 @@ interface StoreSettingsForm {
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation()
   const [form] = Form.useForm<StoreSettingsForm>()
 
   const handleSave = async () => {
     try {
       await form.validateFields()
-      message.success('Đã lưu cài đặt cửa hàng')
+      message.success(t('admin.settings.messages.saved'))
     } catch {
-      message.error('Vui lòng kiểm tra lại thông tin')
+      message.error(t('admin.settings.messages.validationError'))
     }
   }
 
   return (
     <div className="mx-auto max-w-[960px]">
       <AdminPageHeader
-        eyebrow="Cài đặt hệ thống"
+        eyebrow={t('admin.settings.eyebrow')}
         title={
           <>
-            Cấu hình <span className="text-gradient">cửa hàng</span>
+            {t('admin.settings.title')}{' '}
+            <span className="text-gradient">{t('admin.settings.titleHighlight')}</span>
           </>
         }
-        description="Quản lý thông tin cửa hàng, thông báo và tuỳ chọn vận hành."
+        description={t('admin.settings.description')}
         actions={
           <Button leftIcon={<Save className="size-4" />} onClick={handleSave}>
-            Lưu thay đổi
+            {t('admin.settings.save')}
           </Button>
         }
       />
@@ -55,55 +58,64 @@ export default function SettingsPage() {
         className="space-y-6"
       >
         <section className="glass rounded-3xl p-6">
-          <h2 className="mb-4 text-lg font-bold text-slate-900">Thông tin chung</h2>
+          <h2 className="mb-4 text-lg font-bold text-slate-900">
+            {t('admin.settings.general.title')}
+          </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Form.Item
-              label="Tên cửa hàng"
+              label={t('admin.settings.general.storeName')}
               name="storeName"
-              rules={[{ required: true, message: 'Nhập tên cửa hàng' }]}
+              rules={[
+                { required: true, message: t('admin.settings.general.storeNameRequired') },
+              ]}
             >
               <Input placeholder="NovaShop" />
             </Form.Item>
             <Form.Item
-              label="Email hỗ trợ"
+              label={t('admin.settings.general.supportEmail')}
               name="storeEmail"
               rules={[
-                { required: true, message: 'Nhập email' },
-                { type: 'email', message: 'Email không hợp lệ' },
+                { required: true, message: t('admin.settings.general.emailRequired') },
+                { type: 'email', message: t('admin.settings.general.emailInvalid') },
               ]}
             >
               <Input placeholder="support@nova.shop" />
             </Form.Item>
-            <Form.Item label="Tiền tệ" name="currency">
+            <Form.Item label={t('admin.settings.general.currency')} name="currency">
               <Select
                 options={[
-                  { value: 'VND', label: 'VND — Việt Nam Đồng' },
-                  { value: 'USD', label: 'USD — US Dollar' },
+                  { value: 'VND', label: t('admin.settings.general.currencyVnd') },
+                  { value: 'USD', label: t('admin.settings.general.currencyUsd') },
                 ]}
               />
             </Form.Item>
-            <Form.Item label="Miễn phí ship từ (VND)" name="freeShippingThreshold">
+            <Form.Item
+              label={t('admin.settings.general.freeShipping')}
+              name="freeShippingThreshold"
+            >
               <Input type="number" min={0} />
             </Form.Item>
           </div>
         </section>
 
         <section className="glass rounded-3xl p-6">
-          <h2 className="mb-4 text-lg font-bold text-slate-900">Vận hành</h2>
+          <h2 className="mb-4 text-lg font-bold text-slate-900">
+            {t('admin.settings.operations.title')}
+          </h2>
           <div className="space-y-4">
             <Form.Item
-              label="Chế độ bảo trì"
+              label={t('admin.settings.operations.maintenance')}
               name="maintenanceMode"
               valuePropName="checked"
-              extra="Khi bật, khách hàng sẽ thấy trang bảo trì thay vì cửa hàng."
+              extra={t('admin.settings.operations.maintenanceExtra')}
             >
               <Switch />
             </Form.Item>
             <Form.Item
-              label="Thông báo đơn hàng mới"
+              label={t('admin.settings.operations.orderNotifications')}
               name="orderNotifications"
               valuePropName="checked"
-              extra="Gửi email cho admin khi có đơn hàng mới."
+              extra={t('admin.settings.operations.orderNotificationsExtra')}
             >
               <Switch />
             </Form.Item>

@@ -1,0 +1,67 @@
+export const profile = {
+  memberBadge: 'Gold member ⭐',
+  greeting: 'Hello, {{name}}!',
+  meta: '{{orders}} orders · Member since {{joinedAt}}',
+  edit: 'Edit profile',
+  tabs: {
+    profile: 'Profile',
+    orders: 'Orders',
+    wishlist: 'Wishlist',
+    address: 'Addresses',
+    payment: 'Payment',
+    notifications: 'Notifications',
+    security: 'Security',
+  },
+  form: {
+    title: 'Personal information',
+    subtitle: 'Update your details to keep your account secure',
+    fullName: 'Full name',
+    email: 'Email',
+    phone: 'Phone number',
+    joinedAt: 'Member since',
+    save: 'Save changes',
+    success: 'Profile updated successfully',
+  },
+  ordersTab: {
+    title: 'Recent orders',
+    descriptionPrefix: 'View details on the',
+    ordersLink: 'Orders',
+  },
+  wishlistTab: {
+    title: 'Wishlist',
+    descriptionPrefix: 'View details on',
+    wishlistLink: 'Wishlist',
+  },
+  address: {
+    title: 'Address book',
+    add: '+ Add address',
+    default: 'Default',
+    edit: 'Edit',
+    entries: {
+      home: 'Home',
+      office: 'Office',
+    },
+  },
+  payment: {
+    title: 'Payment methods',
+    add: '+ Add card',
+    delete: 'Remove',
+  },
+  notifications: {
+    title: 'Notification settings',
+    items: {
+      orderEmail: 'Email — New order notifications',
+      promoEmail: 'Email — Promotions & offers',
+      securitySms: 'SMS — Security alerts',
+      deliveryPush: 'Push — Delivery status updates',
+    },
+  },
+  security: {
+    twoFactorTitle: 'Two-factor authentication enabled',
+    twoFactorDesc: 'Verified via Google Authenticator',
+    changePassword: 'Change password',
+    currentPassword: 'Current password',
+    newPassword: 'New password',
+    updatePassword: 'Update password',
+  },
+} as const

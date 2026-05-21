@@ -5,16 +5,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.backend.dto.users.CreateUserRequestDto;
 import com.backend.dto.users.GetUserReponseDto;
 import com.backend.entity.User;
-import com.backend.enums.UserRole;
-import com.backend.exception.ConflictException;
-import com.backend.exception.ResourceNotFoundException;
 import com.backend.mapper.UserMapper;
 import com.backend.repository.UserRepository;
 
@@ -36,26 +35,27 @@ public class UserService {
     @Transactional(readOnly = true)
     public GetUserReponseDto getUserById(UUID id) {
         return userMapper.toDto(userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found")));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")));
     }
 
     @Transactional
     public GetUserReponseDto createUser(CreateUserRequestDto request) {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new ConflictException("Email already registered");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
         }
 
-        User user = userMapper.toEntity(request);
-        user.setEmail(email);
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setFullName(request.getFullName());
-        user.setPhone(request.getPhone());
-        user.setRole(UserRole.valueOf(request.getRole()));
-        user.setIsActive(request.getIsActive());
         OffsetDateTime now = OffsetDateTime.now();
-        user.setCreatedAt(now);
-        user.setUpdatedAt(now);
+        User user = User.builder()
+                .email(email)
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .fullName(request.getFullName())
+                .phone(request.getPhone())
+                .role(request.getRole())
+                .isActive(true)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
 
         return userMapper.toDto(userRepository.save(user));
     }

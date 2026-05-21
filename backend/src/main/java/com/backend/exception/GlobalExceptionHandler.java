@@ -2,43 +2,39 @@ package com.backend.exception;
 
 import java.util.stream.Collectors;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
- * Bắt exception từ toàn bộ controller, map sang HTTP status + {@link ErrorResponse},
- * tránh trả stack trace hoặc lỗi không đồng nhất cho client.
+ * Bắt lỗi từ mọi controller và trả JSON {@link ErrorResponse} thống nhất.
+ * <p>
+ * Service ném lỗi bằng {@link org.springframework.web.server.ResponseStatusException}:
+ * <pre>
+ *   throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+ *   throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
+ *   throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
+ * </pre>
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /** 404 — tài nguyên không tồn tại. */
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(ErrorResponse.of(HttpStatus.NOT_FOUND.value(), ex.getMessage()));
+    /** Lỗi nghiệp vụ có HTTP status (404, 409, 401, 403, …). */
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex) {
+        int status = ex.getStatusCode().value();
+        String message = ex.getReason() != null ? ex.getReason() : ex.getStatusCode().toString();
+        return ResponseEntity.status(ex.getStatusCode()).body(ErrorResponse.of(status, message));
     }
 
-    /** 409 — xung đột dữ liệu (trùng email, v.v.). */
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(ErrorResponse.of(HttpStatus.CONFLICT.value(), ex.getMessage()));
-    }
-
-    /** 400 — body không thỏa {@code @Valid} trên DTO (gộp lỗi theo field). */
+    /** Lỗi validation {@code @Valid} trên DTO — HTTP 400, gộp message theo field. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
                 .collect(Collectors.joining("; "));
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of(HttpStatus.BAD_REQUEST.value(), message));
+        return ResponseEntity.badRequest().body(ErrorResponse.of(400, message));
     }
 }

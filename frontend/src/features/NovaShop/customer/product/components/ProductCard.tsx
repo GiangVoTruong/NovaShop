@@ -1,5 +1,6 @@
 import { productDetailPath } from '@/router/paths'
 import { Heart, ShoppingCart, Sparkles } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { formatCurrency } from '../../../shared/format'
 import { useShop } from '../../../shared/store/useShop'
@@ -14,6 +15,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const { t } = useTranslation()
   const { addToCart, toggleWishlist, isWished } = useShop()
   const wished = isWished(product.id)
   const discount = product.originalPrice
@@ -50,12 +52,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
           {isNew && (
             <span className="inline-flex items-center gap-1 rounded-full bg-linear-to-r from-amber-400 to-orange-500 px-3 py-1 text-xs font-bold text-white shadow-lg shadow-orange-500/40">
-              <Sparkles className="size-3" /> HOT
+              <Sparkles className="size-3" /> {t('product.card.hot')}
             </span>
           )}
           {product.stock === 0 && (
             <span className="rounded-full bg-slate-900/85 px-3 py-1 text-xs font-bold text-white backdrop-blur">
-              Hết hàng
+              {t('product.card.outOfStock')}
             </span>
           )}
         </div>
@@ -67,7 +69,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             event.preventDefault()
             toggleWishlist(product.id)
           }}
-          aria-label={wished ? 'Bỏ yêu thích' : 'Thêm yêu thích'}
+          aria-label={
+            wished ? t('product.card.removeFromWishlist') : t('product.card.addToWishlist')
+          }
           className={cx(
             'absolute right-3 top-3 grid size-10 place-items-center rounded-full backdrop-blur-md transition-all duration-300',
             wished
@@ -89,7 +93,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           className="absolute inset-x-3 bottom-3 flex h-11 translate-y-16 items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-fuchsia-500 via-purple-500 to-indigo-500 text-sm font-semibold text-white opacity-0 shadow-[0_10px_30px_-5px_rgba(217,70,239,0.6)] transition-all duration-300 group-hover/card:translate-y-0 group-hover/card:opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ShoppingCart className="size-4" />
-          Thêm vào giỏ
+          {t('product.card.addToCart')}
         </button>
       </Link>
 

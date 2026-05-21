@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Input, Select, Table } from 'antd'
 import { Plus, Search } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { PRODUCTS } from '../../../shared/data/products'
 import { formatCurrency } from '../../../shared/format'
 import type { Product } from '../../../shared/types'
@@ -8,7 +9,10 @@ import Button from '../../../shared/ui/Button'
 import { CategoryTag, ProductStatusBadge } from '../../../shared/ui/StatusBadge'
 import AdminPageHeader from '../../layout/components/AdminPageHeader'
 
+const PRODUCT_STATUS_FILTER_VALUES = ['active', 'draft', 'out_of_stock'] as const
+
 export default function ProductsPage() {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
@@ -25,9 +29,17 @@ export default function ProductsPage() {
     })
   }, [search, statusFilter])
 
+  const statusFilterOptions = [
+    { value: 'all', label: t('admin.products.filterAll') },
+    ...PRODUCT_STATUS_FILTER_VALUES.map((status) => ({
+      value: status,
+      label: t(`status.product.${status}`),
+    })),
+  ]
+
   const columns = [
     {
-      title: 'Sản phẩm',
+      title: t('admin.products.columns.product'),
       key: 'product',
       render: (_: unknown, product: Product) => (
         <div className="flex items-center gap-3">
@@ -44,20 +56,20 @@ export default function ProductsPage() {
       ),
     },
     {
-      title: 'Danh mục',
+      title: t('admin.products.columns.category'),
       dataIndex: 'category',
       key: 'category',
       render: (category: Product['category']) => <CategoryTag category={category} />,
     },
     {
-      title: 'Giá',
+      title: t('admin.products.columns.price'),
       key: 'price',
       render: (_: unknown, product: Product) => (
         <span className="font-bold text-fuchsia-600">{formatCurrency(product.price)}</span>
       ),
     },
     {
-      title: 'Tồn kho',
+      title: t('admin.products.columns.stock'),
       dataIndex: 'stock',
       key: 'stock',
       render: (stock: number) => (
@@ -67,17 +79,17 @@ export default function ProductsPage() {
       ),
     },
     {
-      title: 'Trạng thái',
+      title: t('admin.products.columns.status'),
       dataIndex: 'status',
       key: 'status',
       render: (status: Product['status']) => <ProductStatusBadge status={status} />,
     },
     {
-      title: 'Thao tác',
+      title: t('admin.products.columns.actions'),
       key: 'actions',
       render: () => (
         <Button variant="ghost" size="sm">
-          Sửa
+          {t('admin.products.edit')}
         </Button>
       ),
     },
@@ -86,22 +98,23 @@ export default function ProductsPage() {
   return (
     <div className="mx-auto max-w-[1440px]">
       <AdminPageHeader
-        eyebrow="Quản lý sản phẩm"
+        eyebrow={t('admin.products.eyebrow')}
         title={
           <>
-            Sản phẩm <span className="text-gradient">NovaShop</span>
+            {t('admin.products.title')}{' '}
+            <span className="text-gradient">{t('admin.products.titleHighlight')}</span>
           </>
         }
-        description="Quản lý danh sách sản phẩm, giá bán và trạng thái hiển thị."
+        description={t('admin.products.description')}
         actions={
-          <Button leftIcon={<Plus className="size-4" />}>Thêm sản phẩm</Button>
+          <Button leftIcon={<Plus className="size-4" />}>{t('admin.products.add')}</Button>
         }
       />
 
       <div className="glass mb-6 flex flex-col gap-3 rounded-3xl p-4 sm:flex-row sm:items-center">
         <Input
           prefix={<Search className="size-4 text-slate-400" />}
-          placeholder="Tìm theo tên, SKU, thương hiệu…"
+          placeholder={t('admin.products.searchPlaceholder')}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           className="sm:flex-1"
@@ -111,12 +124,7 @@ export default function ProductsPage() {
           value={statusFilter}
           onChange={setStatusFilter}
           className="w-full sm:w-48"
-          options={[
-            { value: 'all', label: 'Tất cả trạng thái' },
-            { value: 'active', label: 'Đang bán' },
-            { value: 'draft', label: 'Bản nháp' },
-            { value: 'out_of_stock', label: 'Hết hàng' },
-          ]}
+          options={statusFilterOptions}
         />
       </div>
 

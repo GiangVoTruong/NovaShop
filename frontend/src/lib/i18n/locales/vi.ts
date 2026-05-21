@@ -1,0 +1,87 @@
+import { admin } from './partials/vi/admin'
+import { bottomNav } from './partials/vi/bottomNav'
+import { brand } from './partials/vi/brand'
+import { cart } from './partials/vi/cart'
+import { checkout } from './partials/vi/checkout'
+import { footer } from './partials/vi/footer'
+import { home } from './partials/vi/home'
+import { orders } from './partials/vi/orders'
+import { product } from './partials/vi/product'
+import { profile } from './partials/vi/profile'
+import { status } from './partials/vi/status'
+import { wishlist } from './partials/vi/wishlist'
+
+export const vi = {
+  common: {
+    error: 'Có lỗi xảy ra',
+    or: 'hoặc',
+    email: 'Email',
+    password: 'Mật khẩu',
+    language: 'Ngôn ngữ',
+  },
+  nav: {
+    home: 'Trang chủ',
+    products: 'Sản phẩm',
+    explore: 'Khám phá',
+    collections: 'Bộ sưu tập',
+    flashSale: 'Flash Sale',
+    orders: 'Đơn hàng',
+    searchPlaceholder: 'Tìm sản phẩm, thương hiệu…',
+    openMenu: 'Mở menu',
+    wishlist: 'Yêu thích',
+    cart: 'Giỏ hàng',
+  },
+  auth: {
+    login: 'Đăng nhập',
+    register: 'Đăng ký',
+    loginSuccess: 'Đăng nhập thành công',
+    registerSuccess: 'Đăng ký thành công',
+    loginNow: 'Đăng nhập ngay',
+    loggingIn: 'Đang đăng nhập...',
+    creatingAccount: 'Đang tạo tài khoản...',
+    createAccount: 'Tạo tài khoản',
+    continueWithGoogle: 'Tiếp tục với Google',
+    welcomeBack: 'Chào mừng trở lại',
+    loginSubtitle: 'Mua sắm dễ dàng — quản lý đơn hàng trong tích tắc.',
+    noAccount: 'Chưa có tài khoản?',
+    signUpNow: 'Đăng ký ngay',
+    hasAccount: 'Đã có tài khoản?',
+    newAccount: 'Tạo tài khoản mới',
+    registerSubtitle: 'Tham gia 120K+ khách hàng đang yêu thích NovaShop.',
+    rememberMe: 'Ghi nhớ',
+    forgotPassword: 'Quên mật khẩu?',
+    fullName: 'Họ và tên',
+    phone: 'Số điện thoại',
+    passwordMin: 'Mật khẩu (tối thiểu 8 ký tự)',
+    confirmPassword: 'Xác nhận mật khẩu',
+    showPassword: 'Hiện mật khẩu',
+    showConfirmPassword: 'Hiện mật khẩu xác nhận',
+    termsPrefix: 'Tôi đồng ý với',
+    termsOfService: 'Điều khoản dịch vụ',
+    and: 'và',
+    privacyPolicy: 'Chính sách bảo mật',
+    passwordMinError: 'Mật khẩu phải có ít nhất 8 ký tự',
+    passwordMismatch: 'Mật khẩu xác nhận không khớp',
+    phoneMinError: 'Số điện thoại phải có ít nhất 10 chữ số',
+    heroTitle: 'Shop the',
+    heroTitleHighlight: 'future, today.',
+    heroDescription:
+      'Trải nghiệm mua sắm hiện đại với hơn 15,000 sản phẩm chính hãng, giao hàng 2 giờ và đổi trả 30 ngày miễn phí.',
+    statCustomers: 'Khách hàng',
+    statRating: 'Đánh giá',
+    statProducts: 'Sản phẩm',
+    copyright: '© 2026 NovaShop. Made in Vietnam.',
+  },
+  brand,
+  footer,
+  home,
+  product,
+  cart,
+  checkout,
+  orders,
+  wishlist,
+  profile,
+  bottomNav,
+  status,
+  admin,
+} as const

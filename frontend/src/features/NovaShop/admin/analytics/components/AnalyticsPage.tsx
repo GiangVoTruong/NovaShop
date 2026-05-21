@@ -1,9 +1,11 @@
 import { Column, Line } from '@ant-design/charts'
+import { DollarSign, Eye, ShoppingCart } from 'lucide-react'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ANALYTICS } from '../../../shared/data/analytics'
 import { formatCurrency, formatNumber } from '../../../shared/format'
 import AdminPageHeader from '../../layout/components/AdminPageHeader'
 import StatCard from '../../layout/components/StatCard'
-import { DollarSign, Eye, ShoppingCart } from 'lucide-react'
 
 const latest = ANALYTICS[ANALYTICS.length - 1]
 const previous = ANALYTICS[ANALYTICS.length - 2]
@@ -22,47 +24,60 @@ const visitorsChange = (
 ).toFixed(1)
 
 export default function AnalyticsPage() {
+  const { t } = useTranslation()
+
   const revenueData = ANALYTICS.map((point) => ({
     month: point.month,
     value: point.revenue / 1_000_000,
   }))
 
-  const visitorsData = ANALYTICS.map((point) => ({
-    month: point.month,
-    visitors: point.visitors,
-    orders: point.orders,
-  }))
+  const visitorsChartData = useMemo(
+    () =>
+      ANALYTICS.flatMap((point) => [
+        {
+          month: point.month,
+          value: point.visitors,
+          type: t('admin.analytics.visitorsChart.visitors'),
+        },
+        {
+          month: point.month,
+          value: point.orders * 50,
+          type: t('admin.analytics.visitorsChart.ordersScaled'),
+        },
+      ]),
+    [t],
+  )
 
   return (
     <div className="mx-auto max-w-[1440px]">
       <AdminPageHeader
-        
-        eyebrow="Phân tích kinh doanh"
+        eyebrow={t('admin.analytics.eyebrow')}
         title={
           <>
-            Báo cáo <span className="text-gradient">thống kê</span>
+            {t('admin.analytics.title')}{' '}
+            <span className="text-gradient">{t('admin.analytics.titleHighlight')}</span>
           </>
         }
-        description="Phân tích doanh thu, lượt truy cập và xu hướng đơn hàng theo tháng."
+        description={t('admin.analytics.description')}
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
-          label="Doanh thu tháng này"
+          label={t('admin.analytics.stats.monthlyRevenue')}
           value={formatCurrency(latest.revenue)}
           change={`+${revenueChange}%`}
           icon={<DollarSign className="size-5" />}
           tone="fuchsia"
         />
         <StatCard
-          label="Đơn hàng"
+          label={t('admin.analytics.stats.orders')}
           value={formatNumber(latest.orders)}
           change={`+${ordersChange}%`}
           icon={<ShoppingCart className="size-5" />}
           tone="cyan"
         />
         <StatCard
-          label="Lượt truy cập"
+          label={t('admin.analytics.stats.visitors')}
           value={formatNumber(latest.visitors)}
           change={`+${visitorsChange}%`}
           icon={<Eye className="size-5" />}
@@ -72,8 +87,12 @@ export default function AnalyticsPage() {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
         <section className="glass-dark rounded-3xl p-6 ring-1 ring-white/10">
-          <h2 className="text-lg font-bold text-white">Doanh thu theo tháng</h2>
-          <p className="mb-4 text-sm text-slate-400">Đơn vị: triệu VND</p>
+          <h2 className="text-lg font-bold text-white">
+            {t('admin.analytics.revenueChart.title')}
+          </h2>
+          <p className="mb-4 text-sm text-slate-400">
+            {t('admin.analytics.revenueChart.unit')}
+          </p>
           <Column
             data={revenueData}
             xField="month"
@@ -88,13 +107,14 @@ export default function AnalyticsPage() {
         </section>
 
         <section className="glass-dark rounded-3xl p-6 ring-1 ring-white/10">
-          <h2 className="text-lg font-bold text-white">Truy cập & đơn hàng</h2>
-          <p className="mb-4 text-sm text-slate-400">12 tháng gần nhất</p>
+          <h2 className="text-lg font-bold text-white">
+            {t('admin.analytics.visitorsChart.title')}
+          </h2>
+          <p className="mb-4 text-sm text-slate-400">
+            {t('admin.analytics.visitorsChart.subtitle')}
+          </p>
           <Line
-            data={visitorsData.flatMap((point) => [
-              { month: point.month, value: point.visitors, type: 'Truy cập' },
-              { month: point.month, value: point.orders * 50, type: 'Đơn hàng (x50)' },
-            ])}
+            data={visitorsChartData}
             xField="month"
             yField="value"
             colorField="type"

@@ -2,46 +2,46 @@ import { PATHS } from '@/router/paths'
 
 export const CUSTOMER_FOOTER_COLS = [
   {
-    title: 'Mua sắm',
+    titleKey: 'footer.columns.shop.title',
     links: [
-      { label: 'Sản phẩm mới', to: PATHS.PRODUCTS },
-      { label: 'Khuyến mãi', to: PATHS.FLASH_SALE },
-      { label: 'Bestseller', to: PATHS.PRODUCTS },
-      { label: 'Bộ sưu tập', to: PATHS.COLLECTIONS },
+      { labelKey: 'footer.columns.shop.links.newProducts', to: PATHS.PRODUCTS },
+      { labelKey: 'footer.columns.shop.links.promo', to: PATHS.FLASH_SALE },
+      { labelKey: 'footer.columns.shop.links.bestseller', to: PATHS.PRODUCTS },
+      { labelKey: 'footer.columns.shop.links.collections', to: PATHS.COLLECTIONS },
     ],
   },
   {
-    title: 'Hỗ trợ',
+    titleKey: 'footer.columns.support.title',
     links: [
-      { label: 'Trung tâm hỗ trợ', to: '#' },
-      { label: 'Vận chuyển', to: '#' },
-      { label: 'Đổi trả & hoàn tiền', to: '#' },
-      { label: 'Bảo hành', to: '#' },
+      { labelKey: 'footer.columns.support.links.helpCenter', to: '#' },
+      { labelKey: 'footer.columns.support.links.shipping', to: '#' },
+      { labelKey: 'footer.columns.support.links.returns', to: '#' },
+      { labelKey: 'footer.columns.support.links.warranty', to: '#' },
     ],
   },
   {
-    title: 'Công ty',
+    titleKey: 'footer.columns.company.title',
     links: [
-      { label: 'Về NovaShop', to: '#' },
-      { label: 'Tuyển dụng', to: '#' },
-      { label: 'Liên hệ', to: '#' },
-      { label: 'Chính sách', to: '#' },
+      { labelKey: 'footer.columns.company.links.about', to: '#' },
+      { labelKey: 'footer.columns.company.links.careers', to: '#' },
+      { labelKey: 'footer.columns.company.links.contact', to: '#' },
+      { labelKey: 'footer.columns.company.links.policies', to: '#' },
     ],
   },
   {
-    title: 'Tài khoản',
+    titleKey: 'footer.columns.account.title',
     links: [
-      { label: 'Đăng nhập', to: PATHS.LOGIN },
-      { label: 'Đăng ký', to: PATHS.REGISTER },
-      { label: 'Đơn hàng', to: PATHS.ORDERS },
-      { label: 'Hồ sơ', to: PATHS.PROFILE },
+      { labelKey: 'footer.columns.account.links.login', to: PATHS.LOGIN },
+      { labelKey: 'footer.columns.account.links.register', to: PATHS.REGISTER },
+      { labelKey: 'footer.columns.account.links.orders', to: PATHS.ORDERS },
+      { labelKey: 'footer.columns.account.links.profile', to: PATHS.PROFILE },
     ],
   },
-]
+] as const
 
 export const CUSTOMER_SOCIAL_LINKS = [
-  { label: 'Facebook', initial: 'F' },
-  { label: 'Instagram', initial: 'I' },
-  { label: 'TikTok', initial: 'T' },
-  { label: 'YouTube', initial: 'Y' },
-]
+  { labelKey: 'footer.social.facebook', initial: 'F' },
+  { labelKey: 'footer.social.instagram', initial: 'I' },
+  { labelKey: 'footer.social.tiktok', initial: 'T' },
+  { labelKey: 'footer.social.youtube', initial: 'Y' },
+] as const

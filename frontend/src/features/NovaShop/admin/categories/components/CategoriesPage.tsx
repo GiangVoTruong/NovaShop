@@ -1,23 +1,26 @@
 import { Plus, Pencil } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { CATEGORIES } from '../../../shared/data/categories'
-import { formatNumber } from '../../../shared/format'
 import Button from '../../../shared/ui/Button'
 import { CategoryTag } from '../../../shared/ui/StatusBadge'
 import AdminPageHeader from '../../layout/components/AdminPageHeader'
 
 export default function CategoriesPage() {
+  const { t } = useTranslation()
+
   return (
     <div className="mx-auto max-w-[1440px]">
       <AdminPageHeader
-        eyebrow="Quản lý danh mục"
+        eyebrow={t('admin.categories.eyebrow')}
         title={
           <>
-            Danh mục <span className="text-gradient">sản phẩm</span>
+            {t('admin.categories.title')}{' '}
+            <span className="text-gradient">{t('admin.categories.titleHighlight')}</span>
           </>
         }
-        description="Tổ chức sản phẩm theo nhóm để khách hàng dễ tìm kiếm."
+        description={t('admin.categories.description')}
         actions={
-          <Button leftIcon={<Plus className="size-4" />}>Thêm danh mục</Button>
+          <Button leftIcon={<Plus className="size-4" />}>{t('admin.categories.add')}</Button>
         }
       />
 
@@ -38,7 +41,9 @@ export default function CategoriesPage() {
                 <div>
                   <h3 className="text-lg font-bold text-white">{category.name}</h3>
                   <p className="text-xs text-slate-300">
-                    {formatNumber(category.productCount)} sản phẩm
+                    {t('admin.categories.productCount', {
+                      count: category.productCount,
+                    })}
                   </p>
                 </div>
                 <CategoryTag category={category.slug} />
@@ -47,7 +52,7 @@ export default function CategoriesPage() {
             <div className="flex items-center justify-between p-4">
               <p className="line-clamp-2 text-sm text-slate-600">{category.description}</p>
               <Button variant="ghost" size="sm" leftIcon={<Pencil className="size-4" />}>
-                Sửa
+                {t('admin.categories.edit')}
               </Button>
             </div>
           </article>

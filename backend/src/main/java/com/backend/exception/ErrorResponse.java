@@ -6,14 +6,19 @@ import lombok.Builder;
 import lombok.Value;
 
 /**
- * Dạng JSON thống nhất cho lỗi API: mã HTTP, thông báo, thời điểm (để client log / hiển thị).
+ * Body JSON khi API lỗi — mọi handler trong {@link GlobalExceptionHandler} đều trả format này.
+ * <p>
+ * Ví dụ: {@code {"status":401,"message":"Invalid email or password","timestamp":"..."}}
  */
 @Value
 @Builder
 public class ErrorResponse {
 
+    /** Mã HTTP (400, 401, 404, 409, …). */
     int status;
+    /** Thông báo cho client (tiếng Anh hoặc message nghiệp vụ). */
     String message;
+    /** Thời điểm xảy ra lỗi (UTC). */
     Instant timestamp;
 
     /** Tạo bản ghi lỗi với {@code timestamp} = thời điểm hiện tại. */

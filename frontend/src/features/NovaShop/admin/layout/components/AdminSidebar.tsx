@@ -1,7 +1,8 @@
 import { Boxes } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
 import { PATHS } from '@/router/paths'
-import { ADMIN_NAV_ITEMS } from '../constants/layout.constants'
+import { ADMIN_NAV_ITEMS, ADMIN_QUICK_STATS } from '../constants/layout.constants'
 import { cx } from '../../../shared/ui/cx'
 
 interface AdminSidebarProps {
@@ -13,6 +14,8 @@ export default function AdminSidebar({
   onNavigate,
   collapsed = false,
 }: AdminSidebarProps) {
+  const { t } = useTranslation()
+
   return (
     <aside
       className={cx(
@@ -32,10 +35,10 @@ export default function AdminSidebar({
         {!collapsed && (
           <div>
             <p className="text-sm font-extrabold tracking-tight text-white">
-              Nova<span className="text-gradient">Admin</span>
+              {t('admin.sidebar.brand')}
             </p>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-              Control panel
+              {t('admin.sidebar.tagline')}
             </p>
           </div>
         )}
@@ -48,7 +51,7 @@ export default function AdminSidebar({
             to={item.path}
             end={item.path === PATHS.ADMIN}
             onClick={onNavigate}
-            title={collapsed ? item.label : undefined}
+            title={collapsed ? t(item.labelKey) : undefined}
             className={({ isActive }) =>
               cx(
                 'flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all',
@@ -60,17 +63,28 @@ export default function AdminSidebar({
             }
           >
             <item.icon className="size-[18px] shrink-0" />
-            {!collapsed && <span>{item.label}</span>}
+            {!collapsed && <span>{t(item.labelKey)}</span>}
           </NavLink>
         ))}
       </nav>
 
       {!collapsed && (
-        <div className="border-t border-white/10 p-4">
+        <div className="space-y-3 border-t border-white/10 px-4 py-4">
+          <div className="space-y-2">
+            {ADMIN_QUICK_STATS.map((stat) => (
+              <div
+                key={stat.labelKey}
+                className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2"
+              >
+                <span className="text-[11px] text-slate-400">{t(stat.labelKey)}</span>
+                <span className="text-xs font-bold text-white">{stat.value}</span>
+              </div>
+            ))}
+          </div>
           <div className="rounded-2xl bg-linear-to-br from-fuchsia-500/15 to-indigo-500/15 p-4 ring-1 ring-white/10">
-            <p className="text-xs font-bold text-white">NovaShop Pro</p>
+            <p className="text-xs font-bold text-white">{t('admin.sidebar.proTitle')}</p>
             <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
-              Gói doanh nghiệp — không giới hạn sản phẩm & báo cáo nâng cao.
+              {t('admin.sidebar.proDescription')}
             </p>
           </div>
         </div>

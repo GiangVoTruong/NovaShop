@@ -13,6 +13,7 @@ import {
   Sparkles,
   Truck,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { PATHS } from '@/router/paths'
 import { PRODUCTS } from '../../../shared/data/products'
@@ -24,7 +25,29 @@ import { CategoryTag } from '../../../shared/ui/StatusBadge'
 import { cx } from '../../../shared/ui/cx'
 import ProductCard from './ProductCard'
 
+const DETAIL_PERKS = [
+  {
+    icon: Truck,
+    labelKey: 'product.detail.perks.delivery.label',
+    valueKey: 'product.detail.perks.delivery.value',
+    grad: 'from-cyan-400 to-blue-500',
+  },
+  {
+    icon: ShieldCheck,
+    labelKey: 'product.detail.perks.warranty.label',
+    valueKey: 'product.detail.perks.warranty.value',
+    grad: 'from-emerald-400 to-teal-500',
+  },
+  {
+    icon: RotateCcw,
+    labelKey: 'product.detail.perks.returns.label',
+    valueKey: 'product.detail.perks.returns.value',
+    grad: 'from-fuchsia-500 to-pink-500',
+  },
+] as const
+
 export default function ProductDetailPage() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const product = PRODUCTS.find((entry) => entry.id === id)
@@ -48,12 +71,12 @@ export default function ProductDetailPage() {
   if (!product) {
     return (
       <div className="mx-auto max-w-[1440px] px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold">Không tìm thấy sản phẩm</h1>
+        <h1 className="text-2xl font-bold">{t('product.detail.notFound')}</h1>
         <Link
           to={PATHS.PRODUCTS}
           className="mt-4 inline-flex items-center gap-2 text-fuchsia-600 hover:underline"
         >
-          <ArrowLeft className="size-4" /> Quay lại danh sách
+          <ArrowLeft className="size-4" /> {t('product.detail.backToList')}
         </Link>
       </div>
     )
@@ -68,7 +91,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     addToCart(product.id, quantity)
-    message.success('Đã thêm vào giỏ hàng')
+    message.success(t('product.detail.messages.addedToCart'))
   }
 
   const handleBuyNow = () => {
@@ -80,11 +103,11 @@ export default function ProductDetailPage() {
     <div className="mx-auto max-w-[1440px] space-y-16 px-4 py-8 sm:px-6 lg:px-10 xl:px-14">
       <nav className="flex items-center gap-1 text-sm text-slate-500">
         <Link to={PATHS.HOME} className="hover:text-fuchsia-600">
-          Trang chủ
+          {t('product.detail.breadcrumb.home')}
         </Link>
         <ChevronRight className="size-3.5" />
         <Link to={PATHS.PRODUCTS} className="hover:text-fuchsia-600">
-          Sản phẩm
+          {t('product.detail.breadcrumb.products')}
         </Link>
         <ChevronRight className="size-3.5" />
         <span className="font-medium text-slate-900">{product.name}</span>
@@ -141,10 +164,14 @@ export default function ProductDetailPage() {
             <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-slate-600">
               <StarRating value={product.rating} size={18} showValue />
               <span className="text-slate-400">·</span>
-              <span>{product.reviewCount.toLocaleString()} đánh giá</span>
+              <span>
+                {t('product.detail.reviews', {
+                  count: product.reviewCount.toLocaleString(),
+                })}
+              </span>
               <span className="text-slate-400">·</span>
               <span className="inline-flex items-center gap-1 font-medium text-emerald-600">
-                <CheckCircle2 className="size-4" /> Đã bán 5.2K
+                <CheckCircle2 className="size-4" /> {t('product.detail.sold')}
               </span>
             </div>
           </div>
@@ -162,7 +189,7 @@ export default function ProductDetailPage() {
               )}
             </div>
             <p className="relative mt-1 text-xs text-slate-500">
-              Đã bao gồm VAT · Tiết kiệm{' '}
+              {t('product.detail.priceNote')}{' '}
               {product.originalPrice
                 ? formatCurrency(product.originalPrice - product.price)
                 : '—'}
@@ -175,7 +202,7 @@ export default function ProductDetailPage() {
 
           {product.colors && (
             <div>
-              <p className="mb-3 text-sm font-bold text-slate-900">Màu sắc</p>
+              <p className="mb-3 text-sm font-bold text-slate-900">{t('product.detail.color')}</p>
               <div className="flex gap-2">
                 {product.colors.map((color) => (
                   <button
@@ -198,7 +225,7 @@ export default function ProductDetailPage() {
 
           {product.sizes && (
             <div>
-              <p className="mb-3 text-sm font-bold text-slate-900">Kích cỡ</p>
+              <p className="mb-3 text-sm font-bold text-slate-900">{t('product.detail.size')}</p>
               <div className="flex flex-wrap gap-2">
                 {product.sizes.map((size) => (
                   <button
@@ -220,13 +247,13 @@ export default function ProductDetailPage() {
           )}
 
           <div className="flex items-center gap-4">
-            <p className="text-sm font-bold text-slate-900">Số lượng</p>
+            <p className="text-sm font-bold text-slate-900">{t('product.detail.quantity')}</p>
             <div className="flex items-center gap-1 rounded-2xl border-2 border-slate-200 bg-white p-1">
               <button
                 type="button"
                 onClick={() => setQuantity((value) => Math.max(1, value - 1))}
                 className="grid size-9 place-items-center rounded-xl text-slate-600 hover:bg-slate-100"
-                aria-label="Giảm"
+                aria-label={t('product.detail.decrease')}
               >
                 <Minus className="size-4" />
               </button>
@@ -239,13 +266,13 @@ export default function ProductDetailPage() {
                   setQuantity((value) => Math.min(product.stock, value + 1))
                 }
                 className="grid size-9 place-items-center rounded-xl text-slate-600 hover:bg-slate-100"
-                aria-label="Tăng"
+                aria-label={t('product.detail.increase')}
               >
                 <Plus className="size-4" />
               </button>
             </div>
             <span className="text-xs font-medium text-slate-500">
-              Còn {product.stock} sản phẩm
+              {t('product.detail.stockLeft', { count: product.stock })}
             </span>
           </div>
 
@@ -258,7 +285,7 @@ export default function ProductDetailPage() {
               disabled={product.stock === 0}
               leftIcon={<Sparkles className="size-4" />}
             >
-              Thêm vào giỏ
+              {t('product.detail.addToCart')}
             </Button>
             <Button
               size="lg"
@@ -267,7 +294,7 @@ export default function ProductDetailPage() {
               onClick={handleBuyNow}
               disabled={product.stock === 0}
             >
-              Mua ngay
+              {t('product.detail.buyNow')}
             </Button>
             <button
               type="button"
@@ -278,51 +305,30 @@ export default function ProductDetailPage() {
                   ? 'border-transparent bg-linear-to-br from-rose-500 to-pink-500 text-white shadow-lg shadow-pink-500/40'
                   : 'border-slate-200 bg-white text-slate-600 hover:border-rose-300 hover:text-rose-500',
               )}
-              aria-label="Yêu thích"
+              aria-label={t('product.detail.wishlist')}
             >
               <Heart className={cx('size-5', wished && 'fill-white')} />
             </button>
             <button
               type="button"
               className="grid h-13 w-13 shrink-0 place-items-center rounded-2xl border-2 border-slate-200 bg-white text-slate-600 hover:border-slate-900"
-              aria-label="Chia sẻ"
+              aria-label={t('product.detail.share')}
             >
               <Share2 className="size-5" />
             </button>
           </div>
 
           <div className="grid gap-3 rounded-3xl border border-slate-200/60 bg-white/85 p-5 backdrop-blur-xl sm:grid-cols-3">
-            {[
-              {
-                icon: Truck,
-                label: 'Giao hàng',
-                value: 'Trong 2 giờ',
-                grad: 'from-cyan-400 to-blue-500',
-              },
-              {
-                icon: ShieldCheck,
-                label: 'Bảo hành',
-                value: '12 tháng',
-                grad: 'from-emerald-400 to-teal-500',
-              },
-              {
-                icon: RotateCcw,
-                label: 'Đổi trả',
-                value: '30 ngày',
-                grad: 'from-fuchsia-500 to-pink-500',
-              },
-            ].map((entry) => (
-              <div key={entry.label} className="flex items-center gap-3">
+            {DETAIL_PERKS.map((entry) => (
+              <div key={entry.labelKey} className="flex items-center gap-3">
                 <span
                   className={`grid size-10 place-items-center rounded-xl bg-linear-to-br ${entry.grad} text-white shadow-md`}
                 >
                   <entry.icon className="size-5" />
                 </span>
                 <div>
-                  <p className="text-xs text-slate-500">{entry.label}</p>
-                  <p className="text-sm font-bold text-slate-900">
-                    {entry.value}
-                  </p>
+                  <p className="text-xs text-slate-500">{t(entry.labelKey)}</p>
+                  <p className="text-sm font-bold text-slate-900">{t(entry.valueKey)}</p>
                 </div>
               </div>
             ))}
@@ -332,28 +338,32 @@ export default function ProductDetailPage() {
 
       <section className="rounded-[2rem] border border-slate-200/60 bg-white/85 p-8 backdrop-blur-xl">
         <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">
-          Mô tả sản phẩm
+          {t('product.detail.description.title')}
         </h2>
         <div className="mt-4 space-y-3 text-[15px] leading-relaxed text-slate-600">
           <p>{product.description}</p>
-          <p>
-            Sản phẩm được nhập khẩu chính hãng, đầy đủ giấy tờ và bảo hành.
-            NovaShop cam kết hoàn tiền 200% nếu phát hiện hàng giả, hàng nhái.
-          </p>
+          <p>{t('product.detail.description.extra')}</p>
           <ul className="ml-5 list-disc space-y-1">
-            <li>Mã sản phẩm: {product.sku}</li>
-            <li>Tình trạng: Còn {product.stock} sản phẩm</li>
-            <li>Xuất xứ: Chính hãng, có CO/CQ</li>
+            <li>
+              {t('product.detail.description.sku')}: {product.sku}
+            </li>
+            <li>
+              {t('product.detail.description.stock')}:{' '}
+              {t('product.detail.description.stockValue', { count: product.stock })}
+            </li>
+            <li>
+              {t('product.detail.description.origin')}: {t('product.detail.description.originValue')}
+            </li>
           </ul>
         </div>
       </section>
 
       <section>
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-gradient">
-          Có thể bạn thích
+          {t('product.detail.related.eyebrow')}
         </p>
         <h2 className="mt-2 mb-8 text-3xl font-extrabold tracking-tight text-slate-900">
-          Sản phẩm liên quan
+          {t('product.detail.related.title')}
         </h2>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {related.map((entry) => (

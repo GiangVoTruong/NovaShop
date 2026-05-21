@@ -1,10 +1,12 @@
 import { PATHS } from '@/router/paths'
+import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
 import { useShop } from '../../../shared/store/useShop'
 import { cx } from '../../../shared/ui/cx'
 import { CUSTOMER_BOTTOM_NAV_ITEMS } from '../constants/layout.constants'
 
 export default function CustomerBottomNav() {
+  const { t } = useTranslation()
   const { cartCount } = useShop()
   return (
     <nav className="fixed inset-x-0 bottom-3 z-40 mx-3 lg:hidden">
@@ -28,12 +30,12 @@ export default function CustomerBottomNav() {
                       <span className="absolute inset-1 rounded-2xl bg-linear-to-br from-fuchsia-500 via-purple-500 to-indigo-500" />
                     )}
                     <item.icon className="relative size-5" />
-                    {item.showCart && cartCount > 0 && (
+                    {'showCart' in item && item.showCart && cartCount > 0 && (
                       <span className="absolute right-3 top-1 grid size-4 place-items-center rounded-full bg-rose-500 text-[9px] font-bold text-white ring-2 ring-white">
                         {cartCount}
                       </span>
                     )}
-                    <span className="relative">{item.label}</span>
+                    <span className="relative">{t(item.labelKey)}</span>
                   </>
                 )}
               </NavLink>

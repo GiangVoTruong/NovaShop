@@ -1,8 +1,8 @@
 export const HERO_STATS = [
-  { value: '15K+', label: 'Sản phẩm' },
-  { value: '120K+', label: 'Khách hàng' },
-  { value: '4.9', label: 'Rating trung bình' },
-]
+  { value: '15K+', labelKey: 'home.hero.stats.products' },
+  { value: '120K+', labelKey: 'home.hero.stats.customers' },
+  { value: '4.9', labelKey: 'home.hero.stats.rating' },
+] as const
 
 export const BRANDS = [
   'Nova Audio',
@@ -18,20 +18,20 @@ export const BRANDS = [
 export const TESTIMONIALS = [
   {
     name: 'Linh Đỗ',
-    role: 'Khách hàng VIP',
+    roleKey: 'home.testimonials.roles.vip',
     avatar: 'https://i.pravatar.cc/120?img=23',
     quote: 'Giao diện quá đẹp, đặt hàng 30 giây xong. Sản phẩm chất, đóng gói premium như Apple.',
   },
   {
     name: 'Minh Anh',
-    role: 'Người dùng mới',
+    roleKey: 'home.testimonials.roles.newUser',
     avatar: 'https://i.pravatar.cc/120?img=47',
     quote: 'Mình từng dùng Shopee, Lazada — NovaShop là trải nghiệm sang nhất từ trước đến giờ.',
   },
   {
     name: 'Quốc Bảo',
-    role: 'Tín đồ công nghệ',
+    roleKey: 'home.testimonials.roles.techEnthusiast',
     avatar: 'https://i.pravatar.cc/120?img=11',
     quote: 'Đặt 12 đơn rồi. Giao 2 giờ thật, không phải quảng cáo. App lẫn web đều quá ổn.',
   },
-]
+] as const

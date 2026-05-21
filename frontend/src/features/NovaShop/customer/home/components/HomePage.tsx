@@ -12,6 +12,7 @@ import {
   Truck,
   Zap,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { BRANDS, HERO_STATS, TESTIMONIALS } from '../constants/home.constants'
 import { CATEGORIES } from '../../../shared/data/categories'
@@ -22,7 +23,35 @@ import StarRating from '../../../shared/ui/StarRating'
 import CategoryCard from '../../product/components/CategoryCard'
 import ProductCard from '../../product/components/ProductCard'
 
+const USP_ITEMS = [
+  {
+    icon: Truck,
+    titleKey: 'home.usp.delivery.title',
+    descKey: 'home.usp.delivery.desc',
+    grad: 'from-cyan-400 to-blue-500',
+  },
+  {
+    icon: ShieldCheck,
+    titleKey: 'home.usp.warranty.title',
+    descKey: 'home.usp.warranty.desc',
+    grad: 'from-emerald-400 to-teal-500',
+  },
+  {
+    icon: RotateCcw,
+    titleKey: 'home.usp.returns.title',
+    descKey: 'home.usp.returns.desc',
+    grad: 'from-amber-400 to-orange-500',
+  },
+  {
+    icon: Headphones,
+    titleKey: 'home.usp.support.title',
+    descKey: 'home.usp.support.desc',
+    grad: 'from-fuchsia-500 to-pink-500',
+  },
+] as const
+
 export default function HomePage() {
+  const { t } = useTranslation()
   const heroProduct = PRODUCTS.find((entry) => entry.id === 'p-001')!
   const sideProductA = PRODUCTS.find((entry) => entry.id === 'p-004')!
   const sideProductB = PRODUCTS.find((entry) => entry.id === 'p-013')!
@@ -43,20 +72,20 @@ export default function HomePage() {
           {/* LEFT */}
           <div className="space-y-7 text-white lg:col-span-6">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider backdrop-blur">
-              <Sparkles className="size-3.5" /> Bộ sưu tập mùa hè 2026
+              <Sparkles className="size-3.5" /> {t('home.hero.badge')}
             </span>
 
             <h1 className="text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-              Shop the
+              {t('home.hero.title')}
               <br />
               <span className="bg-linear-to-r from-pink-300 via-fuchsia-300 to-cyan-200 bg-clip-text text-transparent">
-                future, today.
+                {t('home.hero.titleHighlight')}
               </span>
             </h1>
 
             <p className="max-w-xl text-base text-white/80 sm:text-lg">
-              15,000+ sản phẩm chính hãng, giao hàng 2 giờ tại nội thành, đổi trả miễn phí 30 ngày.
-              NovaShop — nơi mua sắm cảm thấy <span className="text-cyan-300">electric</span>.
+              {t('home.hero.description')}{' '}
+              <span className="text-cyan-300">{t('home.hero.descriptionHighlight')}</span>.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -67,22 +96,22 @@ export default function HomePage() {
                   rightIcon={<ArrowRight className="size-5" />}
                   className="font-bold"
                 >
-                  Khám phá ngay
+                  {t('home.hero.exploreNow')}
                 </Button>
               </Link>
               <Link to={PATHS.FLASH_SALE}>
                 <Button variant="glass" size="lg">
-                  Flash sale 30%
+                  {t('home.hero.flashSaleCta')}
                 </Button>
               </Link>
             </div>
 
             <div className="flex flex-wrap items-center gap-10 pt-6">
               {HERO_STATS.map((stat) => (
-                <div key={stat.label}>
+                <div key={stat.labelKey}>
                   <p className="text-3xl font-extrabold tracking-tight">{stat.value}</p>
                   <p className="mt-0.5 text-xs uppercase tracking-wider text-white/60">
-                    {stat.label}
+                    {t(stat.labelKey)}
                   </p>
                 </div>
               ))}
@@ -105,7 +134,9 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 via-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 text-white">
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-white/70">Bestseller</p>
+                    <p className="text-xs uppercase tracking-wider text-white/70">
+                      {t('home.hero.featured.bestseller')}
+                    </p>
                     <p className="text-lg font-bold leading-tight">{heroProduct.name}</p>
                   </div>
                   <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold backdrop-blur">
@@ -135,7 +166,7 @@ export default function HomePage() {
                   <p className="text-2xl font-extrabold">4.9</p>
                 </div>
                 <p className="mt-1 text-[11px] uppercase tracking-wider text-white/70">
-                  Trên 50K đánh giá
+                  {t('home.hero.ratingCard')}
                 </p>
               </div>
 
@@ -158,8 +189,8 @@ export default function HomePage() {
                 <BadgeCheck className="size-5" />
               </span>
               <div>
-                <p className="text-sm font-bold">Chính hãng 100%</p>
-                <p className="text-xs text-slate-500">Hoàn 200% nếu giả</p>
+                <p className="text-sm font-bold">{t('home.hero.badges.authentic.title')}</p>
+                <p className="text-xs text-slate-500">{t('home.hero.badges.authentic.subtitle')}</p>
               </div>
             </div>
             <div className="absolute -right-4 bottom-12 hidden items-center gap-3 rounded-2xl border border-white/30 bg-white/95 p-3 text-slate-900 shadow-2xl backdrop-blur lg:flex">
@@ -167,8 +198,8 @@ export default function HomePage() {
                 <Zap className="size-5 fill-current" />
               </span>
               <div>
-                <p className="text-sm font-bold">Giao 2 giờ</p>
-                <p className="text-xs text-slate-500">420 đơn / ngày</p>
+                <p className="text-sm font-bold">{t('home.hero.badges.delivery.title')}</p>
+                <p className="text-xs text-slate-500">{t('home.hero.badges.delivery.subtitle')}</p>
               </div>
             </div>
           </div>
@@ -177,34 +208,9 @@ export default function HomePage() {
 
       {/* ====== USP STRIP ====== */}
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[
-          {
-            icon: Truck,
-            title: 'Giao hàng 2 giờ',
-            desc: 'Miễn phí đơn từ 500K',
-            grad: 'from-cyan-400 to-blue-500',
-          },
-          {
-            icon: ShieldCheck,
-            title: 'Bảo hành chính hãng',
-            desc: '12-24 tháng tuỳ sản phẩm',
-            grad: 'from-emerald-400 to-teal-500',
-          },
-          {
-            icon: RotateCcw,
-            title: 'Đổi trả 30 ngày',
-            desc: 'Hoàn tiền nếu không hài lòng',
-            grad: 'from-amber-400 to-orange-500',
-          },
-          {
-            icon: Headphones,
-            title: 'Hỗ trợ 24/7',
-            desc: 'Chat & hotline luôn online',
-            grad: 'from-fuchsia-500 to-pink-500',
-          },
-        ].map((feature) => (
+        {USP_ITEMS.map((feature) => (
           <div
-            key={feature.title}
+            key={feature.titleKey}
             className="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
           >
             <span
@@ -212,8 +218,10 @@ export default function HomePage() {
             >
               <feature.icon className="size-5" />
             </span>
-            <p className="text-base font-bold tracking-tight text-slate-900">{feature.title}</p>
-            <p className="mt-1 text-sm text-slate-500">{feature.desc}</p>
+            <p className="text-base font-bold tracking-tight text-slate-900">
+              {t(feature.titleKey)}
+            </p>
+            <p className="mt-1 text-sm text-slate-500">{t(feature.descKey)}</p>
           </div>
         ))}
       </section>
@@ -221,10 +229,10 @@ export default function HomePage() {
       {/* ====== CATEGORIES BENTO ====== */}
       <section>
         <SectionHeading
-          eyebrow="Khám phá"
-          title="Mua theo danh mục"
-          subtitle="Tìm chính xác thứ bạn cần — chỉ trong 1 click"
-          ctaLabel="Xem tất cả"
+          eyebrow={t('home.categories.eyebrow')}
+          title={t('home.categories.title')}
+          subtitle={t('home.categories.subtitle')}
+          ctaLabel={t('home.categories.viewAll')}
           ctaTo={PATHS.PRODUCTS}
         />
         <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4 lg:grid-rows-2">
@@ -252,20 +260,20 @@ export default function HomePage() {
             </span>
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-rose-300">
-                ⚡ Giới hạn 24 giờ
+                {t('home.flashSale.limited')}
               </p>
               <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-                Flash Sale Cuối Tuần
+                {t('home.flashSale.title')}
               </h2>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <CountdownBox label="GIỜ" value="12" />
+            <CountdownBox label={t('home.flashSale.countdown.hours')} value="12" />
             <Colon />
-            <CountdownBox label="PHÚT" value="34" />
+            <CountdownBox label={t('home.flashSale.countdown.minutes')} value="34" />
             <Colon />
-            <CountdownBox label="GIÂY" value="56" />
+            <CountdownBox label={t('home.flashSale.countdown.seconds')} value="56" />
           </div>
         </div>
 
@@ -279,10 +287,10 @@ export default function HomePage() {
       {/* ====== FEATURED PRODUCTS ====== */}
       <section>
         <SectionHeading
-          eyebrow="Bestseller"
-          title="Sản phẩm nổi bật"
-          subtitle="Được khách hàng yêu thích & đánh giá cao nhất"
-          ctaLabel="Xem tất cả"
+          eyebrow={t('home.featured.eyebrow')}
+          title={t('home.featured.title')}
+          subtitle={t('home.featured.subtitle')}
+          ctaLabel={t('home.featured.viewAll')}
           ctaTo={PATHS.PRODUCTS}
         />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
@@ -295,7 +303,7 @@ export default function HomePage() {
       {/* ====== BRANDS ====== */}
       <section className="relative overflow-hidden rounded-[2.5rem] border border-slate-200/60 bg-white p-10">
         <p className="text-center text-xs font-bold uppercase tracking-[0.25em] text-slate-400">
-          Đối tác chính hãng — trusted by
+          {t('home.brands.label')}
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
           {BRANDS.map((brand) => (
@@ -313,9 +321,9 @@ export default function HomePage() {
       <section>
         <SectionHeading
           center
-          eyebrow="Reviews"
-          title="Khách hàng nói gì?"
-          subtitle="Hàng triệu khách hàng đã tin tưởng NovaShop"
+          eyebrow={t('home.testimonials.eyebrow')}
+          title={t('home.testimonials.title')}
+          subtitle={t('home.testimonials.subtitle')}
         />
         <div className="grid gap-5 md:grid-cols-3">
           {TESTIMONIALS.map((entry, idx) => (
@@ -349,7 +357,7 @@ export default function HomePage() {
                   />
                   <div>
                     <p className="text-sm font-bold text-slate-900">{entry.name}</p>
-                    <p className="text-xs text-slate-500">{entry.role}</p>
+                    <p className="text-xs text-slate-500">{t(entry.roleKey)}</p>
                   </div>
                 </div>
               </div>

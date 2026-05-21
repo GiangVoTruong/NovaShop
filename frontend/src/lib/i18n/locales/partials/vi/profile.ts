@@ -1,0 +1,67 @@
+export const profile = {
+  memberBadge: 'Thành viên Gold ⭐',
+  greeting: 'Xin chào, {{name}}!',
+  meta: '{{orders}} đơn hàng · Tham gia từ {{joinedAt}}',
+  edit: 'Chỉnh sửa',
+  tabs: {
+    profile: 'Hồ sơ',
+    orders: 'Đơn hàng',
+    wishlist: 'Yêu thích',
+    address: 'Địa chỉ',
+    payment: 'Thanh toán',
+    notifications: 'Thông báo',
+    security: 'Bảo mật',
+  },
+  form: {
+    title: 'Thông tin cá nhân',
+    subtitle: 'Cập nhật thông tin để bảo vệ tài khoản',
+    fullName: 'Họ và tên',
+    email: 'Email',
+    phone: 'Số điện thoại',
+    joinedAt: 'Ngày tham gia',
+    save: 'Lưu thay đổi',
+    success: 'Cập nhật thông tin thành công',
+  },
+  ordersTab: {
+    title: 'Đơn hàng gần đây',
+    descriptionPrefix: 'Xem chi tiết tại trang',
+    ordersLink: 'Đơn hàng',
+  },
+  wishlistTab: {
+    title: 'Sản phẩm yêu thích',
+    descriptionPrefix: 'Xem chi tiết tại',
+    wishlistLink: 'Danh sách yêu thích',
+  },
+  address: {
+    title: 'Sổ địa chỉ',
+    add: '+ Thêm địa chỉ',
+    default: 'Mặc định',
+    edit: 'Sửa',
+    entries: {
+      home: 'Nhà riêng',
+      office: 'Văn phòng',
+    },
+  },
+  payment: {
+    title: 'Phương thức thanh toán',
+    add: '+ Thêm thẻ',
+    delete: 'Xoá',
+  },
+  notifications: {
+    title: 'Cài đặt thông báo',
+    items: {
+      orderEmail: 'Email — Thông báo đơn hàng mới',
+      promoEmail: 'Email — Khuyến mãi & ưu đãi',
+      securitySms: 'SMS — Cảnh báo bảo mật',
+      deliveryPush: 'Push — Cập nhật trạng thái giao hàng',
+    },
+  },
+  security: {
+    twoFactorTitle: 'Bảo mật 2 lớp đã bật',
+    twoFactorDesc: 'Xác thực qua Google Authenticator',
+    changePassword: 'Đổi mật khẩu',
+    currentPassword: 'Mật khẩu hiện tại',
+    newPassword: 'Mật khẩu mới',
+    updatePassword: 'Cập nhật mật khẩu',
+  },
+} as const

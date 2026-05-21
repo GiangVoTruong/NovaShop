@@ -12,19 +12,19 @@ import {
 import { PATHS } from '@/router/paths'
 
 export const ADMIN_NAV_ITEMS = [
-  { label: 'Tổng quan', path: PATHS.ADMIN, icon: LayoutDashboard },
-  { label: 'Sản phẩm', path: PATHS.ADMIN_PRODUCTS, icon: ShoppingBag },
-  { label: 'Đơn hàng', path: PATHS.ADMIN_ORDERS, icon: Package },
-  { label: 'Khách hàng', path: PATHS.ADMIN_CUSTOMERS, icon: Users },
-  { label: 'Danh mục', path: PATHS.ADMIN_CATEGORIES, icon: FolderTree },
-  { label: 'Kho hàng', path: PATHS.ADMIN_INVENTORY, icon: Warehouse },
-  { label: 'Mã giảm giá', path: PATHS.ADMIN_COUPONS, icon: Percent },
-  { label: 'Phân tích', path: PATHS.ADMIN_ANALYTICS, icon: BarChart3 },
-  { label: 'Cài đặt', path: PATHS.ADMIN_SETTINGS, icon: Settings },
+  { labelKey: 'admin.nav.dashboard', path: PATHS.ADMIN, icon: LayoutDashboard },
+  { labelKey: 'admin.nav.products', path: PATHS.ADMIN_PRODUCTS, icon: ShoppingBag },
+  { labelKey: 'admin.nav.orders', path: PATHS.ADMIN_ORDERS, icon: Package },
+  { labelKey: 'admin.nav.customers', path: PATHS.ADMIN_CUSTOMERS, icon: Users },
+  { labelKey: 'admin.nav.categories', path: PATHS.ADMIN_CATEGORIES, icon: FolderTree },
+  { labelKey: 'admin.nav.inventory', path: PATHS.ADMIN_INVENTORY, icon: Warehouse },
+  { labelKey: 'admin.nav.coupons', path: PATHS.ADMIN_COUPONS, icon: Percent },
+  { labelKey: 'admin.nav.analytics', path: PATHS.ADMIN_ANALYTICS, icon: BarChart3 },
+  { labelKey: 'admin.nav.settings', path: PATHS.ADMIN_SETTINGS, icon: Settings },
 ] as const
 
 export const ADMIN_QUICK_STATS = [
-  { label: 'Đơn chờ xử lý', value: '12', tone: 'amber' },
-  { label: 'Sắp hết hàng', value: '5', tone: 'rose' },
-  { label: 'Doanh thu hôm nay', value: '48.2M', tone: 'emerald' },
+  { labelKey: 'admin.quickStats.pendingOrders', value: '12', tone: 'amber' },
+  { labelKey: 'admin.quickStats.lowStock', value: '5', tone: 'rose' },
+  { labelKey: 'admin.quickStats.todayRevenue', value: '48.2M', tone: 'emerald' },
 ] as const

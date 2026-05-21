@@ -1,0 +1,37 @@
+export const cart = {
+  stepLabel: 'Checkout step 1/2',
+  title: 'Your',
+  titleHighlight: 'cart',
+  subtitle: 'You have {{count}} items — review before checkout',
+  empty: {
+    title: 'Your cart is empty',
+    description: 'No items in your cart yet. Discover something you will love!',
+    continueShopping: 'Continue shopping',
+  },
+  remove: 'Remove',
+  decrease: 'Decrease',
+  increase: 'Increase',
+  continueShopping: '← Continue shopping',
+  clearAll: 'Clear all',
+  summary: {
+    title: 'Order summary',
+    subtotal: 'Subtotal',
+    shipping: 'Shipping',
+    discount: 'Discount',
+    total: 'Total',
+    free: 'Free',
+    checkout: 'Checkout',
+    freeShippingNote: 'Free shipping on orders from 500K',
+  },
+  coupon: {
+    title: 'Coupon code',
+    placeholder: 'Enter code (e.g. NOVA20)',
+    apply: 'Apply',
+    hint: 'Try code',
+    hintSuffix: 'for 20% off',
+  },
+  messages: {
+    applied: 'Applied NOVA20 — 20% off',
+    invalid: 'Invalid coupon code',
+  },
+} as const

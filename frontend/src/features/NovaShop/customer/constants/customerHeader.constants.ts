@@ -1,10 +1,10 @@
 import { PATHS } from '@/router/paths'
 
 export const CUSTOMER_NAV_LINKS = [
-  { label: 'Trang chủ', to: PATHS.HOME },
-  { label: 'Sản phẩm', to: PATHS.PRODUCTS },
-  { label: 'Khám phá', to: PATHS.EXPLORE },
-  { label: 'Bộ sưu tập', to: PATHS.COLLECTIONS },
-  { label: 'Flash Sale', to: PATHS.FLASH_SALE },
-  { label: 'Đơn hàng', to: PATHS.ORDERS },
-]
+  { labelKey: 'nav.home', to: PATHS.HOME },
+  { labelKey: 'nav.products', to: PATHS.PRODUCTS },
+  { labelKey: 'nav.explore', to: PATHS.EXPLORE },
+  { labelKey: 'nav.collections', to: PATHS.COLLECTIONS },
+  { labelKey: 'nav.flashSale', to: PATHS.FLASH_SALE },
+  { labelKey: 'nav.orders', to: PATHS.ORDERS },
+] as const

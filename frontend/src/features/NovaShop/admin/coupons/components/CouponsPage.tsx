@@ -1,16 +1,11 @@
 import { Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { COUPONS } from '../../../shared/data/coupons'
 import { formatCurrency, formatDate } from '../../../shared/format'
 import type { Coupon } from '../../../shared/types'
 import Badge from '../../../shared/ui/Badge'
 import Button from '../../../shared/ui/Button'
 import AdminPageHeader from '../../layout/components/AdminPageHeader'
-
-const COUPON_STATUS_LABEL = {
-  active: 'Đang hoạt động',
-  expired: 'Đã hết hạn',
-  paused: 'Tạm dừng',
-} as const
 
 const COUPON_STATUS_TONE = {
   active: 'emerald',
@@ -19,18 +14,21 @@ const COUPON_STATUS_TONE = {
 } as const
 
 export default function CouponsPage() {
+  const { t } = useTranslation()
+
   return (
     <div className="mx-auto max-w-[1440px]">
       <AdminPageHeader
-        eyebrow="Mã giảm giá"
+        eyebrow={t('admin.coupons.eyebrow')}
         title={
           <>
-            Khuyến mãi <span className="text-gradient">& coupon</span>
+            {t('admin.coupons.title')}{' '}
+            <span className="text-gradient">{t('admin.coupons.titleHighlight')}</span>
           </>
         }
-        description="Tạo và quản lý mã giảm giá cho chiến dịch marketing."
+        description={t('admin.coupons.description')}
         actions={
-          <Button leftIcon={<Plus className="size-4" />}>Tạo mã mới</Button>
+          <Button leftIcon={<Plus className="size-4" />}>{t('admin.coupons.create')}</Button>
         }
       />
 
@@ -44,11 +42,12 @@ export default function CouponsPage() {
 }
 
 function CouponCard({ coupon }: { coupon: Coupon }) {
+  const { t } = useTranslation()
   const usagePercent = Math.round((coupon.used / coupon.limit) * 100)
   const discountLabel =
     coupon.type === 'percent'
-      ? `Giảm ${coupon.value}%`
-      : `Giảm ${formatCurrency(coupon.value)}`
+      ? t('admin.coupons.discountPercent', { value: coupon.value })
+      : t('admin.coupons.discountFixed', { amount: formatCurrency(coupon.value) })
 
   return (
     <article className="glass-dark rounded-3xl p-5 ring-1 ring-white/10">
@@ -60,23 +59,23 @@ function CouponCard({ coupon }: { coupon: Coupon }) {
           <p className="mt-1 text-sm text-fuchsia-300">{discountLabel}</p>
         </div>
         <Badge tone={COUPON_STATUS_TONE[coupon.status]} dot>
-          {COUPON_STATUS_LABEL[coupon.status]}
+          {t(`status.coupon.${coupon.status}`)}
         </Badge>
       </div>
 
       <dl className="mt-5 space-y-2 text-sm">
         <div className="flex justify-between text-slate-400">
-          <dt>Đơn tối thiểu</dt>
+          <dt>{t('admin.coupons.minOrder')}</dt>
           <dd className="font-semibold text-slate-200">
-            {coupon.minOrder > 0 ? formatCurrency(coupon.minOrder) : 'Không'}
+            {coupon.minOrder > 0 ? formatCurrency(coupon.minOrder) : t('admin.coupons.none')}
           </dd>
         </div>
         <div className="flex justify-between text-slate-400">
-          <dt>Hết hạn</dt>
+          <dt>{t('admin.coupons.expires')}</dt>
           <dd className="font-semibold text-slate-200">{formatDate(coupon.expiresAt)}</dd>
         </div>
         <div className="flex justify-between text-slate-400">
-          <dt>Đã dùng</dt>
+          <dt>{t('admin.coupons.used')}</dt>
           <dd className="font-semibold text-slate-200">
             {coupon.used} / {coupon.limit}
           </dd>
@@ -85,7 +84,7 @@ function CouponCard({ coupon }: { coupon: Coupon }) {
 
       <div className="mt-4">
         <div className="mb-1 flex justify-between text-xs text-slate-500">
-          <span>Tiến độ sử dụng</span>
+          <span>{t('admin.coupons.usageProgress')}</span>
           <span>{usagePercent}%</span>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-white/10">
@@ -98,10 +97,10 @@ function CouponCard({ coupon }: { coupon: Coupon }) {
 
       <div className="mt-5 flex gap-2">
         <Button variant="outline" size="sm" fullWidth>
-          Sửa
+          {t('admin.coupons.edit')}
         </Button>
         <Button variant="ghost" size="sm" fullWidth>
-          {coupon.status === 'paused' ? 'Kích hoạt' : 'Tạm dừng'}
+          {coupon.status === 'paused' ? t('admin.coupons.activate') : t('admin.coupons.pause')}
         </Button>
       </div>
     </article>

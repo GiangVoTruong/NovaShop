@@ -1,0 +1,87 @@
+import { admin } from './partials/en/admin'
+import { bottomNav } from './partials/en/bottomNav'
+import { brand } from './partials/en/brand'
+import { cart } from './partials/en/cart'
+import { checkout } from './partials/en/checkout'
+import { footer } from './partials/en/footer'
+import { home } from './partials/en/home'
+import { orders } from './partials/en/orders'
+import { product } from './partials/en/product'
+import { profile } from './partials/en/profile'
+import { status } from './partials/en/status'
+import { wishlist } from './partials/en/wishlist'
+
+export const en = {
+  common: {
+    error: 'Something went wrong',
+    or: 'or',
+    email: 'Email',
+    password: 'Password',
+    language: 'Language',
+  },
+  nav: {
+    home: 'Home',
+    products: 'Products',
+    explore: 'Explore',
+    collections: 'Collections',
+    flashSale: 'Flash Sale',
+    orders: 'Orders',
+    searchPlaceholder: 'Search products, brands…',
+    openMenu: 'Open menu',
+    wishlist: 'Wishlist',
+    cart: 'Cart',
+  },
+  auth: {
+    login: 'Sign in',
+    register: 'Sign up',
+    loginSuccess: 'Signed in successfully',
+    registerSuccess: 'Account created successfully',
+    loginNow: 'Sign in now',
+    loggingIn: 'Signing in...',
+    creatingAccount: 'Creating account...',
+    createAccount: 'Create account',
+    continueWithGoogle: 'Continue with Google',
+    welcomeBack: 'Welcome back',
+    loginSubtitle: 'Shop easily — manage orders in a snap.',
+    noAccount: "Don't have an account?",
+    signUpNow: 'Sign up now',
+    hasAccount: 'Already have an account?',
+    newAccount: 'Create a new account',
+    registerSubtitle: 'Join 120K+ customers who love NovaShop.',
+    rememberMe: 'Remember me',
+    forgotPassword: 'Forgot password?',
+    fullName: 'Full name',
+    phone: 'Phone number',
+    passwordMin: 'Password (min. 8 characters)',
+    confirmPassword: 'Confirm password',
+    showPassword: 'Show password',
+    showConfirmPassword: 'Show confirm password',
+    termsPrefix: 'I agree to the',
+    termsOfService: 'Terms of Service',
+    and: 'and',
+    privacyPolicy: 'Privacy Policy',
+    passwordMinError: 'Password must be at least 8 characters',
+    passwordMismatch: 'Passwords do not match',
+    phoneMinError: 'Phone number must be at least 10 digits',
+    heroTitle: 'Shop the',
+    heroTitleHighlight: 'future, today.',
+    heroDescription:
+      'A modern shopping experience with 15,000+ authentic products, 2-hour delivery, and 30-day free returns.',
+    statCustomers: 'Customers',
+    statRating: 'Rating',
+    statProducts: 'Products',
+    copyright: '© 2026 NovaShop. Made in Vietnam.',
+  },
+  brand,
+  footer,
+  home,
+  product,
+  cart,
+  checkout,
+  orders,
+  wishlist,
+  profile,
+  bottomNav,
+  status,
+  admin,
+} as const
