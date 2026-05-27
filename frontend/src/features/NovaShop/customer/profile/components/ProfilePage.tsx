@@ -4,13 +4,13 @@ import { CreditCard, MapPin, Pencil, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { CUSTOMERS } from '../../../shared/data/customers'
-import Button from '../../../shared/ui/Button'
-import { cx } from '../../../shared/ui/cx'
+import { CUSTOMERS } from '@/features/NovaShop/shared/data/customers'
+import Button from '@/features/NovaShop/shared/ui/Button'
+import { cx } from '@/features/NovaShop/shared/ui/cx'
 import { PROFILE_TABS } from '../constants/profile.constants'
 
 export default function ProfilePage() {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
   const profile = CUSTOMERS[0]
   const [tab, setTab] = useState<string>('profile')
 
@@ -28,20 +28,20 @@ export default function ProfilePage() {
           />
           <div className="flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/70">
-              {t('profile.memberBadge')}
+              {translate('profile.memberBadge')}
             </p>
             <h1 className="text-3xl font-extrabold tracking-tight">
-              {t('profile.greeting', { name: profile.name })}
+              {translate('profile.greeting', { name: profile.name })}
             </h1>
             <p className="mt-1 text-sm text-white/80">
-              {t('profile.meta', {
+              {translate('profile.meta', {
                 orders: profile.totalOrders,
                 joinedAt: profile.joinedAt,
               })}
             </p>
           </div>
           <Button variant="white" leftIcon={<Pencil className="size-4" />}>
-            {t('profile.edit')}
+            {translate('profile.edit')}
           </Button>
         </div>
       </header>
@@ -69,7 +69,7 @@ export default function ProfilePage() {
                 >
                   <entry.icon className="size-3.5" />
                 </span>
-                {t(entry.labelKey)}
+                {translate(entry.labelKey)}
               </button>
             ))}
           </nav>
@@ -80,12 +80,12 @@ export default function ProfilePage() {
           {tab === 'orders' && (
             <div className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl">
               <h2 className="text-xl font-extrabold tracking-tight">
-                {t('profile.ordersTab.title')}
+                {translate('profile.ordersTab.title')}
               </h2>
               <p className="mt-2 text-sm text-slate-500">
-                {t('profile.ordersTab.descriptionPrefix')}{' '}
+                {translate('profile.ordersTab.descriptionPrefix')}{' '}
                 <Link to={PATHS.ORDERS} className="font-bold text-fuchsia-600 hover:underline">
-                  {t('profile.ordersTab.ordersLink')}
+                  {translate('profile.ordersTab.ordersLink')}
                 </Link>
                 .
               </p>
@@ -94,12 +94,12 @@ export default function ProfilePage() {
           {tab === 'wishlist' && (
             <div className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl">
               <h2 className="text-xl font-extrabold tracking-tight">
-                {t('profile.wishlistTab.title')}
+                {translate('profile.wishlistTab.title')}
               </h2>
               <p className="mt-2 text-sm text-slate-500">
-                {t('profile.wishlistTab.descriptionPrefix')}{' '}
+                {translate('profile.wishlistTab.descriptionPrefix')}{' '}
                 <Link to={PATHS.WISHLIST} className="font-bold text-fuchsia-600 hover:underline">
-                  {t('profile.wishlistTab.wishlistLink')}
+                  {translate('profile.wishlistTab.wishlistLink')}
                 </Link>
                 .
               </p>
@@ -116,20 +116,20 @@ export default function ProfilePage() {
 }
 
 function ProfileForm({ profile }: { profile: (typeof CUSTOMERS)[number] }) {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
 
   return (
     <form
       onSubmit={(event) => {
         event.preventDefault()
-        message.success(t('profile.form.success'))
+        message.success(translate('profile.form.success'))
       }}
       className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl"
     >
       <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
-        {t('profile.form.title')}
+        {translate('profile.form.title')}
       </h2>
-      <p className="text-sm text-slate-500">{t('profile.form.subtitle')}</p>
+      <p className="text-sm text-slate-500">{translate('profile.form.subtitle')}</p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {[
@@ -139,7 +139,7 @@ function ProfileForm({ profile }: { profile: (typeof CUSTOMERS)[number] }) {
           { labelKey: 'profile.form.joinedAt', value: profile.joinedAt },
         ].map((field) => (
           <div key={field.labelKey}>
-            <p className="mb-1.5 text-sm font-semibold text-slate-700">{t(field.labelKey)}</p>
+            <p className="mb-1.5 text-sm font-semibold text-slate-700">{translate(field.labelKey)}</p>
             <input
               defaultValue={field.value}
               className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
@@ -148,22 +148,22 @@ function ProfileForm({ profile }: { profile: (typeof CUSTOMERS)[number] }) {
         ))}
       </div>
       <Button type="submit" className="mt-6" glow>
-        {t('profile.form.save')}
+        {translate('profile.form.save')}
       </Button>
     </form>
   )
 }
 
 function AddressSection() {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
-          {t('profile.address.title')}
+          {translate('profile.address.title')}
         </h2>
-        <Button glow>{t('profile.address.add')}</Button>
+        <Button glow>{translate('profile.address.add')}</Button>
       </div>
       {[
         {
@@ -187,10 +187,10 @@ function AddressSection() {
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <p className="font-bold text-slate-900">{t(entry.nameKey)}</p>
+                <p className="font-bold text-slate-900">{translate(entry.nameKey)}</p>
                 {entry.default && (
                   <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">
-                    {t('profile.address.default')}
+                    {translate('profile.address.default')}
                   </span>
                 )}
               </div>
@@ -198,7 +198,7 @@ function AddressSection() {
             </div>
           </div>
           <Button variant="ghost" size="sm">
-            {t('profile.address.edit')}
+            {translate('profile.address.edit')}
           </Button>
         </article>
       ))}
@@ -207,15 +207,15 @@ function AddressSection() {
 }
 
 function PaymentSection() {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
-          {t('profile.payment.title')}
+          {translate('profile.payment.title')}
         </h2>
-        <Button glow>{t('profile.payment.add')}</Button>
+        <Button glow>{translate('profile.payment.add')}</Button>
       </div>
       {[
         {
@@ -252,7 +252,7 @@ function PaymentSection() {
             </div>
           </div>
           <Button variant="ghost" size="sm">
-            {t('profile.payment.delete')}
+            {translate('profile.payment.delete')}
           </Button>
         </article>
       ))}
@@ -268,12 +268,12 @@ const NOTIFICATION_ITEM_KEYS = [
 ] as const
 
 function NotificationSection() {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
 
   return (
     <div className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl">
       <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
-        {t('profile.notifications.title')}
+        {translate('profile.notifications.title')}
       </h2>
       <ul className="mt-4 space-y-3">
         {NOTIFICATION_ITEM_KEYS.map((labelKey) => (
@@ -281,7 +281,7 @@ function NotificationSection() {
             key={labelKey}
             className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3"
           >
-            <span className="text-sm text-slate-700">{t(labelKey)}</span>
+            <span className="text-sm text-slate-700">{translate(labelKey)}</span>
             <input type="checkbox" defaultChecked className="size-5 accent-fuchsia-600" />
           </li>
         ))}
@@ -291,7 +291,7 @@ function NotificationSection() {
 }
 
 function SecuritySection() {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
 
   return (
     <div className="space-y-4">
@@ -301,29 +301,29 @@ function SecuritySection() {
             <ShieldCheck className="size-5" />
           </span>
           <div>
-            <p className="font-bold text-slate-900">{t('profile.security.twoFactorTitle')}</p>
-            <p className="text-sm text-slate-600">{t('profile.security.twoFactorDesc')}</p>
+            <p className="font-bold text-slate-900">{translate('profile.security.twoFactorTitle')}</p>
+            <p className="text-sm text-slate-600">{translate('profile.security.twoFactorDesc')}</p>
           </div>
         </div>
       </div>
       <div className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl">
         <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
-          {t('profile.security.changePassword')}
+          {translate('profile.security.changePassword')}
         </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <input
             type="password"
-            placeholder={t('profile.security.currentPassword')}
+            placeholder={translate('profile.security.currentPassword')}
             className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
           />
           <input
             type="password"
-            placeholder={t('profile.security.newPassword')}
+            placeholder={translate('profile.security.newPassword')}
             className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
           />
         </div>
         <Button className="mt-4" glow>
-          {t('profile.security.updatePassword')}
+          {translate('profile.security.updatePassword')}
         </Button>
       </div>
     </div>

@@ -1,26 +1,23 @@
-import { Plus, Pencil } from 'lucide-react'
+import { Pencil, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { CATEGORIES } from '../../../shared/data/categories'
-import Button from '../../../shared/ui/Button'
-import { CategoryTag } from '../../../shared/ui/StatusBadge'
+import { CATEGORIES } from '@/features/NovaShop/shared/data/categories'
+import Button from '@/features/NovaShop/shared/ui/Button'
+import { CategoryTag } from '@/features/NovaShop/shared/ui/StatusBadge'
 import AdminPageHeader from '../../layout/components/AdminPageHeader'
+import AdminShell from '../../layout/components/AdminShell'
 
 export default function CategoriesPage() {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
 
   return (
-    <div className="mx-auto max-w-[1440px]">
+    <AdminShell>
       <AdminPageHeader
-        eyebrow={t('admin.categories.eyebrow')}
-        title={
-          <>
-            {t('admin.categories.title')}{' '}
-            <span className="text-gradient">{t('admin.categories.titleHighlight')}</span>
-          </>
-        }
-        description={t('admin.categories.description')}
+        eyebrow={translate('admin.categories.eyebrow')}
+        title={translate('admin.categories.title')}
+        titleHighlight={translate('admin.categories.titleHighlight')}
+        description={translate('admin.categories.description')}
         actions={
-          <Button leftIcon={<Plus className="size-4" />}>{t('admin.categories.add')}</Button>
+          <Button leftIcon={<Plus className="size-4" />}>{translate('admin.categories.add')}</Button>
         }
       />
 
@@ -28,7 +25,7 @@ export default function CategoriesPage() {
         {CATEGORIES.map((category) => (
           <article
             key={category.id}
-            className="glass group overflow-hidden rounded-3xl transition hover:-translate-y-1 hover:shadow-xl"
+            className="glass-dark group overflow-hidden rounded-3xl ring-1 ring-white/10 transition duration-200 hover:-translate-y-1 hover:ring-fuchsia-400/20"
           >
             <div className="relative h-40 overflow-hidden">
               <img
@@ -41,7 +38,7 @@ export default function CategoriesPage() {
                 <div>
                   <h3 className="text-lg font-bold text-white">{category.name}</h3>
                   <p className="text-xs text-slate-300">
-                    {t('admin.categories.productCount', {
+                    {translate('admin.categories.productCount', {
                       count: category.productCount,
                     })}
                   </p>
@@ -49,15 +46,15 @@ export default function CategoriesPage() {
                 <CategoryTag category={category.slug} />
               </div>
             </div>
-            <div className="flex items-center justify-between p-4">
-              <p className="line-clamp-2 text-sm text-slate-600">{category.description}</p>
+            <div className="flex items-center justify-between gap-3 p-4">
+              <p className="line-clamp-2 text-sm text-slate-400">{category.description}</p>
               <Button variant="ghost" size="sm" leftIcon={<Pencil className="size-4" />}>
-                {t('admin.categories.edit')}
+                {translate('admin.categories.edit')}
               </Button>
             </div>
           </article>
         ))}
       </div>
-    </div>
+    </AdminShell>
   )
 }

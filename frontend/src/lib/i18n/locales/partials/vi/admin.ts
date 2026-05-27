@@ -2,6 +2,7 @@ export const admin = {
   sidebar: {
     brand: 'NovaAdmin',
     tagline: 'Control panel',
+    viewStore: 'Xem cửa hàng',
     proTitle: 'NovaShop Pro',
     proDescription: 'Gói doanh nghiệp — không giới hạn sản phẩm & báo cáo nâng cao.',
   },
@@ -16,6 +17,10 @@ export const admin = {
     userRole: 'Super admin',
   },
   nav: {
+    sectionOverview: 'Tổng quan',
+    sectionCatalog: 'Quản lý',
+    sectionMarketing: 'Marketing',
+    sectionSystem: 'Hệ thống',
     dashboard: 'Tổng quan',
     products: 'Sản phẩm',
     orders: 'Đơn hàng',

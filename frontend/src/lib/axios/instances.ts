@@ -2,13 +2,13 @@ import axios from 'axios'
 import i18n from 'i18next'
 
 import type { ApiErrorBody } from '@/types/api.types'
+import type { AuthLoginResponse } from '@/types/auth.types'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || '/api'
 
 const ACCESS_TOKEN_KEY = 'novashop.accessToken'
 const REFRESH_TOKEN_KEY = 'novashop.refreshToken'
 
-// --- Lưu token sau khi login ---
 export function setTokens(accessToken: string, refreshToken?: string | null): void {
   localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
   if (refreshToken) {
@@ -21,11 +21,18 @@ export function clearTokens(): void {
   localStorage.removeItem(REFRESH_TOKEN_KEY)
 }
 
-function getAccessToken(): string | null {
+export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY)
 }
 
-// --- Đọc message lỗi từ backend (dùng trong catch) ---
+export function getRefreshToken(): string | null {
+  return localStorage.getItem(REFRESH_TOKEN_KEY)
+}
+
+export function hasAccessToken(): boolean {
+  return Boolean(getAccessToken())
+}
+
 export function getApiErrorMessage(
   error: unknown,
   fallback = i18n.t('common.error'),
@@ -39,7 +46,6 @@ export function getApiErrorMessage(
   return fallback
 }
 
-// --- Instance dùng chung — import từ đây, không tạo axios.create ở chỗ khác ---
 export const axiosInstance = axios.create({
   baseURL: apiBaseUrl,
   timeout: 30_000,
@@ -49,7 +55,6 @@ export const axiosInstance = axios.create({
   },
 })
 
-// Mỗi request tự gắn JWT nếu đã login
 axiosInstance.interceptors.request.use((config) => {
   const accessToken = getAccessToken()
   if (accessToken) {
@@ -58,12 +63,66 @@ axiosInstance.interceptors.request.use((config) => {
   return config
 })
 
+let refreshPromise: Promise<AuthLoginResponse> | null = null
+
+async function refreshAccessToken(): Promise<AuthLoginResponse> {
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) {
+    throw new Error('Missing refresh token')
+  }
+
+  const { data } = await axios.post<AuthLoginResponse>(
+    `${apiBaseUrl}/auth/refresh`,
+    { refreshToken },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    },
+  )
+
+  setTokens(data.accessToken, data.refreshToken)
+  return data
+}
+
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (axios.isAxiosError(error)) {
       console.error('[API]', error.config?.url, error.response?.status, error.response?.data)
+
+      const originalRequest = error.config
+      const isUnauthorized = error.response?.status === 401
+      const isRefreshRequest = originalRequest?.url?.includes('/auth/refresh')
+      const alreadyRetried = originalRequest?._retry
+
+      if (isUnauthorized && originalRequest && !isRefreshRequest && !alreadyRetried) {
+        originalRequest._retry = true
+
+        try {
+          refreshPromise ??= refreshAccessToken().finally(() => {
+            refreshPromise = null
+          })
+          await refreshPromise
+          const accessToken = getAccessToken()
+          if (accessToken) {
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`
+          }
+          return axiosInstance(originalRequest)
+        } catch (refreshError) {
+          clearTokens()
+          return Promise.reject(refreshError)
+        }
+      }
     }
+
     return Promise.reject(error)
   },
 )
+
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    _retry?: boolean
+  }
+}

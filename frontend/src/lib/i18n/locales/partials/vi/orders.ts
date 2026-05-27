@@ -4,6 +4,12 @@ export const orders = {
   titleHighlight: 'của tôi',
   subtitle: 'Theo dõi và quản lý các đơn hàng đã đặt',
   searchPlaceholder: 'Tìm mã đơn hoặc sản phẩm…',
+  stats: {
+    total: 'Tổng đơn',
+    active: 'Đang xử lý',
+    delivered: 'Đã giao',
+    spent: 'Tổng chi tiêu',
+  },
   tabs: {
     all: 'Tất cả',
     pending: 'Chờ xác nhận',
@@ -14,10 +20,19 @@ export const orders = {
   empty: {
     title: 'Chưa có đơn hàng',
     description: 'Bạn chưa có đơn hàng nào trong mục này. Hãy bắt đầu mua sắm nào!',
+    shopNow: 'Mua sắm ngay',
   },
   orderCode: 'Mã đơn',
   placedAt: 'Đặt lúc',
   quantity: 'Số lượng',
+  itemCount: '{{count}} sản phẩm',
   total: 'Tổng tiền',
+  payment: 'Thanh toán',
+  shippingAddress: 'Giao đến',
   viewDetail: 'Xem chi tiết',
+  reorder: 'Mua lại',
+  cancel: 'Huỷ đơn',
+  messages: {
+    cancelled: 'Đã huỷ đơn hàng',
+  },
 } as const

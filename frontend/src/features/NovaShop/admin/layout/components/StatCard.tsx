@@ -26,7 +26,7 @@ export default function StatCard({
   tone = 'fuchsia',
 }: StatCardProps) {
   return (
-    <article className="glass-dark rounded-3xl p-5 ring-1 ring-white/10">
+    <article className="glass-dark rounded-3xl p-5 ring-1 ring-white/10 transition duration-200 hover:-translate-y-0.5 hover:ring-fuchsia-400/20">
       <div className="flex items-start justify-between gap-3">
         <div
           className={cx(

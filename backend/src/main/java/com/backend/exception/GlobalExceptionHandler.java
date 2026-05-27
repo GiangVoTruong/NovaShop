@@ -2,39 +2,44 @@ package com.backend.exception;
 
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
-/**
- * Bắt lỗi từ mọi controller và trả JSON {@link ErrorResponse} thống nhất.
- * <p>
- * Service ném lỗi bằng {@link org.springframework.web.server.ResponseStatusException}:
- * <pre>
- *   throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
- *   throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
- *   throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
- * </pre>
- */
+import com.backend.dto.common.ApiResponse;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /** Lỗi nghiệp vụ có HTTP status (404, 409, 401, 403, …). */
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleResponseStatus(ResponseStatusException ex) {
         int status = ex.getStatusCode().value();
         String message = ex.getReason() != null ? ex.getReason() : ex.getStatusCode().toString();
-        return ResponseEntity.status(ex.getStatusCode()).body(ErrorResponse.of(status, message));
+        return ResponseEntity.status(ex.getStatusCode()).body(ApiResponse.error(status, message));
     }
 
-    /** Lỗi validation {@code @Valid} trên DTO — HTTP 400, gộp message theo field. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
                 .collect(Collectors.joining("; "));
-        return ResponseEntity.badRequest().body(ErrorResponse.of(400, message));
+        return ResponseEntity.badRequest().body(ApiResponse.error(400, message));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(403, "Access denied"));
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(ObjectOptimisticLockingFailureException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(409, "Resource was updated by another request, please retry"));
     }
 }

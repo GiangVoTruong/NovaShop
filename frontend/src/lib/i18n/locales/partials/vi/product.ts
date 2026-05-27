@@ -30,6 +30,13 @@ export const product = {
     rating: 'Đánh giá cao',
   },
   filters: {
+    listingMode: 'Loại sản phẩm',
+    listingModeOptions: {
+      all: 'Tất cả sản phẩm',
+      explore: 'Khám phá',
+      collections: 'Bộ sưu tập',
+      flashSale: 'Flash Sale',
+    },
     title: 'Bộ lọc',
     reset: 'Reset',
     category: 'Danh mục',

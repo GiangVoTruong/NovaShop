@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { Loader2 } from 'lucide-react'
 import { BUTTON_SIZE_CLASS, BUTTON_VARIANT_CLASS } from './button.constants'
 import { cx } from './cx'
 
@@ -19,6 +20,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   rightIcon?: ReactNode
   fullWidth?: boolean
   glow?: boolean
+  loading?: boolean
 }
 
 export default function Button({
@@ -28,14 +30,17 @@ export default function Button({
   rightIcon,
   fullWidth,
   glow,
+  loading,
   className,
   children,
   type = 'button',
+  disabled,
   ...rest
 }: ButtonProps) {
   return (
     <button
       type={type}
+      disabled={disabled || loading}
       className={cx(
         'group/btn relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl font-semibold tracking-tight transition-all duration-200',
         'disabled:cursor-not-allowed disabled:opacity-50',
@@ -51,9 +56,9 @@ export default function Button({
       {...rest}
     >
       <span className="relative z-10 flex items-center gap-2">
-        {leftIcon}
+        {loading ? <Loader2 className="size-4 animate-spin" /> : leftIcon}
         {children}
-        {rightIcon}
+        {!loading && rightIcon}
       </span>
       {variant === 'gradient' && (
         <span

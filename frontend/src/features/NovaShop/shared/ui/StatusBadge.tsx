@@ -6,11 +6,11 @@ import Badge from './Badge'
 import { CATEGORY_TONE } from './categoryTokens'
 
 export function OrderStatusBadge({ status }: { status: OrderStatus }) {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
 
   return (
     <Badge tone={ORDER_STATUS_TONE[status]} dot>
-      {t(`status.order.${status}`)}
+      {translate(`status.order.${status}`)}
     </Badge>
   )
 }
@@ -20,11 +20,11 @@ export function ProductStatusBadge({
 }: {
   status: keyof typeof PRODUCT_STATUS_TONE
 }) {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
 
   return (
     <Badge tone={PRODUCT_STATUS_TONE[status]} dot>
-      {t(`status.product.${status}`)}
+      {translate(`status.product.${status}`)}
     </Badge>
   )
 }
@@ -34,7 +34,7 @@ export function CategoryTag({
 }: {
   category: keyof typeof CATEGORY_TONE
 }) {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
 
-  return <Badge tone={CATEGORY_TONE[category]}>{t(`status.category.${category}`)}</Badge>
+  return <Badge tone={CATEGORY_TONE[category]}>{translate(`status.category.${category}`)}</Badge>
 }

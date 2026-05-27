@@ -1,11 +1,11 @@
+import Button from '@/features/NovaShop/shared/ui/Button'
 import { ArrowUpRight, Mail, MapPin, Phone, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import Button from '../../../shared/ui/Button'
 import { CUSTOMER_FOOTER_COLS, CUSTOMER_SOCIAL_LINKS } from '../constants/layout.constants'
 
 export default function CustomerFooter() {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
 
   return (
     <footer className="relative mt-24 overflow-hidden">
@@ -17,21 +17,21 @@ export default function CustomerFooter() {
           <div className="relative grid gap-8 lg:grid-cols-2 lg:items-center">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider backdrop-blur">
-                <Sparkles className="size-3.5" /> {t('footer.newsletter.badge')}
+                <Sparkles className="size-3.5" /> {translate('footer.newsletter.badge')}
               </span>
               <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
-                {t('footer.newsletter.title')}
+                {translate('footer.newsletter.title')}
                 <br />
-                {t('footer.newsletter.titleLine2')}
+                {translate('footer.newsletter.titleLine2')}
               </h2>
               <p className="mt-3 max-w-md text-sm text-white/85">
-                {t('footer.newsletter.description')}
+                {translate('footer.newsletter.description')}
               </p>
             </div>
             <form className="flex flex-col gap-3 sm:flex-row">
               <input
                 type="email"
-                placeholder={t('footer.newsletter.emailPlaceholder')}
+                placeholder={translate('footer.newsletter.emailPlaceholder')}
                 className="h-14 flex-1 rounded-2xl border border-white/30 bg-white/15 px-5 text-sm text-white placeholder:text-white/70 backdrop-blur transition-all focus:border-white/60 focus:bg-white/20 focus:outline-none"
               />
               <Button
@@ -41,7 +41,7 @@ export default function CustomerFooter() {
                 rightIcon={<ArrowUpRight className="size-4" />}
                 className="h-14!"
               >
-                {t('footer.newsletter.subscribe')}
+                {translate('footer.newsletter.subscribe')}
               </Button>
             </form>
           </div>
@@ -61,26 +61,26 @@ export default function CustomerFooter() {
                 </span>
               </div>
               <p className="mt-4 max-w-md text-sm text-slate-400">
-                {t('footer.brand.description')}
+                {translate('footer.brand.description')}
               </p>
               <ul className="mt-6 space-y-3 text-sm text-slate-400">
                 <li className="flex items-center gap-3">
                   <span className="grid size-9 place-items-center rounded-xl bg-white/5 text-fuchsia-300">
                     <MapPin className="size-4" />
                   </span>
-                  {t('footer.contact.address')}
+                  {translate('footer.contact.address')}
                 </li>
                 <li className="flex items-center gap-3">
                   <span className="grid size-9 place-items-center rounded-xl bg-white/5 text-cyan-300">
                     <Phone className="size-4" />
                   </span>
-                  {t('footer.contact.phone')}
+                  {translate('footer.contact.phone')}
                 </li>
                 <li className="flex items-center gap-3">
                   <span className="grid size-9 place-items-center rounded-xl bg-white/5 text-amber-300">
                     <Mail className="size-4" />
                   </span>
-                  {t('footer.contact.email')}
+                  {translate('footer.contact.email')}
                 </li>
               </ul>
             </div>
@@ -88,7 +88,7 @@ export default function CustomerFooter() {
             {CUSTOMER_FOOTER_COLS.map((column) => (
               <div key={column.titleKey} className="lg:col-span-2">
                 <p className="text-sm font-bold uppercase tracking-wider text-white">
-                  {t(column.titleKey)}
+                  {translate(column.titleKey)}
                 </p>
                 <ul className="mt-5 space-y-3">
                   {column.links.map((link) => (
@@ -97,7 +97,7 @@ export default function CustomerFooter() {
                         to={link.to}
                         className="text-sm text-slate-400 transition-colors hover:text-white"
                       >
-                        {t(link.labelKey)}
+                        {translate(link.labelKey)}
                       </Link>
                     </li>
                   ))}
@@ -107,14 +107,14 @@ export default function CustomerFooter() {
 
             <div className="lg:col-span-1">
               <p className="text-sm font-bold uppercase tracking-wider text-white">
-                {t('footer.follow')}
+                {translate('footer.follow')}
               </p>
               <div className="mt-5 flex gap-2">
                 {CUSTOMER_SOCIAL_LINKS.map((entry) => (
                   <a
                     key={entry.labelKey}
                     href="#"
-                    aria-label={t(entry.labelKey)}
+                    aria-label={translate(entry.labelKey)}
                     className="grid size-10 place-items-center rounded-xl bg-white/5 text-sm font-bold text-white transition-all hover:scale-110 hover:bg-linear-to-br hover:from-fuchsia-500 hover:to-purple-500"
                   >
                     {entry.initial}
@@ -125,16 +125,16 @@ export default function CustomerFooter() {
           </div>
 
           <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center">
-            <p>{t('footer.copyright')}</p>
+            <p>{translate('footer.copyright')}</p>
             <div className="flex items-center gap-4">
               <a href="#" className="hover:text-white">
-                {t('footer.legal.terms')}
+                {translate('footer.legal.terms')}
               </a>
               <a href="#" className="hover:text-white">
-                {t('footer.legal.privacy')}
+                {translate('footer.legal.privacy')}
               </a>
               <a href="#" className="hover:text-white">
-                {t('footer.legal.cookies')}
+                {translate('footer.legal.cookies')}
               </a>
             </div>
           </div>

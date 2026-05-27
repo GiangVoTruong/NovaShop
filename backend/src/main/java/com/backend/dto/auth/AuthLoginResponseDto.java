@@ -1,5 +1,9 @@
 package com.backend.dto.auth;
 
+import java.util.List;
+
+import com.backend.enums.UserRole;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,4 +21,13 @@ public class AuthLoginResponseDto {
     private String tokenType;
     private Long expiresIn;
     private String refreshToken;
+
+    /** Role — dùng để routing: admin portal hay customer shop. */
+    private UserRole role;
+
+    /** ADMIN = trang admin, CUSTOMER = trang khách hàng. */
+    private String portalType;
+
+    /** Quyền chi tiết — chỉ có khi portalType = ADMIN. */
+    private List<String> permissions;
 }

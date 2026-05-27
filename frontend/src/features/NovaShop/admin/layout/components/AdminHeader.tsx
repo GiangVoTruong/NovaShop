@@ -1,7 +1,8 @@
-import { Bell, Menu, Search, Store } from 'lucide-react'
+import { Bell, Menu, PanelLeft, PanelLeftClose, Search, Store } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { PATHS } from '@/router/paths'
+import LanguageSwitcher from '@/lib/i18n/LanguageSwitcher'
 import Button from '../../../shared/ui/Button'
 
 interface AdminHeaderProps {
@@ -16,6 +17,7 @@ export default function AdminHeader({
   onToggleCollapse,
 }: AdminHeaderProps) {
   const { t } = useTranslation()
+  const CollapseIcon = sidebarCollapsed ? PanelLeft : PanelLeftClose
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-white/10 bg-slate-950/70 px-4 backdrop-blur-xl sm:px-6">
@@ -38,13 +40,18 @@ export default function AdminHeader({
             : t('admin.header.collapseSidebar')
         }
       >
-        <Menu className="size-5" />
+        <CollapseIcon className="size-5" />
       </button>
 
       <div className="hidden min-w-0 flex-1 sm:block">
+        <label htmlFor="admin-global-search" className="sr-only">
+          {t('admin.header.searchPlaceholder')}
+        </label>
         <div className="flex max-w-md items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3">
           <Search className="size-4 shrink-0 text-slate-400" />
           <input
+            id="admin-global-search"
+            name="adminSearch"
             type="search"
             placeholder={t('admin.header.searchPlaceholder')}
             className="h-10 min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
@@ -58,6 +65,8 @@ export default function AdminHeader({
             {t('admin.header.viewStore')}
           </Button>
         </Link>
+
+        <LanguageSwitcher className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white" />
 
         <button
           type="button"

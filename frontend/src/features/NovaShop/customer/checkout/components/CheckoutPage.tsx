@@ -1,5 +1,11 @@
-import { useMemo, useState } from 'react'
-import { message } from 'antd'
+import { formatCurrency } from '@/features/NovaShop/shared/format'
+import { useCartDisplayLines } from '@/features/NovaShop/shared/store/useCartDisplayLines'
+import { useShop } from '@/features/NovaShop/shared/store/useShop'
+import Button from '@/features/NovaShop/shared/ui/Button'
+import { cx } from '@/features/NovaShop/shared/ui/cx'
+import { getApiErrorMessage } from '@/lib/axios/instances'
+import { PATHS } from '@/router/paths'
+import { message, Spin } from 'antd'
 import {
   Banknote,
   CheckCircle2,
@@ -10,14 +16,11 @@ import {
   Truck,
   Zap,
 } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { PATHS } from '@/router/paths'
-import { PRODUCTS } from '../../../shared/data/products'
-import { useShop } from '../../../shared/store/useShop'
-import { formatCurrency } from '../../../shared/format'
-import Button from '../../../shared/ui/Button'
-import { cx } from '../../../shared/ui/cx'
+import { useCheckout } from '../../orders/hooks/useOrders'
+import { toApiPaymentMethod } from '../../orders/lib/checkoutPayment'
 
 type DeliveryMethod = 'standard' | 'express' | 'pickup'
 type PaymentMethod = 'card' | 'momo' | 'bank' | 'cod'
@@ -79,47 +82,53 @@ const CHECKOUT_CITIES = ['hcm', 'hanoi', 'danang'] as const
 const CHECKOUT_DISTRICTS = ['q1', 'q3', 'q7'] as const
 
 export default function CheckoutPage() {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
   const navigate = useNavigate()
-  const { cart, clearCart } = useShop()
+  const { clearCart } = useShop()
+  const { lines, isLoading, subtotal } = useCartDisplayLines()
+  const checkoutMutation = useCheckout()
   const [delivery, setDelivery] = useState<DeliveryMethod>('standard')
   const [payment, setPayment] = useState<PaymentMethod>('card')
 
-  const lines = useMemo(
-    () =>
-      cart
-        .map((line) => {
-          const product = PRODUCTS.find((entry) => entry.id === line.productId)
-          if (!product) return null
-          return { ...line, product }
-        })
-        .filter((entry): entry is NonNullable<typeof entry> => entry !== null),
-    [cart],
-  )
-
-  const subtotal = lines.reduce(
-    (sum, line) => sum + line.product.price * line.quantity,
-    0,
-  )
   const shipping = DELIVERIES.find((entry) => entry.id === delivery)?.price ?? 0
   const tax = Math.round(subtotal * 0.05)
   const total = subtotal + shipping + tax
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
-    message.success(t('checkout.messages.success'))
-    clearCart()
-    navigate(PATHS.ORDERS)
+    checkoutMutation.mutate(
+      { paymentMethod: toApiPaymentMethod(payment) },
+      {
+        onSuccess: async () => {
+          message.success(translate('checkout.messages.success'))
+          await clearCart()
+          navigate(PATHS.ORDERS)
+        },
+        onError: (error) => {
+          message.error(getApiErrorMessage(error, translate('common.error')))
+        },
+      },
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Spin size="large" />
+      </div>
+    )
   }
 
   if (lines.length === 0) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <h1 className="text-3xl font-extrabold text-slate-900">{t('checkout.empty.title')}</h1>
-        <p className="mt-2 text-sm text-slate-500">{t('checkout.empty.description')}</p>
+        <h1 className="text-3xl font-extrabold text-slate-900">
+          {translate('checkout.empty.title')}
+        </h1>
+        <p className="mt-2 text-sm text-slate-500">{translate('checkout.empty.description')}</p>
         <Link to={PATHS.PRODUCTS}>
           <Button className="mt-6" glow>
-            {t('checkout.empty.shopNow')}
+            {translate('checkout.empty.shopNow')}
           </Button>
         </Link>
       </div>
@@ -132,63 +141,51 @@ export default function CheckoutPage() {
         to={PATHS.CART}
         className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-slate-500 hover:text-fuchsia-600"
       >
-        <ChevronLeft className="size-4" /> {t('checkout.backToCart')}
+        <ChevronLeft className="size-4" /> {translate('checkout.backToCart')}
       </Link>
       <header className="mb-8">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-gradient">
-          {t('checkout.stepLabel')}
+          {translate('checkout.stepLabel')}
         </p>
         <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-          {t('checkout.title')}{' '}
-          <span className="text-gradient">{t('checkout.titleHighlight')}</span>
+          {translate('checkout.title')}{' '}
+          <span className="text-gradient">{translate('checkout.titleHighlight')}</span>
         </h1>
       </header>
 
       <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <SectionCard step="1" title={t('checkout.sections.address')}>
+          <SectionCard step="1" title={translate('checkout.sections.address')}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={t('checkout.fields.fullName')} required>
-                <input
-                  required
-                  defaultValue="Nguyễn Minh Anh"
-                  className="checkout-input"
-                />
+              <Field label={translate('checkout.fields.fullName')} required>
+                <input required defaultValue="Nguyễn Minh Anh" className="checkout-input" />
               </Field>
-              <Field label={t('checkout.fields.phone')} required>
-                <input
-                  required
-                  defaultValue="0901 234 567"
-                  className="checkout-input"
-                />
+              <Field label={translate('checkout.fields.phone')} required>
+                <input required defaultValue="0901 234 567" className="checkout-input" />
               </Field>
-              <Field label={t('checkout.fields.email')} className="sm:col-span-2">
-                <input
-                  type="email"
-                  defaultValue="minhanh@nova.shop"
-                  className="checkout-input"
-                />
+              <Field label={translate('checkout.fields.email')} className="sm:col-span-2">
+                <input type="email" defaultValue="minhanh@nova.shop" className="checkout-input" />
               </Field>
-              <Field label={t('checkout.fields.city')} required>
+              <Field label={translate('checkout.fields.city')} required>
                 <select required className="checkout-input">
                   {CHECKOUT_CITIES.map((city) => (
                     <option key={city} value={city}>
-                      {t(`checkout.cities.${city}`)}
+                      {translate(`checkout.cities.${city}`)}
                     </option>
                   ))}
                 </select>
               </Field>
-              <Field label={t('checkout.fields.district')} required>
+              <Field label={translate('checkout.fields.district')} required>
                 <select required className="checkout-input">
                   {CHECKOUT_DISTRICTS.map((district) => (
                     <option key={district} value={district}>
-                      {t(`checkout.districts.${district}`)}
+                      {translate(`checkout.districts.${district}`)}
                     </option>
                   ))}
                 </select>
               </Field>
               <Field
-                label={t('checkout.fields.address')}
+                label={translate('checkout.fields.address')}
                 required
                 className="sm:col-span-2"
               >
@@ -198,17 +195,17 @@ export default function CheckoutPage() {
                   className="checkout-input"
                 />
               </Field>
-              <Field label={t('checkout.fields.note')} className="sm:col-span-2">
+              <Field label={translate('checkout.fields.note')} className="sm:col-span-2">
                 <textarea
                   rows={3}
-                  placeholder={t('checkout.fields.notePlaceholder')}
+                  placeholder={translate('checkout.fields.notePlaceholder')}
                   className="checkout-input min-h-[88px] py-2.5"
                 />
               </Field>
             </div>
           </SectionCard>
 
-          <SectionCard step="2" title={t('checkout.sections.delivery')}>
+          <SectionCard step="2" title={translate('checkout.sections.delivery')}>
             <div className="grid gap-3 sm:grid-cols-3">
               {DELIVERIES.map((option) => (
                 <label
@@ -236,14 +233,14 @@ export default function CheckoutPage() {
                     <option.icon className="size-5" />
                   </span>
                   <p className="text-sm font-bold text-slate-900">
-                    {t(`checkout.delivery.${option.id}.title`)}
+                    {translate(`checkout.delivery.${option.id}.title`)}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
-                    {t(`checkout.delivery.${option.id}.desc`)}
+                    {translate(`checkout.delivery.${option.id}.desc`)}
                   </p>
                   <p className="mt-3 text-base font-extrabold text-slate-900">
                     {option.price === 0 ? (
-                      <span className="text-emerald-600">{t('checkout.order.free')}</span>
+                      <span className="text-emerald-600">{translate('checkout.order.free')}</span>
                     ) : (
                       formatCurrency(option.price)
                     )}
@@ -253,7 +250,7 @@ export default function CheckoutPage() {
             </div>
           </SectionCard>
 
-          <SectionCard step="3" title={t('checkout.sections.payment')}>
+          <SectionCard step="3" title={translate('checkout.sections.payment')}>
             <div className="grid gap-3 sm:grid-cols-2">
               {PAYMENTS.map((option) => (
                 <label
@@ -282,10 +279,10 @@ export default function CheckoutPage() {
                   </span>
                   <div className="flex-1">
                     <p className="text-sm font-bold text-slate-900">
-                      {t(`checkout.payment.${option.id}.title`)}
+                      {translate(`checkout.payment.${option.id}.title`)}
                     </p>
                     <p className="text-xs text-slate-500">
-                      {t(`checkout.payment.${option.id}.desc`)}
+                      {translate(`checkout.payment.${option.id}.desc`)}
                     </p>
                   </div>
                   <span
@@ -305,19 +302,16 @@ export default function CheckoutPage() {
             </div>
             {payment === 'card' && (
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <Field label={t('checkout.fields.cardNumber')} className="sm:col-span-2">
+                <Field label={translate('checkout.fields.cardNumber')} className="sm:col-span-2">
                   <input
                     placeholder="•••• •••• •••• ••••"
                     className="checkout-input font-mono tracking-widest"
                   />
                 </Field>
-                <Field label={t('checkout.fields.cardHolder')}>
-                  <input
-                    placeholder="NGUYEN MINH ANH"
-                    className="checkout-input"
-                  />
+                <Field label={translate('checkout.fields.cardHolder')}>
+                  <input placeholder="NGUYEN MINH ANH" className="checkout-input" />
                 </Field>
-                <Field label={t('checkout.fields.cardExpiry')}>
+                <Field label={translate('checkout.fields.cardExpiry')}>
                   <input placeholder="MM/YY" className="checkout-input" />
                 </Field>
               </div>
@@ -330,31 +324,22 @@ export default function CheckoutPage() {
             <div className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl glow-purple">
               <div className="absolute -right-10 -top-10 size-32 rounded-full bg-fuchsia-300/30 blur-2xl" />
               <h2 className="relative text-lg font-extrabold tracking-tight text-slate-900">
-                {t('checkout.order.title')}
+                {translate('checkout.order.title')}
               </h2>
               <ul className="relative mt-4 space-y-3">
                 {lines.map((line) => (
                   <li key={line.productId} className="flex items-center gap-3">
                     <div className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                      <img
-                        src={line.product.images[0]}
-                        alt={line.product.name}
-                        className="size-full object-cover"
-                      />
+                      <img src={line.image} alt={line.name} className="size-full object-cover" />
                       <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-linear-to-br from-fuchsia-500 to-purple-500 text-[10px] font-bold text-white ring-2 ring-white">
                         {line.quantity}
                       </span>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-slate-900">
-                        {line.product.name}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {line.product.brand}
-                      </p>
+                      <p className="truncate text-sm font-bold text-slate-900">{line.name}</p>
                     </div>
                     <p className="text-sm font-bold text-slate-900">
-                      {formatCurrency(line.product.price * line.quantity)}
+                      {formatCurrency(line.unitPrice * line.quantity)}
                     </p>
                   </li>
                 ))}
@@ -362,29 +347,25 @@ export default function CheckoutPage() {
 
               <dl className="relative mt-6 space-y-2 border-t border-dashed border-slate-200 pt-4 text-sm">
                 <div className="flex justify-between text-slate-500">
-                  <dt>{t('checkout.order.subtotal')}</dt>
-                  <dd className="font-medium text-slate-900">
-                    {formatCurrency(subtotal)}
-                  </dd>
+                  <dt>{translate('checkout.order.subtotal')}</dt>
+                  <dd className="font-medium text-slate-900">{formatCurrency(subtotal)}</dd>
                 </div>
                 <div className="flex justify-between text-slate-500">
-                  <dt>{t('checkout.order.shipping')}</dt>
+                  <dt>{translate('checkout.order.shipping')}</dt>
                   <dd className="font-medium text-slate-900">
                     {shipping === 0 ? (
-                      <span className="text-emerald-600">{t('checkout.order.free')}</span>
+                      <span className="text-emerald-600">{translate('checkout.order.free')}</span>
                     ) : (
                       formatCurrency(shipping)
                     )}
                   </dd>
                 </div>
                 <div className="flex justify-between text-slate-500">
-                  <dt>{t('checkout.order.tax')}</dt>
-                  <dd className="font-medium text-slate-900">
-                    {formatCurrency(tax)}
-                  </dd>
+                  <dt>{translate('checkout.order.tax')}</dt>
+                  <dd className="font-medium text-slate-900">{formatCurrency(tax)}</dd>
                 </div>
                 <div className="flex items-baseline justify-between border-t border-dashed border-slate-200 pt-3">
-                  <dt className="font-bold text-slate-900">{t('checkout.order.total')}</dt>
+                  <dt className="font-bold text-slate-900">{translate('checkout.order.total')}</dt>
                   <dd className="text-2xl font-extrabold tracking-tight text-gradient">
                     {formatCurrency(total)}
                   </dd>
@@ -398,15 +379,16 @@ export default function CheckoutPage() {
                 glow
                 className="relative mt-6"
                 leftIcon={<Sparkles className="size-4" />}
+                loading={checkoutMutation.isPending}
               >
-                {t('checkout.order.placeOrder')}
+                {translate('checkout.order.placeOrder')}
               </Button>
               <p className="relative mt-3 text-center text-xs text-slate-500">
-                {t('checkout.order.termsPrefix')}{' '}
+                {translate('checkout.order.termsPrefix')}{' '}
                 <a href="#" className="text-fuchsia-600 hover:underline">
-                  {t('checkout.order.terms')}
+                  {translate('checkout.order.terms')}
                 </a>{' '}
-                {t('checkout.order.termsSuffix')}
+                {translate('checkout.order.termsSuffix')}
               </p>
             </div>
           </div>
@@ -451,9 +433,7 @@ function SectionCard({
         <span className="grid size-9 place-items-center rounded-xl bg-linear-to-br from-fuchsia-500 to-purple-500 text-sm font-extrabold text-white shadow-md">
           {step}
         </span>
-        <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
-          {title}
-        </h2>
+        <h2 className="text-xl font-extrabold tracking-tight text-slate-900">{title}</h2>
       </header>
       {children}
     </section>

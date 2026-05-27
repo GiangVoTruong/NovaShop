@@ -1,3 +1,4 @@
+import Button from '@/features/NovaShop/shared/ui/Button'
 import { PATHS } from '@/router/paths'
 import { message } from 'antd'
 import { Eye, EyeOff, Lock, Mail, Phone, Sparkles, User } from 'lucide-react'
@@ -6,19 +7,18 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import useRegister from '../hooks/useRegister'
-import Button from '../../../shared/ui/Button'
 
 export default function RegisterPage() {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
   const navigate = useNavigate()
   const registerMutation = useRegister()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const heroStats = [
-    { value: '120K+', label: t('auth.statCustomers') },
-    { value: '4.9★', label: t('auth.statRating') },
-    { value: '15K+', label: t('auth.statProducts') },
+    { value: '120K+', label: translate('auth.statCustomers') },
+    { value: '4.9★', label: translate('auth.statRating') },
+    { value: '15K+', label: translate('auth.statProducts') },
   ]
 
   const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
@@ -30,15 +30,15 @@ export default function RegisterPage() {
     const phone = String(formData.get('phone') ?? '').trim()
 
     if (password.length < 8) {
-      message.error(t('auth.passwordMinError'))
+      message.error(translate('auth.passwordMinError'))
       return
     }
     if (password !== confirmPassword) {
-      message.error(t('auth.passwordMismatch'))
+      message.error(translate('auth.passwordMismatch'))
       return
     }
     if (phone.length < 10) {
-      message.error(t('auth.phoneMinError'))
+      message.error(translate('auth.phoneMinError'))
       return
     }
 
@@ -51,8 +51,10 @@ export default function RegisterPage() {
       },
       {
         onSuccess: () => {
-          message.success(t('auth.registerSuccess'))
-          navigate(PATHS.LOGIN)
+          message.success(translate('auth.registerSuccess'))
+          navigate(PATHS.VERIFY_EMAIL, {
+            state: { email: String(formData.get('email') ?? '').trim() },
+          })
         },
       },
     )
@@ -82,13 +84,13 @@ export default function RegisterPage() {
 
           <div className="space-y-6">
             <h2 className="text-5xl font-extrabold leading-[1.05] tracking-tight">
-              {t('auth.heroTitle')}
+              {translate('auth.heroTitle')}
               <br />
               <span className="bg-linear-to-r from-pink-300 via-fuchsia-300 to-cyan-200 bg-clip-text text-transparent">
-                {t('auth.heroTitleHighlight')}
+                {translate('auth.heroTitleHighlight')}
               </span>
             </h2>
-            <p className="max-w-md text-base text-white/80">{t('auth.heroDescription')}</p>
+            <p className="max-w-md text-base text-white/80">{translate('auth.heroDescription')}</p>
             <div className="flex gap-8 pt-4">
               {heroStats.map((stat) => (
                 <div key={stat.label}>
@@ -99,7 +101,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <p className="text-xs text-white/50">{t('auth.copyright')}</p>
+          <p className="text-xs text-white/50">{translate('auth.copyright')}</p>
         </div>
 
         <div className="flex items-center justify-center px-4 py-12 sm:px-12 lg:px-16">
@@ -117,12 +119,12 @@ export default function RegisterPage() {
             </Link>
 
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-gradient">
-              {t('auth.newAccount')}
+              {translate('auth.newAccount')}
             </p>
             <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-              {t('auth.register')}
+              {translate('auth.register')}
             </h1>
-            <p className="mt-2 text-sm text-slate-500">{t('auth.registerSubtitle')}</p>
+            <p className="mt-2 text-sm text-slate-500">{translate('auth.registerSubtitle')}</p>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-4">
               <FieldGroup icon={User}>
@@ -130,7 +132,7 @@ export default function RegisterPage() {
                   required
                   name="fullName"
                   minLength={3}
-                  placeholder={t('auth.fullName')}
+                  placeholder={translate('auth.fullName')}
                   className="auth-input"
                 />
               </FieldGroup>
@@ -140,7 +142,7 @@ export default function RegisterPage() {
                   required
                   name="email"
                   type="email"
-                  placeholder={t('common.email')}
+                  placeholder={translate('common.email')}
                   className="auth-input"
                 />
               </FieldGroup>
@@ -152,7 +154,7 @@ export default function RegisterPage() {
                   type="tel"
                   minLength={10}
                   maxLength={15}
-                  placeholder={t('auth.phone')}
+                  placeholder={translate('auth.phone')}
                   className="auth-input"
                 />
               </FieldGroup>
@@ -163,14 +165,14 @@ export default function RegisterPage() {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   minLength={8}
-                  placeholder={t('auth.passwordMin')}
+                  placeholder={translate('auth.passwordMin')}
                   className="auth-input pr-12"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  aria-label={t('auth.showPassword')}
+                  aria-label={translate('auth.showPassword')}
                 >
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
@@ -182,14 +184,14 @@ export default function RegisterPage() {
                   name="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   minLength={8}
-                  placeholder={t('auth.confirmPassword')}
+                  placeholder={translate('auth.confirmPassword')}
                   className="auth-input pr-12"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword((value) => !value)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  aria-label={t('auth.showConfirmPassword')}
+                  aria-label={translate('auth.showConfirmPassword')}
                 >
                   {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
@@ -202,38 +204,40 @@ export default function RegisterPage() {
                   className="mt-0.5 size-4 shrink-0 rounded border-slate-300 text-fuchsia-600"
                 />
                 <span>
-                  {t('auth.termsPrefix')}{' '}
+                  {translate('auth.termsPrefix')}{' '}
                   <a href="#" className="font-semibold text-fuchsia-600 hover:underline">
-                    {t('auth.termsOfService')}
+                    {translate('auth.termsOfService')}
                   </a>{' '}
-                  {t('auth.and')}{' '}
+                  {translate('auth.and')}{' '}
                   <a href="#" className="font-semibold text-fuchsia-600 hover:underline">
-                    {t('auth.privacyPolicy')}
+                    {translate('auth.privacyPolicy')}
                   </a>
                 </span>
               </label>
 
               <Button type="submit" size="lg" fullWidth glow disabled={registerMutation.isPending}>
-                {registerMutation.isPending ? t('auth.creatingAccount') : t('auth.createAccount')}
+                {registerMutation.isPending
+                  ? translate('auth.creatingAccount')
+                  : translate('auth.createAccount')}
               </Button>
 
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1 bg-slate-200" />
                 <span className="text-xs uppercase tracking-widest text-slate-400">
-                  {t('common.or')}
+                  {translate('common.or')}
                 </span>
                 <div className="h-px flex-1 bg-slate-200" />
               </div>
 
               <Button variant="outline" size="lg" fullWidth type="button">
-                {t('auth.continueWithGoogle')}
+                {translate('auth.continueWithGoogle')}
               </Button>
             </form>
 
             <p className="mt-8 text-center text-sm text-slate-600">
-              {t('auth.hasAccount')}{' '}
+              {translate('auth.hasAccount')}{' '}
               <Link to={PATHS.LOGIN} className="font-bold text-gradient hover:underline">
-                {t('auth.login')}
+                {translate('auth.login')}
               </Link>
             </p>
           </div>

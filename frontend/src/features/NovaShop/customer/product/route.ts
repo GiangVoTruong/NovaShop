@@ -1,15 +1,23 @@
+import { createElement } from 'react'
 import type { RouteObject } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { PATHS } from '@/router/paths'
-import CollectionsPage from './components/CollectionsPage'
-import ExplorePage from './components/ExplorePage'
-import FlashSalePage from './components/FlashSalePage'
 import ProductDetailPage from './components/ProductDetailPage'
 import ProductListPage from './components/ProductListPage'
 
 export const customerProductRoutes: RouteObject[] = [
-  { path: PATHS.EXPLORE, Component: ExplorePage },
-  { path: PATHS.COLLECTIONS, Component: CollectionsPage },
-  { path: PATHS.FLASH_SALE, Component: FlashSalePage },
+  {
+    path: PATHS.EXPLORE,
+    element: createElement(Navigate, { to: '/products?mode=explore', replace: true }),
+  },
+  {
+    path: PATHS.COLLECTIONS,
+    element: createElement(Navigate, { to: '/products?mode=collections', replace: true }),
+  },
+  {
+    path: PATHS.FLASH_SALE,
+    element: createElement(Navigate, { to: '/products?mode=flash-sale', replace: true }),
+  },
   { path: PATHS.PRODUCTS, Component: ProductListPage },
   { path: PATHS.PRODUCT_DETAIL, Component: ProductDetailPage },
 ]

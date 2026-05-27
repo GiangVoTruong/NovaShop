@@ -25,6 +25,7 @@ public class GetUserReponseDto {
     private String avatarUrl;
     private UserRole role;
     private Boolean isActive;
+    private OffsetDateTime emailVerifiedAt;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 }

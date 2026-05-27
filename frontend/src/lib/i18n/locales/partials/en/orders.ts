@@ -4,6 +4,12 @@ export const orders = {
   titleHighlight: 'orders',
   subtitle: 'Track and manage your placed orders',
   searchPlaceholder: 'Search order code or product…',
+  stats: {
+    total: 'Total orders',
+    active: 'In progress',
+    delivered: 'Delivered',
+    spent: 'Total spent',
+  },
   tabs: {
     all: 'All',
     pending: 'Pending',
@@ -14,10 +20,19 @@ export const orders = {
   empty: {
     title: 'No orders yet',
     description: 'You have no orders in this tab. Start shopping!',
+    shopNow: 'Shop now',
   },
   orderCode: 'Order code',
   placedAt: 'Placed at',
   quantity: 'Quantity',
+  itemCount: '{{count}} items',
   total: 'Total',
+  payment: 'Payment',
+  shippingAddress: 'Ship to',
   viewDetail: 'View details',
+  reorder: 'Buy again',
+  cancel: 'Cancel order',
+  messages: {
+    cancelled: 'Order cancelled',
+  },
 } as const

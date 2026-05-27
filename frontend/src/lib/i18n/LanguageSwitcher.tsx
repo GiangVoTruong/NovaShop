@@ -3,6 +3,7 @@ import { Dropdown } from 'antd'
 import { Globe } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+import { cx } from '@/features/NovaShop/shared/ui/cx'
 import { isAppLanguage } from '@/lib/i18n/antdLocale'
 import type { AppLanguage } from '@/lib/i18n/types'
 
@@ -16,7 +17,7 @@ interface LanguageSwitcherProps {
 }
 
 export default function LanguageSwitcher({ className }: LanguageSwitcherProps) {
-  const { i18n, t } = useTranslation()
+  const { i18n, t: translate } = useTranslation()
 
   const currentLanguage = isAppLanguage(i18n.language) ? i18n.language : 'vi'
 
@@ -41,11 +42,11 @@ export default function LanguageSwitcher({ className }: LanguageSwitcherProps) {
     >
       <button
         type="button"
-        className={
-          className ??
-          'grid size-10 shrink-0 place-items-center rounded-xl bg-white text-slate-700 transition-colors hover:border-fuchsia-300 hover:text-fuchsia-600'
-        }
-        aria-label={t('common.language')}
+        className={cx(
+          'grid size-10 shrink-0 place-items-center text-slate-700 transition-colors hover:border-fuchsia-300 hover:text-fuchsia-600',
+          className,
+        )}
+        aria-label={translate('common.language')}
       >
         <Globe className="size-5" />
       </button>

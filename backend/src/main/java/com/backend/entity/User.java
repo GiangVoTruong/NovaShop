@@ -57,6 +57,9 @@ public class User {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "email_verified_at")
+    private OffsetDateTime emailVerifiedAt;
+
     @Column(name = "created_at")
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();

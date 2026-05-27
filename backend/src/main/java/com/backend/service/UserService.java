@@ -16,6 +16,7 @@ import com.backend.dto.users.GetUserReponseDto;
 import com.backend.entity.User;
 import com.backend.mapper.UserMapper;
 import com.backend.repository.UserRepository;
+import com.backend.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +27,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
 
     @Transactional(readOnly = true)
     public List<GetUserReponseDto> getAllUsers() {
@@ -36,6 +38,11 @@ public class UserService {
     public GetUserReponseDto getUserById(UUID id) {
         return userMapper.toDto(userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")));
+    }
+
+    @Transactional(readOnly = true)
+    public GetUserReponseDto getCurrentUser() {
+        return getUserById(SecurityUtils.getCurrentUserId());
     }
 
     @Transactional
@@ -52,11 +59,14 @@ public class UserService {
                 .fullName(request.getFullName())
                 .phone(request.getPhone())
                 .role(request.getRole())
-                .isActive(true)
+                .isActive(false)
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
 
-        return userMapper.toDto(userRepository.save(user));
+        User savedUser = userRepository.save(user);
+        emailVerificationService.sendVerificationForUser(savedUser);
+
+        return userMapper.toDto(savedUser);
     }
 }

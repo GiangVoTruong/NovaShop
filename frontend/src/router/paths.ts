@@ -16,6 +16,7 @@ export const PATHS = {
   PROFILE: '/profile',
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
+  VERIFY_EMAIL: '/auth/verify-email',
 
   ADMIN: '/admin',
   ADMIN_PRODUCTS: '/admin/products',

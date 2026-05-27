@@ -30,6 +30,13 @@ export const product = {
     rating: 'Top rated',
   },
   filters: {
+    listingMode: 'Product type',
+    listingModeOptions: {
+      all: 'All products',
+      explore: 'Explore',
+      collections: 'Collections',
+      flashSale: 'Flash Sale',
+    },
     title: 'Filters',
     reset: 'Reset',
     category: 'Category',

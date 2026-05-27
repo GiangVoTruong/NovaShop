@@ -1,18 +1,17 @@
 import { getApiErrorMessage } from '@/lib/axios/instances'
-import type { AuthRegisterRequest } from '@/types/auth.types'
 import { useMutation } from '@tanstack/react-query'
 import { message } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { register } from '../services/registerService'
+import authService from '../services/authService'
 
 export default function useRegister() {
-  const { t } = useTranslation()
+  const { t: translate } = useTranslation()
 
   return useMutation({
     mutationKey: ['register'],
-    mutationFn: (request: AuthRegisterRequest) => register(request),
+    mutationFn: authService.register,
     onError: (error) => {
-      message.error(getApiErrorMessage(error, t('common.error')))
+      message.error(getApiErrorMessage(error, translate('common.error')))
     },
   })
 }

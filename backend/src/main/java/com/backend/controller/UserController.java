@@ -3,17 +3,22 @@ package com.backend.controller;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.dto.common.ApiResponse;
+import com.backend.dto.common.ApiResponses;
+import com.backend.dto.permissions.GetUserPermissionsResponseDto;
+import com.backend.dto.permissions.UpdateUserPermissionsRequestDto;
 import com.backend.dto.users.CreateUserRequestDto;
 import com.backend.dto.users.GetUserReponseDto;
+import com.backend.service.PermissionService;
 import com.backend.service.UserService;
 
 import jakarta.validation.Valid;
@@ -25,19 +30,39 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserService userService;
+    private final PermissionService permissionService;
 
     @GetMapping
-    public ResponseEntity<List<GetUserReponseDto>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<ApiResponse<List<GetUserReponseDto>>> getAllUsers() {
+        return ApiResponses.ok(userService.getAllUsers(), "Lấy danh sách người dùng thành công");
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<GetUserReponseDto>> getCurrentUser() {
+        return ApiResponses.ok(userService.getCurrentUser(), "Lấy thông tin người dùng thành công");
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GetUserReponseDto> getUserById(@PathVariable UUID id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+    public ResponseEntity<ApiResponse<GetUserReponseDto>> getUserById(@PathVariable UUID id) {
+        return ApiResponses.ok(userService.getUserById(id), "Lấy thông tin người dùng thành công");
     }
 
     @PostMapping
-    public ResponseEntity<GetUserReponseDto> createUser(@Valid @RequestBody CreateUserRequestDto request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(request));
+    public ResponseEntity<ApiResponse<GetUserReponseDto>> createUser(@Valid @RequestBody CreateUserRequestDto request) {
+        return ApiResponses.created(userService.createUser(request), "Tạo người dùng thành công");
+    }
+
+    @GetMapping("/{id}/permissions")
+    public ResponseEntity<ApiResponse<GetUserPermissionsResponseDto>> getUserPermissions(@PathVariable UUID id) {
+        return ApiResponses.ok(permissionService.getUserPermissions(id), "Lấy quyền người dùng thành công");
+    }
+
+    @PutMapping("/{id}/permissions")
+    public ResponseEntity<ApiResponse<GetUserPermissionsResponseDto>> assignUserPermissions(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateUserPermissionsRequestDto request) {
+        return ApiResponses.ok(
+                permissionService.assignUserPermissions(id, request.getPermissionCodes()),
+                "Cập nhật quyền người dùng thành công");
     }
 }

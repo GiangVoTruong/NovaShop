@@ -1,13 +1,14 @@
 import { PATHS } from '@/router/paths'
+import { productsPath } from './productList.constants'
 
 export const CUSTOMER_FOOTER_COLS = [
   {
     titleKey: 'footer.columns.shop.title',
     links: [
       { labelKey: 'footer.columns.shop.links.newProducts', to: PATHS.PRODUCTS },
-      { labelKey: 'footer.columns.shop.links.promo', to: PATHS.FLASH_SALE },
-      { labelKey: 'footer.columns.shop.links.bestseller', to: PATHS.PRODUCTS },
-      { labelKey: 'footer.columns.shop.links.collections', to: PATHS.COLLECTIONS },
+      { labelKey: 'footer.columns.shop.links.promo', to: productsPath({ mode: 'flash-sale' }) },
+      { labelKey: 'footer.columns.shop.links.bestseller', to: productsPath({ mode: 'explore' }) },
+      { labelKey: 'footer.columns.shop.links.collections', to: productsPath({ mode: 'collections' }) },
     ],
   },
   {

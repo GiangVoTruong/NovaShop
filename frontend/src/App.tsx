@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router-dom'
+import { AuthProvider } from '@/features/NovaShop/customer/auth/context/AuthProvider'
 import I18nProvider from '@/lib/i18n/I18nProvider'
 import { router } from '@/router/router'
 import './App.css'
@@ -10,7 +11,9 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nProvider>
-        <RouterProvider router={router} />
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
       </I18nProvider>
     </QueryClientProvider>
   )

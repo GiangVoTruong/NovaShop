@@ -1,4 +1,8 @@
-import { PATHS } from '@/router/paths'
+import { formatCurrency } from '@/features/NovaShop/shared/format'
+import Button from '@/features/NovaShop/shared/ui/Button'
+import StarRating from '@/features/NovaShop/shared/ui/StarRating'
+import { PATHS, productDetailPath } from '@/router/paths'
+import { Spin } from 'antd'
 import {
   ArrowRight,
   ArrowUpRight,
@@ -14,14 +18,13 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { BRANDS, HERO_STATS, TESTIMONIALS } from '../constants/home.constants'
-import { CATEGORIES } from '../../../shared/data/categories'
-import { PRODUCTS } from '../../../shared/data/products'
-import { formatCurrency } from '../../../shared/format'
-import Button from '../../../shared/ui/Button'
-import StarRating from '../../../shared/ui/StarRating'
+import { useCategories } from '../../catalog/hooks/useCategories'
+import { useProducts } from '../../catalog/hooks/useProducts'
+import { getProductImages, getProductSalePrice } from '../../catalog/lib/productApi'
+import { productsPath } from '../../constants/productList.constants'
 import CategoryCard from '../../product/components/CategoryCard'
 import ProductCard from '../../product/components/ProductCard'
+import { BRANDS, HERO_STATS, TESTIMONIALS } from '../constants/home.constants'
 
 const USP_ITEMS = [
   {
@@ -51,57 +54,67 @@ const USP_ITEMS = [
 ] as const
 
 export default function HomePage() {
-  const { t } = useTranslation()
-  const heroProduct = PRODUCTS.find((entry) => entry.id === 'p-001')!
-  const sideProductA = PRODUCTS.find((entry) => entry.id === 'p-004')!
-  const sideProductB = PRODUCTS.find((entry) => entry.id === 'p-013')!
-  const featured = PRODUCTS.filter((entry) => entry.status === 'active').slice(0, 8)
-  const flashSale = PRODUCTS.filter((entry) => entry.originalPrice).slice(0, 4)
+  const { t: translate } = useTranslation()
+  const featuredQuery = useProducts({ page: 0, size: 8, sortKey: 'popular' })
+  const flashSaleQuery = useProducts({ mode: 'flash-sale', page: 0, size: 4 })
+  const categoriesQuery = useCategories()
+
+  const featured = featuredQuery.data?.data ?? []
+  const flashSale = flashSaleQuery.data?.data ?? []
+  const categories = categoriesQuery.data ?? []
+  const heroProduct = featured[0]
+  const sideProductA = featured[1]
+  const sideProductB = featured[2]
+  const isLoadingProducts = featuredQuery.isLoading || flashSaleQuery.isLoading
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-24 px-4 py-6 sm:px-6 lg:px-10 xl:px-14">
-      {/* ====== HERO ====== */}
-      <section className="relative isolate overflow-hidden rounded-[2.5rem] mesh-hero">
+    <>
+      {/* ====== HERO — full width banner ====== */}
+      <section className="customer-hero-banner relative isolate w-full overflow-hidden mesh-hero">
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="blob animate-float-slow left-[-5%] top-[-10%] size-[420px] bg-fuchsia-500/60" />
           <div className="blob animate-float-slower right-[-5%] top-[10%] size-[480px] bg-cyan-400/40" />
           <div className="blob animate-float-slow bottom-[-15%] left-[30%] size-[440px] bg-purple-500/60" />
         </div>
 
-        <div className="grid gap-10 px-6 py-12 sm:px-12 sm:py-16 lg:grid-cols-12 lg:items-center lg:gap-8 lg:px-16 lg:py-24">
+        <div className="mx-auto grid max-w-[1440px] gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-12 lg:items-center lg:gap-8 lg:px-10 lg:py-24 xl:px-14">
           {/* LEFT */}
           <div className="space-y-7 text-white lg:col-span-6">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider backdrop-blur">
-              <Sparkles className="size-3.5" /> {t('home.hero.badge')}
+              <Sparkles className="size-3.5" /> {translate('home.hero.badge')}
             </span>
 
             <h1 className="text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-              {t('home.hero.title')}
+              {translate('home.hero.title')}
               <br />
               <span className="bg-linear-to-r from-pink-300 via-fuchsia-300 to-cyan-200 bg-clip-text text-transparent">
-                {t('home.hero.titleHighlight')}
+                {translate('home.hero.titleHighlight')}
               </span>
             </h1>
 
             <p className="max-w-xl text-base text-white/80 sm:text-lg">
-              {t('home.hero.description')}{' '}
-              <span className="text-cyan-300">{t('home.hero.descriptionHighlight')}</span>.
+              {translate('home.hero.description')}{' '}
+              <span className="text-cyan-300">{translate('home.hero.descriptionHighlight')}</span>.
             </p>
 
             <div className="flex flex-wrap gap-3">
-              <Link to={PATHS.EXPLORE}>
+              <Link to={productsPath({ mode: 'explore' })}>
                 <Button
                   variant="white"
                   size="lg"
                   rightIcon={<ArrowRight className="size-5" />}
                   className="font-bold"
                 >
-                  {t('home.hero.exploreNow')}
+                  {translate('home.hero.exploreNow')}
                 </Button>
               </Link>
-              <Link to={PATHS.FLASH_SALE}>
-                <Button variant="glass" size="lg">
-                  {t('home.hero.flashSaleCta')}
+              <Link to={productsPath({ mode: 'flash-sale' })}>
+                <Button
+                  variant="glass"
+                  size="lg"
+                  className="border-white/40 bg-white/20 font-semibold shadow-lg backdrop-blur-md hover:bg-white/30"
+                >
+                  {translate('home.hero.flashSaleCta')}
                 </Button>
               </Link>
             </div>
@@ -111,7 +124,7 @@ export default function HomePage() {
                 <div key={stat.labelKey}>
                   <p className="text-3xl font-extrabold tracking-tight">{stat.value}</p>
                   <p className="mt-0.5 text-xs uppercase tracking-wider text-white/60">
-                    {t(stat.labelKey)}
+                    {translate(stat.labelKey)}
                   </p>
                 </div>
               ))}
@@ -120,68 +133,82 @@ export default function HomePage() {
 
           {/* RIGHT */}
           <div className="relative lg:col-span-6">
-            <div className="relative mx-auto grid max-w-md grid-cols-6 grid-rows-6 gap-3 sm:max-w-lg lg:max-w-none">
-              {/* Main featured product */}
-              <Link
-                to={PATHS.PRODUCTS}
-                className="group/main relative col-span-4 row-span-4 col-start-2 row-start-1 overflow-hidden rounded-3xl ring-1 ring-white/30"
-              >
-                <img
-                  src={heroProduct.images[0]}
-                  alt={heroProduct.name}
-                  className="size-full object-cover transition-transform duration-700 group-hover/main:scale-110"
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 via-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 text-white">
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-white/70">
-                      {t('home.hero.featured.bestseller')}
-                    </p>
-                    <p className="text-lg font-bold leading-tight">{heroProduct.name}</p>
-                  </div>
-                  <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold backdrop-blur">
-                    {formatCurrency(heroProduct.price)}
-                  </span>
-                </div>
-              </Link>
-
-              {/* Small floating product B */}
-              <Link
-                to={PATHS.PRODUCTS}
-                className="relative col-span-2 row-span-3 col-start-5 row-start-4 overflow-hidden rounded-3xl ring-1 ring-white/30"
-              >
-                <img
-                  src={sideProductA.images[0]}
-                  alt={sideProductA.name}
-                  className="size-full object-cover"
-                />
-              </Link>
-
-              {/* Glass card stats */}
-              <div className="relative col-span-3 row-span-2 col-start-1 row-start-5 flex flex-col justify-center rounded-3xl border border-white/30 bg-white/15 p-4 backdrop-blur-xl">
-                <div className="flex items-center gap-2 text-white">
-                  <span className="grid size-8 place-items-center rounded-xl bg-linear-to-r from-amber-300 to-orange-400 text-slate-900">
-                    <Star className="size-4 fill-current" />
-                  </span>
-                  <p className="text-2xl font-extrabold">4.9</p>
-                </div>
-                <p className="mt-1 text-[11px] uppercase tracking-wider text-white/70">
-                  {t('home.hero.ratingCard')}
-                </p>
+            {isLoadingProducts ? (
+              <div className="flex min-h-[320px] items-center justify-center">
+                <Spin size="large" />
               </div>
+            ) : heroProduct ? (
+              <div className="relative mx-auto w-full max-w-md sm:max-w-lg lg:max-w-none">
+                <div className="relative aspect-4/5 w-full max-h-[min(520px,72vw)] sm:aspect-5/4 lg:aspect-4/3 lg:max-h-[480px]">
+                  <div className="absolute inset-0 grid grid-cols-6 grid-rows-6 gap-3">
+                    {/* Main featured product */}
+                    <Link
+                      to={productDetailPath(heroProduct.id)}
+                      className="group/main relative col-span-4 row-span-4 col-start-2 row-start-1 min-h-0 overflow-hidden rounded-3xl ring-1 ring-white/30"
+                    >
+                      <img
+                        src={getProductImages(heroProduct)[0]}
+                        alt={heroProduct.name}
+                        className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover/main:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 via-transparent" />
+                      <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 text-white">
+                        <div>
+                          <p className="text-xs uppercase tracking-wider text-white/70">
+                            {translate('home.hero.featured.bestseller')}
+                          </p>
+                          <p className="text-lg font-bold leading-tight">{heroProduct.name}</p>
+                        </div>
+                        <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold backdrop-blur">
+                          {formatCurrency(getProductSalePrice(heroProduct))}
+                        </span>
+                      </div>
+                    </Link>
 
-              {/* Floating circle product */}
-              <Link
-                to={PATHS.PRODUCTS}
-                className="relative col-span-1 row-span-1 col-start-1 row-start-2 grid place-items-center rounded-3xl border border-white/20 bg-white/10 backdrop-blur"
-              >
-                <img
-                  src={sideProductB.images[0]}
-                  alt=""
-                  className="size-full rounded-3xl object-cover"
-                />
-              </Link>
-            </div>
+                    {/* Small floating product B */}
+                    {sideProductA && (
+                      <Link
+                        to={productDetailPath(sideProductA.id)}
+                        className="relative col-span-2 row-span-3 col-start-5 row-start-4 min-h-0 overflow-hidden rounded-3xl ring-1 ring-white/30"
+                      >
+                        <img
+                          src={getProductImages(sideProductA)[0]}
+                          alt={sideProductA.name}
+                          className="absolute inset-0 size-full object-cover"
+                        />
+                      </Link>
+                    )}
+
+                    {/* Glass card stats */}
+                    <div className="relative col-span-3 row-span-2 col-start-1 row-start-5 flex flex-col justify-center rounded-3xl border border-white/30 bg-white/15 p-4 backdrop-blur-xl">
+                      <div className="flex items-center gap-2 text-white">
+                        <span className="grid size-8 place-items-center rounded-xl bg-linear-to-r from-amber-300 to-orange-400 text-slate-900">
+                          <Star className="size-4 fill-current" />
+                        </span>
+                        <p className="text-2xl font-extrabold">4.9</p>
+                      </div>
+                      <p className="mt-1 text-[11px] uppercase tracking-wider text-white/70">
+                        {translate('home.hero.ratingCard')}
+                      </p>
+                    </div>
+
+                    {/* Floating circle product */}
+                    {sideProductB && (
+                      <Link
+                        to={productDetailPath(sideProductB.id)}
+                        className="relative col-span-1 row-span-1 col-start-1 row-start-2 min-h-0 overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur"
+                      >
+                        <img
+                          src={getProductImages(sideProductB)[0]}
+                          alt={sideProductB.name}
+                          className="absolute inset-0 size-full object-cover"
+                        />
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             {/* Floating badges */}
             <div className="absolute -left-4 top-8 hidden items-center gap-3 rounded-2xl border border-white/30 bg-white/95 p-3 text-slate-900 shadow-2xl backdrop-blur lg:flex">
@@ -189,8 +216,10 @@ export default function HomePage() {
                 <BadgeCheck className="size-5" />
               </span>
               <div>
-                <p className="text-sm font-bold">{t('home.hero.badges.authentic.title')}</p>
-                <p className="text-xs text-slate-500">{t('home.hero.badges.authentic.subtitle')}</p>
+                <p className="text-sm font-bold">{translate('home.hero.badges.authentic.title')}</p>
+                <p className="text-xs text-slate-500">
+                  {translate('home.hero.badges.authentic.subtitle')}
+                </p>
               </div>
             </div>
             <div className="absolute -right-4 bottom-12 hidden items-center gap-3 rounded-2xl border border-white/30 bg-white/95 p-3 text-slate-900 shadow-2xl backdrop-blur lg:flex">
@@ -198,174 +227,178 @@ export default function HomePage() {
                 <Zap className="size-5 fill-current" />
               </span>
               <div>
-                <p className="text-sm font-bold">{t('home.hero.badges.delivery.title')}</p>
-                <p className="text-xs text-slate-500">{t('home.hero.badges.delivery.subtitle')}</p>
+                <p className="text-sm font-bold">{translate('home.hero.badges.delivery.title')}</p>
+                <p className="text-xs text-slate-500">
+                  {translate('home.hero.badges.delivery.subtitle')}
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ====== USP STRIP ====== */}
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {USP_ITEMS.map((feature) => (
-          <div
-            key={feature.titleKey}
-            className="group relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-          >
-            <span
-              className={`mb-4 inline-grid size-12 place-items-center rounded-2xl bg-linear-to-r ${feature.grad} text-white shadow-lg`}
+      <div className="mx-auto max-w-[1440px] space-y-24 px-4 py-6 sm:px-6 lg:px-10 xl:px-14">
+        <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {USP_ITEMS.map((feature) => (
+            <div
+              key={feature.titleKey}
+              className="customer-panel group relative overflow-hidden rounded-3xl p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
             >
-              <feature.icon className="size-5" />
-            </span>
-            <p className="text-base font-bold tracking-tight text-slate-900">
-              {t(feature.titleKey)}
-            </p>
-            <p className="mt-1 text-sm text-slate-500">{t(feature.descKey)}</p>
-          </div>
-        ))}
-      </section>
-
-      {/* ====== CATEGORIES BENTO ====== */}
-      <section>
-        <SectionHeading
-          eyebrow={t('home.categories.eyebrow')}
-          title={t('home.categories.title')}
-          subtitle={t('home.categories.subtitle')}
-          ctaLabel={t('home.categories.viewAll')}
-          ctaTo={PATHS.PRODUCTS}
-        />
-        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4 lg:grid-rows-2">
-          <div className="min-h-0 h-full sm:col-span-3 sm:row-span-1 lg:col-span-2 lg:row-span-2">
-            <CategoryCard category={CATEGORIES[0]} fill />
-          </div>
-          <CategoryCard category={CATEGORIES[1]} variant="square" />
-          <CategoryCard category={CATEGORIES[2]} variant="square" />
-          <CategoryCard category={CATEGORIES[3]} variant="square" />
-          <CategoryCard category={CATEGORIES[4]} variant="square" />
-        </div>
-      </section>
-
-      {/* ====== FLASH SALE ====== */}
-      <section className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 p-6 text-white sm:p-10">
-        <div className="pointer-events-none absolute inset-0 z-0">
-          <div className="absolute -right-10 -top-10 size-72 rounded-full bg-rose-500/30 blur-3xl" />
-          <div className="absolute -bottom-10 -left-10 size-72 rounded-full bg-amber-500/30 blur-3xl" />
-        </div>
-
-        <div className="relative mb-8 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <span className="grid size-14 place-items-center rounded-2xl bg-linear-to-r from-rose-500 via-pink-500 to-orange-500 shadow-[0_15px_40px_-5px_rgba(244,63,94,0.5)]">
-              <Flame className="size-7" />
-            </span>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-rose-300">
-                {t('home.flashSale.limited')}
+              <span
+                className={`mb-4 inline-grid size-12 place-items-center rounded-2xl bg-linear-to-r ${feature.grad} text-white shadow-lg`}
+              >
+                <feature.icon className="size-5" />
+              </span>
+              <p className="text-base font-bold tracking-tight text-slate-900">
+                {translate(feature.titleKey)}
               </p>
-              <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-                {t('home.flashSale.title')}
-              </h2>
+              <p className="mt-1 text-sm text-slate-500">{translate(feature.descKey)}</p>
+            </div>
+          ))}
+        </section>
+
+        {/* ====== CATEGORIES BENTO ====== */}
+        <section>
+          <SectionHeading
+            eyebrow={translate('home.categories.eyebrow')}
+            title={translate('home.categories.title')}
+            subtitle={translate('home.categories.subtitle')}
+            ctaLabel={translate('home.categories.viewAll')}
+            ctaTo={PATHS.PRODUCTS}
+          />
+          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4 lg:grid-rows-2">
+            {categories[0] && (
+              <div className="min-h-0 h-full sm:col-span-3 sm:row-span-1 lg:col-span-2 lg:row-span-2">
+                <CategoryCard category={categories[0]} fill />
+              </div>
+            )}
+            {categories.slice(1, 5).map((category) => (
+              <CategoryCard key={category.id} category={category} variant="square" />
+            ))}
+          </div>
+        </section>
+
+        {/* ====== FLASH SALE ====== */}
+        <section className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 p-6 text-white sm:p-10">
+          <div className="pointer-events-none absolute inset-0 z-0">
+            <div className="absolute -right-10 -top-10 size-72 rounded-full bg-rose-500/30 blur-3xl" />
+            <div className="absolute -bottom-10 -left-10 size-72 rounded-full bg-amber-500/30 blur-3xl" />
+          </div>
+
+          <div className="relative mb-8 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <span className="grid size-14 place-items-center rounded-2xl bg-linear-to-r from-rose-500 via-pink-500 to-orange-500 shadow-[0_15px_40px_-5px_rgba(244,63,94,0.5)]">
+                <Flame className="size-7" />
+              </span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-rose-300">
+                  {translate('home.flashSale.limited')}
+                </p>
+                <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+                  {translate('home.flashSale.title')}
+                </h2>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <CountdownBox label={translate('home.flashSale.countdown.hours')} value="12" />
+              <Colon />
+              <CountdownBox label={translate('home.flashSale.countdown.minutes')} value="34" />
+              <Colon />
+              <CountdownBox label={translate('home.flashSale.countdown.seconds')} value="56" />
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <CountdownBox label={t('home.flashSale.countdown.hours')} value="12" />
-            <Colon />
-            <CountdownBox label={t('home.flashSale.countdown.minutes')} value="34" />
-            <Colon />
-            <CountdownBox label={t('home.flashSale.countdown.seconds')} value="56" />
+          <div className="relative grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {flashSale.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
           </div>
-        </div>
+        </section>
 
-        <div className="relative grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {flashSale.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
+        {/* ====== FEATURED PRODUCTS ====== */}
+        <section>
+          <SectionHeading
+            eyebrow={translate('home.featured.eyebrow')}
+            title={translate('home.featured.title')}
+            subtitle={translate('home.featured.subtitle')}
+            ctaLabel={translate('home.featured.viewAll')}
+            ctaTo={PATHS.PRODUCTS}
+          />
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            {featured.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
 
-      {/* ====== FEATURED PRODUCTS ====== */}
-      <section>
-        <SectionHeading
-          eyebrow={t('home.featured.eyebrow')}
-          title={t('home.featured.title')}
-          subtitle={t('home.featured.subtitle')}
-          ctaLabel={t('home.featured.viewAll')}
-          ctaTo={PATHS.PRODUCTS}
-        />
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {featured.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
+        {/* ====== BRANDS ====== */}
+        <section className="customer-panel relative overflow-hidden rounded-[2.5rem] p-10">
+          <p className="text-center text-xs font-bold uppercase tracking-[0.25em] text-slate-400">
+            {translate('home.brands.label')}
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+            {BRANDS.map((brand) => (
+              <span
+                key={brand}
+                className="text-xl font-extrabold tracking-tight text-slate-300 transition-all duration-300 hover:text-gradient hover:scale-110"
+              >
+                {brand}
+              </span>
+            ))}
+          </div>
+        </section>
 
-      {/* ====== BRANDS ====== */}
-      <section className="relative overflow-hidden rounded-[2.5rem] border border-slate-200/60 bg-white p-10">
-        <p className="text-center text-xs font-bold uppercase tracking-[0.25em] text-slate-400">
-          {t('home.brands.label')}
-        </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-          {BRANDS.map((brand) => (
-            <span
-              key={brand}
-              className="text-xl font-extrabold tracking-tight text-slate-300 transition-all duration-300 hover:text-gradient hover:scale-110"
-            >
-              {brand}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      {/* ====== TESTIMONIALS ====== */}
-      <section>
-        <SectionHeading
-          center
-          eyebrow={t('home.testimonials.eyebrow')}
-          title={t('home.testimonials.title')}
-          subtitle={t('home.testimonials.subtitle')}
-        />
-        <div className="grid gap-5 md:grid-cols-3">
-          {TESTIMONIALS.map((entry, idx) => (
-            <article
-              key={entry.name}
-              className={`relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${
-                idx === 1 ? 'md:-translate-y-3' : ''
-              }`}
-            >
-              <div
-                className="absolute -right-10 -top-10 size-32 rounded-full opacity-30 blur-2xl"
-                style={{
-                  background:
-                    idx === 0
-                      ? 'radial-gradient(circle, rgba(217,70,239,0.6), transparent)'
-                      : idx === 1
-                      ? 'radial-gradient(circle, rgba(34,211,238,0.6), transparent)'
-                      : 'radial-gradient(circle, rgba(251,146,60,0.6), transparent)',
-                }}
-              />
-              <div className="relative">
-                <StarRating value={5} size={16} />
-                <p className="mt-4 text-base font-medium leading-relaxed text-slate-700">
-                  "{entry.quote}"
-                </p>
-                <div className="mt-6 flex items-center gap-3">
-                  <img
-                    src={entry.avatar}
-                    alt={entry.name}
-                    className="size-11 rounded-2xl object-cover ring-2 ring-white"
-                  />
-                  <div>
-                    <p className="text-sm font-bold text-slate-900">{entry.name}</p>
-                    <p className="text-xs text-slate-500">{t(entry.roleKey)}</p>
+        {/* ====== TESTIMONIALS ====== */}
+        <section>
+          <SectionHeading
+            center
+            eyebrow={translate('home.testimonials.eyebrow')}
+            title={translate('home.testimonials.title')}
+            subtitle={translate('home.testimonials.subtitle')}
+          />
+          <div className="grid gap-5 md:grid-cols-3">
+            {TESTIMONIALS.map((entry, idx) => (
+              <article
+                key={entry.name}
+                className={`customer-panel relative overflow-hidden rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${
+                  idx === 1 ? 'md:-translate-y-3' : ''
+                }`}
+              >
+                <div
+                  className="absolute -right-10 -top-10 size-32 rounded-full opacity-30 blur-2xl"
+                  style={{
+                    background:
+                      idx === 0
+                        ? 'radial-gradient(circle, rgba(217,70,239,0.6), transparent)'
+                        : idx === 1
+                        ? 'radial-gradient(circle, rgba(34,211,238,0.6), transparent)'
+                        : 'radial-gradient(circle, rgba(251,146,60,0.6), transparent)',
+                  }}
+                />
+                <div className="relative">
+                  <StarRating value={5} size={16} />
+                  <p className="mt-4 text-base font-medium leading-relaxed text-slate-700">
+                    "{entry.quote}"
+                  </p>
+                  <div className="mt-6 flex items-center gap-3">
+                    <img
+                      src={entry.avatar}
+                      alt={entry.name}
+                      className="size-11 rounded-2xl object-cover ring-2 ring-white"
+                    />
+                    <div>
+                      <p className="text-sm font-bold text-slate-900">{entry.name}</p>
+                      <p className="text-xs text-slate-500">{translate(entry.roleKey)}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-    </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </>
   )
 }
 
@@ -392,7 +425,7 @@ function SectionHeading({
     >
       <div>
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-gradient">{eyebrow}</p>
-        <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+        <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 customer-section-title sm:text-4xl">
           {title}
         </h2>
         <p className="mt-2 text-sm text-slate-500 sm:text-base">{subtitle}</p>

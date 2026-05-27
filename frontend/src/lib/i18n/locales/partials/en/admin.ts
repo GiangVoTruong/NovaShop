@@ -2,6 +2,7 @@ export const admin = {
   sidebar: {
     brand: 'NovaAdmin',
     tagline: 'Control panel',
+    viewStore: 'View store',
     proTitle: 'NovaShop Pro',
     proDescription: 'Enterprise plan — unlimited products & advanced reports.',
   },
@@ -16,6 +17,10 @@ export const admin = {
     userRole: 'Super admin',
   },
   nav: {
+    sectionOverview: 'Overview',
+    sectionCatalog: 'Management',
+    sectionMarketing: 'Marketing',
+    sectionSystem: 'System',
     dashboard: 'Dashboard',
     products: 'Products',
     orders: 'Orders',
