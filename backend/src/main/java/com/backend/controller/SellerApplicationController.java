@@ -20,6 +20,7 @@ import com.backend.dto.sellers.GetSellerApplicationResponseDto;
 import com.backend.dto.sellers.ReviewSellerApplicationRequestDto;
 import com.backend.service.SellerApplicationService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -31,23 +32,35 @@ public class SellerApplicationController {
     private final SellerApplicationService sellerApplicationService;
 
     @PostMapping
+    @Operation(
+            summary = "Gửi đơn đăng ký seller",
+            description = "Tạo mới đơn đăng ký trở thành seller cho người dùng hiện tại.")
     public ResponseEntity<ApiResponse<GetSellerApplicationResponseDto>> apply(
             @Valid @RequestBody CreateSellerApplicationRequestDto request) {
         return ApiResponses.created(sellerApplicationService.apply(request), "Gửi đơn đăng ký seller thành công");
     }
 
     @GetMapping("/mine")
+    @Operation(
+            summary = "Lấy đơn đăng ký seller của tôi",
+            description = "Trả về đơn đăng ký seller hiện tại của người dùng đang đăng nhập.")
     public ResponseEntity<ApiResponse<GetSellerApplicationResponseDto>> getMyApplication() {
         return ApiResponses.ok(sellerApplicationService.getMyApplication(), "Lấy đơn đăng ký thành công");
     }
 
     @GetMapping
+    @Operation(
+            summary = "Lấy danh sách đơn đăng ký seller",
+            description = "Trả về danh sách đơn đăng ký seller, có thể lọc theo trạng thái.")
     public ResponseEntity<ApiResponse<List<GetSellerApplicationResponseDto>>> listApplications(
             @RequestParam(required = false) String status) {
         return ApiResponses.ok(sellerApplicationService.listApplications(status), "Lấy danh sách đơn đăng ký thành công");
     }
 
     @PutMapping("/{id}/review")
+    @Operation(
+            summary = "Duyệt hoặc từ chối đơn seller",
+            description = "Admin/Seller manager cập nhật kết quả review cho đơn đăng ký seller theo ID.")
     public ResponseEntity<ApiResponse<GetSellerApplicationResponseDto>> reviewApplication(
             @PathVariable UUID id,
             @Valid @RequestBody ReviewSellerApplicationRequestDto request) {

@@ -19,6 +19,7 @@ import com.backend.dto.common.ApiResponse;
 import com.backend.dto.common.ApiResponses;
 import com.backend.service.CartService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -30,16 +31,25 @@ public class CartController {
     private final CartService cartService;
 
     @GetMapping
+    @Operation(
+            summary = "Lấy giỏ hàng của tôi",
+            description = "Trả về giỏ hàng hiện tại của người dùng đang đăng nhập.")
     public ResponseEntity<ApiResponse<GetCartResponseDto>> getMyCart() {
         return ApiResponses.ok(cartService.getMyCart(), "Lấy giỏ hàng thành công");
     }
 
     @PostMapping("/items")
+    @Operation(
+            summary = "Thêm sản phẩm vào giỏ hàng",
+            description = "Thêm một sản phẩm vào giỏ hàng hoặc tăng số lượng nếu sản phẩm đã tồn tại.")
     public ResponseEntity<ApiResponse<GetCartResponseDto>> addItem(@Valid @RequestBody AddCartItemRequestDto request) {
         return ApiResponses.ok(cartService.addItem(request), "Thêm sản phẩm vào giỏ hàng thành công");
     }
 
     @PutMapping("/items/{itemId}")
+    @Operation(
+            summary = "Cập nhật mục trong giỏ hàng",
+            description = "Cập nhật số lượng hoặc thông tin cần thiết của một item trong giỏ hàng theo item ID.")
     public ResponseEntity<ApiResponse<GetCartResponseDto>> updateItem(
             @PathVariable UUID itemId,
             @Valid @RequestBody UpdateCartItemRequestDto request) {
@@ -47,6 +57,9 @@ public class CartController {
     }
 
     @DeleteMapping("/items/{itemId}")
+    @Operation(
+            summary = "Xóa mục khỏi giỏ hàng",
+            description = "Xóa một sản phẩm khỏi giỏ hàng theo item ID.")
     public ResponseEntity<ApiResponse<GetCartResponseDto>> removeItem(@PathVariable UUID itemId) {
         return ApiResponses.ok(cartService.removeItem(itemId), "Xóa sản phẩm khỏi giỏ hàng thành công");
     }

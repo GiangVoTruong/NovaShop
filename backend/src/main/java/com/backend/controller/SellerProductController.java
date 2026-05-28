@@ -16,6 +16,7 @@ import com.backend.security.SecurityUtils;
 import com.backend.service.ProductService;
 import com.backend.util.PaginationUtils;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -26,6 +27,9 @@ public class SellerProductController {
     private final ProductService productService;
 
     @GetMapping
+    @Operation(
+            summary = "Lấy sản phẩm của người bán hiện tại",
+            description = "Trả về danh sách sản phẩm thuộc seller đang đăng nhập, có hỗ trợ phân trang và sắp xếp.")
     public ResponseEntity<ApiResponse<List<GetProductResponseDto>>> getMyProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
