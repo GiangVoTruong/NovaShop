@@ -22,6 +22,7 @@ import com.backend.service.ProductService;
 import com.backend.util.PaginationUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
+@Tag(name = "products")
 public class ProductController {
 
     private final ProductService productService;
@@ -98,3 +100,4 @@ public class ProductController {
         return ApiResponses.okMessage("Xóa sản phẩm thành công");
     }
 }
+

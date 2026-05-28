@@ -22,12 +22,14 @@ import com.backend.service.PermissionService;
 import com.backend.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "users")
 public class UserController {
 
     private final UserService userService;
@@ -85,3 +87,4 @@ public class UserController {
                 "Cập nhật quyền người dùng thành công");
     }
 }
+

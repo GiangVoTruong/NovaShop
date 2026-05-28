@@ -20,12 +20,14 @@ import com.backend.dto.common.ApiResponses;
 import com.backend.service.CartService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
+@Tag(name = "cart")
 public class CartController {
 
     private final CartService cartService;
@@ -64,3 +66,4 @@ public class CartController {
         return ApiResponses.ok(cartService.removeItem(itemId), "Xóa sản phẩm khỏi giỏ hàng thành công");
     }
 }
+

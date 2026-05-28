@@ -20,12 +20,14 @@ import com.backend.dto.orders.UpdateOrderStatusRequestDto;
 import com.backend.service.OrderService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
+@Tag(name = "orders")
 public class OrderController {
 
     private final OrderService orderService;
@@ -72,3 +74,4 @@ public class OrderController {
         return ApiResponses.ok(orderService.updateOrderStatus(id, request), "Cập nhật trạng thái đơn hàng thành công");
     }
 }
+

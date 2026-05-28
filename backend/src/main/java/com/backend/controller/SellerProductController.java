@@ -17,11 +17,13 @@ import com.backend.service.ProductService;
 import com.backend.util.PaginationUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/seller/products")
 @RequiredArgsConstructor
+@Tag(name = "seller-products")
 public class SellerProductController {
 
     private final ProductService productService;
@@ -42,3 +44,4 @@ public class SellerProductController {
                 "Lấy dữ liệu thành công");
     }
 }
+

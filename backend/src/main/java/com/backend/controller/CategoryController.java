@@ -13,6 +13,7 @@ import com.backend.dto.common.ApiResponses;
 import com.backend.service.ProductService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
 @SecurityRequirements
+@Tag(name = "categories")
 public class CategoryController {
 
     private final ProductService productService;
@@ -32,3 +34,4 @@ public class CategoryController {
         return ApiResponses.ok(productService.getAllCategories(), "Lấy danh mục thành công");
     }
 }
+

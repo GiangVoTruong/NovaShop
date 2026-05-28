@@ -18,6 +18,7 @@ import com.backend.dto.common.ApiResponses;
 import com.backend.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @SecurityRequirements
+@Tag(name = "auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -71,3 +73,4 @@ public class AuthController {
         return ApiResponses.okMessage("Verification code sent successfully");
     }
 }
+

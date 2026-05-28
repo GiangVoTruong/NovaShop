@@ -21,12 +21,14 @@ import com.backend.dto.sellers.ReviewSellerApplicationRequestDto;
 import com.backend.service.SellerApplicationService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/seller-applications")
 @RequiredArgsConstructor
+@Tag(name = "seller-applications")
 public class SellerApplicationController {
 
     private final SellerApplicationService sellerApplicationService;
@@ -67,3 +69,4 @@ public class SellerApplicationController {
         return ApiResponses.ok(sellerApplicationService.reviewApplication(id, request), "Duyệt đơn đăng ký thành công");
     }
 }
+

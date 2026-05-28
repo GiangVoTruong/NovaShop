@@ -13,11 +13,13 @@ import com.backend.dto.permissions.GetPermissionResponseDto;
 import com.backend.service.PermissionService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/permissions")
 @RequiredArgsConstructor
+@Tag(name = "permissions")
 public class PermissionController {
 
     private final PermissionService permissionService;
@@ -30,3 +32,4 @@ public class PermissionController {
         return ApiResponses.ok(permissionService.getAllPermissions(), "Lấy danh sách quyền thành công");
     }
 }
+
