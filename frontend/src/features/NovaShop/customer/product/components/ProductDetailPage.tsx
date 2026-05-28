@@ -1,22 +1,19 @@
 import { formatCurrency } from '@/features/NovaShop/shared/format'
-import { useShop } from '@/features/NovaShop/shared/store/useShop'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import StarRating from '@/features/NovaShop/shared/ui/StarRating'
 import { CategoryTag } from '@/features/NovaShop/shared/ui/StatusBadge'
 import { cx } from '@/features/NovaShop/shared/ui/cx'
 import { PATHS } from '@/router/paths'
-import { message, Spin } from 'antd'
+import { Spin } from 'antd'
 import {
   ArrowLeft,
   CheckCircle2,
   ChevronRight,
-  Heart,
   Minus,
   Plus,
   RotateCcw,
   Share2,
   ShieldCheck,
-  Sparkles,
   Truck,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -32,7 +29,6 @@ import {
   getProductListPrice,
   getProductRating,
   getProductSalePrice,
-  isProductOutOfStock,
 } from '../../catalog/lib/productApi'
 import ProductCard from './ProductCard'
 
@@ -78,12 +74,11 @@ export default function ProductDetailPage() {
     sortKey: 'popular',
     enabled: Boolean(productCategorySlug),
   })
-  const { addToCart, toggleWishlist, isWished } = useShop()
   const [activeImage, setActiveImage] = useState<number>(0)
   const [quantity, setQuantity] = useState<number>(1)
 
   const related = product
-    ? (relatedQuery.data?.items ?? []).filter((entry) => entry.id !== product.id).slice(0, 4)
+    ? (relatedQuery.data?.data ?? []).filter((entry) => entry.id !== product.id).slice(0, 4)
     : []
 
   if (productQuery.isLoading) {
@@ -108,23 +103,11 @@ export default function ProductDetailPage() {
     )
   }
 
-  const wished = isWished(product.id)
   const images = getProductImages(product)
   const salePrice = getProductSalePrice(product)
   const listPrice = getProductListPrice(product)
   const discount = getProductDiscountPercent(product)
-  const outOfStock = isProductOutOfStock(product)
   const stock = product.stock ?? 0
-
-  const handleAddToCart = async () => {
-    await addToCart(product.id, quantity)
-    message.success(translate('product.detail.messages.addedToCart'))
-  }
-
-  const handleBuyNow = async () => {
-    await addToCart(product.id, quantity)
-    navigate(PATHS.CHECKOUT)
-  }
 
   return (
     <div className="mx-auto max-w-[1440px] space-y-16 px-4 py-8 sm:px-6 lg:px-10 xl:px-14">
@@ -250,32 +233,9 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              size="lg"
-              fullWidth
-              glow
-              onClick={handleAddToCart}
-              disabled={outOfStock}
-              leftIcon={<Sparkles className="size-4" />}
-            >
-              {translate('product.detail.addToCart')}
+            <Button size="lg" variant="dark" fullWidth onClick={() => navigate(PATHS.PRODUCTS)}>
+              {translate('product.detail.backToList')}
             </Button>
-            <Button size="lg" variant="dark" fullWidth onClick={handleBuyNow} disabled={outOfStock}>
-              {translate('product.detail.buyNow')}
-            </Button>
-            <button
-              type="button"
-              onClick={() => toggleWishlist(product.id)}
-              className={cx(
-                'grid h-13 w-13 shrink-0 place-items-center rounded-2xl border-2 transition-all',
-                wished
-                  ? 'border-transparent bg-linear-to-br from-rose-500 to-pink-500 text-white shadow-lg shadow-pink-500/40'
-                  : 'border-slate-200 bg-white text-slate-600 hover:border-rose-300 hover:text-rose-500',
-              )}
-              aria-label={translate('product.detail.wishlist')}
-            >
-              <Heart className={cx('size-5', wished && 'fill-white')} />
-            </button>
             <button
               type="button"
               className="grid h-13 w-13 shrink-0 place-items-center rounded-2xl border-2 border-slate-200 bg-white text-slate-600 hover:border-slate-900"

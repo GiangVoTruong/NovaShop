@@ -50,6 +50,9 @@ export const vi = {
     resendOtp: 'Gửi lại mã',
     resendOtpIn: 'Gửi lại sau {{seconds}}s',
     otpResent: 'Đã gửi lại mã OTP',
+    verificationEmailResent:
+      'Email chưa được xác minh. Mã OTP mới đã được gửi đến hộp thư của bạn.',
+    backToLogin: 'Quay lại đăng nhập',
     wrongEmail: 'Email không đúng?',
     registerAgain: 'Đăng ký lại',
     loginNow: 'Đăng nhập ngay',

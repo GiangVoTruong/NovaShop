@@ -6,6 +6,7 @@ import type { ComponentType, ReactNode } from 'react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
+import { isEmailNotVerifiedError } from '../lib/authErrors'
 import useLogin from '../hooks/useLogin'
 
 export default function LoginPage() {
@@ -25,17 +26,28 @@ export default function LoginPage() {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
 
+    const email = String(formData.get('email') ?? '').trim()
+    const password = String(formData.get('password') ?? '')
+
     loginMutation.mutate(
-      {
-        email: String(formData.get('email') ?? '').trim(),
-        password: String(formData.get('password') ?? ''),
-      },
+      { email, password },
       {
         onSuccess: () => {
           message.success(translate('auth.loginSuccess'))
           const redirectTo =
             (location.state as { from?: string } | null)?.from ?? PATHS.HOME
           navigate(redirectTo, { replace: true })
+        },
+        onError: (error) => {
+          if (!isEmailNotVerifiedError(error)) {
+            return
+          }
+
+          message.info(translate('auth.verificationEmailResent'))
+          navigate(PATHS.VERIFY_EMAIL, {
+            replace: true,
+            state: { email, fromLogin: true },
+          })
         },
       },
     )

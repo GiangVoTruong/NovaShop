@@ -1,10 +1,11 @@
 import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
-import { useShop } from '@/features/NovaShop/shared/store/useShop'
 import { cx } from '@/features/NovaShop/shared/ui/cx'
 import LanguageSwitcher from '@/lib/i18n/LanguageSwitcher'
 import { PATHS } from '@/router/paths'
-import { Drawer } from 'antd'
+import type { MenuProps } from 'antd'
+import { Drawer, Dropdown } from 'antd'
 import {
+  ChevronDown,
   Heart,
   LogOut,
   Menu,
@@ -22,10 +23,10 @@ import { CUSTOMER_NAV_LINKS } from '../constants/layout.constants'
 export default function CustomerHeader() {
   const { t: translate } = useTranslation()
   const navigate = useNavigate()
-  const { cartCount, wishlistCount } = useShop()
   const { user, isAuthenticated, logout } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 16)
@@ -33,6 +34,32 @@ export default function CustomerHeader() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  const displayName = user?.fullName?.split(' ')[0] ?? translate('nav.profile')
+
+  const handleLogout = () => {
+    logout()
+    navigate(PATHS.HOME)
+  }
+
+  const userMenuItems: MenuProps['items'] = [
+    {
+      key: 'profile',
+      icon: <User className="size-4" />,
+      label: (
+        <Link to={PATHS.PROFILE} className="font-medium text-slate-800">
+          {translate('nav.profile')}
+        </Link>
+      ),
+    },
+    { type: 'divider' },
+    {
+      key: 'logout',
+      label: translate('auth.logout'),
+      icon: <LogOut className="size-4" />,
+      danger: true,
+    },
+  ]
 
   return (
     <header
@@ -112,11 +139,6 @@ export default function CustomerHeader() {
                 aria-label={translate('nav.wishlist')}
               >
                 <Heart className="size-5" />
-                {wishlistCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 grid size-[18px] place-items-center rounded-full bg-linear-to-r from-rose-500 to-pink-500 text-[10px] font-bold text-white ring-2 ring-white">
-                    {wishlistCount}
-                  </span>
-                )}
               </Link>
               <Link
                 to={PATHS.CART}
@@ -124,40 +146,69 @@ export default function CustomerHeader() {
                 aria-label={translate('nav.cart')}
               >
                 <ShoppingCart className="size-5" />
-                {cartCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 grid size-[18px] place-items-center rounded-full bg-linear-to-r from-fuchsia-500 to-purple-500 text-[10px] font-bold text-white ring-2 ring-white">
-                    {cartCount}
-                  </span>
-                )}
-              </Link>
-              <Link
-                to={isAuthenticated ? PATHS.PROFILE : PATHS.LOGIN}
-                className="hidden h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-slate-200/80 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:border-fuchsia-300 hover:text-fuchsia-600 lg:inline-flex"
-              >
-                <User className="size-4 shrink-0" />
-                {isAuthenticated
-                  ? user?.fullName?.split(' ')[0] ?? translate('nav.profile')
-                  : translate('auth.login')}
               </Link>
               {isAuthenticated ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    logout()
-                    navigate(PATHS.HOME)
+                <Dropdown
+                  open={userMenuOpen}
+                  onOpenChange={setUserMenuOpen}
+                  menu={{
+                    items: userMenuItems,
+                    className:
+                      'min-w-[200px] !rounded-2xl !p-1.5 !shadow-[0_16px_40px_-12px_rgba(15,23,42,0.2)]',
+                    onClick: ({ key }) => {
+                      if (key === 'logout') {
+                        handleLogout()
+                      }
+                      setUserMenuOpen(false)
+                    },
                   }}
-                  className="hidden h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-slate-200/80 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-600 lg:inline-flex"
+                  trigger={['click']}
+                  placement="bottomRight"
+                  arrow={{ pointAtCenter: true }}
                 >
-                  <LogOut className="size-4 shrink-0" />
-                  {translate('auth.logout')}
-                </button>
+                  <button
+                    type="button"
+                    aria-haspopup="menu"
+                    aria-expanded={userMenuOpen}
+                    aria-label={translate('nav.profile')}
+                    className={cx(
+                      'group hidden h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border py-1 pl-1 pr-2.5 text-sm font-semibold transition-all duration-200 lg:inline-flex',
+                      userMenuOpen
+                        ? 'border-fuchsia-300 bg-fuchsia-50/80 text-fuchsia-800 shadow-[0_6px_20px_-6px_rgba(217,70,239,0.45)]'
+                        : 'border-fuchsia-100/90 bg-linear-to-r from-white to-fuchsia-50/40 text-slate-800 shadow-[0_2px_12px_-4px_rgba(217,70,239,0.2)] hover:border-fuchsia-200 hover:shadow-[0_6px_20px_-6px_rgba(217,70,239,0.35)]',
+                    )}
+                  >
+                    <span
+                      className="grid size-8 shrink-0 place-items-center rounded-full bg-linear-to-br from-fuchsia-500 via-purple-500 to-indigo-500 text-xs font-bold tracking-tight text-white ring-2 ring-white"
+                      aria-hidden
+                    >
+                      {getUserInitials(user?.fullName)}
+                    </span>
+                    <span className="max-w-22 truncate">{displayName}</span>
+                    <ChevronDown
+                      className={cx(
+                        'size-4 shrink-0 text-slate-400 transition-transform duration-200 group-hover:text-fuchsia-600',
+                        userMenuOpen && 'rotate-180 text-fuchsia-600',
+                      )}
+                    />
+                  </button>
+                </Dropdown>
               ) : (
-                <Link
-                  to={PATHS.REGISTER}
-                  className="hidden h-10 shrink-0 items-center whitespace-nowrap rounded-xl bg-linear-to-r from-fuchsia-500 via-purple-500 to-indigo-500 px-3.5 text-sm font-semibold text-white shadow-[0_8px_24px_-10px_rgba(217,70,239,0.55)] transition hover:brightness-105 active:scale-[0.98] lg:inline-flex"
-                >
-                  {translate('auth.register')}
-                </Link>
+                <>
+                  <Link
+                    to={PATHS.LOGIN}
+                    className="hidden h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-slate-200/80 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:border-fuchsia-300 hover:text-fuchsia-600 lg:inline-flex"
+                  >
+                    <User className="size-4 shrink-0" />
+                    {translate('auth.login')}
+                  </Link>
+                  <Link
+                    to={PATHS.REGISTER}
+                    className="hidden h-10 shrink-0 items-center whitespace-nowrap rounded-xl bg-linear-to-r from-fuchsia-500 via-purple-500 to-indigo-500 px-3.5 text-sm font-semibold text-white shadow-[0_8px_24px_-10px_rgba(217,70,239,0.55)] transition hover:brightness-105 active:scale-[0.98] lg:inline-flex"
+                  >
+                    {translate('auth.register')}
+                  </Link>
+                </>
               )}
             </div>
           </div>
@@ -218,9 +269,8 @@ export default function CustomerHeader() {
                 <button
                   type="button"
                   onClick={() => {
-                    logout()
                     setMobileOpen(false)
-                    navigate(PATHS.HOME)
+                    handleLogout()
                   }}
                   className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-center text-sm font-semibold text-rose-600"
                 >
@@ -250,4 +300,19 @@ export default function CustomerHeader() {
       </Drawer>
     </header>
   )
+}
+
+function getUserInitials(fullName: string | undefined): string {
+  if (!fullName?.trim()) {
+    return '?'
+  }
+
+  const nameParts = fullName.trim().split(/\s+/)
+  if (nameParts.length === 1) {
+    return nameParts[0].slice(0, 2).toUpperCase()
+  }
+
+  const firstInitial = nameParts[0][0] ?? ''
+  const lastInitial = nameParts[nameParts.length - 1][0] ?? ''
+  return `${firstInitial}${lastInitial}`.toUpperCase()
 }

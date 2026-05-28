@@ -3,6 +3,7 @@ import i18n from 'i18next'
 
 import type { ApiErrorBody } from '@/types/api.types'
 import type { AuthLoginResponse } from '@/types/auth.types'
+import type { ApiResponse } from '@/types/product.types'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || '/api'
 
@@ -71,7 +72,7 @@ async function refreshAccessToken(): Promise<AuthLoginResponse> {
     throw new Error('Missing refresh token')
   }
 
-  const { data } = await axios.post<AuthLoginResponse>(
+  const { data } = await axios.post<ApiResponse<AuthLoginResponse>>(
     `${apiBaseUrl}/auth/refresh`,
     { refreshToken },
     {
@@ -82,8 +83,11 @@ async function refreshAccessToken(): Promise<AuthLoginResponse> {
     },
   )
 
-  setTokens(data.accessToken, data.refreshToken)
-  return data
+  if (!data.success || !data.data) {
+    throw new Error(data.message || 'Token refresh failed')
+  }
+  setTokens(data.data.accessToken, data.data.refreshToken)
+  return data.data
 }
 
 axiosInstance.interceptors.response.use(
@@ -93,11 +97,16 @@ axiosInstance.interceptors.response.use(
       console.error('[API]', error.config?.url, error.response?.status, error.response?.data)
 
       const originalRequest = error.config
-      const isUnauthorized = error.response?.status === 401
+      const status = error.response?.status
+      const isAuthRoute = originalRequest?.url?.includes('/auth/')
       const isRefreshRequest = originalRequest?.url?.includes('/auth/refresh')
       const alreadyRetried = originalRequest?._retry
+      // Spring Security trả 403 (không phải 401) khi thiếu JWT / access token hết hạn
+      const shouldRefreshSession =
+        (status === 401 || (status === 403 && !isAuthRoute)) &&
+        Boolean(getRefreshToken())
 
-      if (isUnauthorized && originalRequest && !isRefreshRequest && !alreadyRetried) {
+      if (shouldRefreshSession && originalRequest && !isRefreshRequest && !alreadyRetried) {
         originalRequest._retry = true
 
         try {

@@ -50,6 +50,9 @@ export const en = {
     resendOtp: 'Resend code',
     resendOtpIn: 'Resend in {{seconds}}s',
     otpResent: 'Verification code resent',
+    verificationEmailResent:
+      'Email not verified yet. A new verification code has been sent to your inbox.',
+    backToLogin: 'Back to sign in',
     wrongEmail: 'Wrong email?',
     registerAgain: 'Register again',
     loginNow: 'Sign in now',

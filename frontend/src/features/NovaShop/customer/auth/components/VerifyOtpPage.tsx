@@ -12,13 +12,16 @@ const RESEND_COOLDOWN_SECONDS = 60
 
 type VerifyEmailLocationState = {
   email?: string
+  fromLogin?: boolean
 }
 
 export default function VerifyOtpPage() {
   const { t: translate } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
-  const email = (location.state as VerifyEmailLocationState | null)?.email ?? ''
+  const locationState = location.state as VerifyEmailLocationState | null
+  const email = locationState?.email ?? ''
+  const fromLogin = locationState?.fromLogin === true
   const verifyEmailMutation = useVerifyEmail()
   const resendMutation = useResendVerification()
   const [otp, setOtp] = useState('')
@@ -26,9 +29,9 @@ export default function VerifyOtpPage() {
 
   useEffect(() => {
     if (!email) {
-      navigate(PATHS.REGISTER, { replace: true })
+      navigate(fromLogin ? PATHS.LOGIN : PATHS.REGISTER, { replace: true })
     }
-  }, [email, navigate])
+  }, [email, fromLogin, navigate])
 
   useEffect(() => {
     if (cooldownSeconds <= 0) {
@@ -159,8 +162,11 @@ export default function VerifyOtpPage() {
 
           <p className="mt-4 text-center text-sm text-slate-600">
             {translate('auth.wrongEmail')}{' '}
-            <Link to={PATHS.REGISTER} className="font-bold text-gradient hover:underline">
-              {translate('auth.registerAgain')}
+            <Link
+              to={fromLogin ? PATHS.LOGIN : PATHS.REGISTER}
+              className="font-bold text-gradient hover:underline"
+            >
+              {fromLogin ? translate('auth.backToLogin') : translate('auth.registerAgain')}
             </Link>
           </p>
         </div>

@@ -1,6 +1,5 @@
 import { axiosInstance } from '@/lib/axios/instances'
-import type { ApiCartResponse } from '@/types/cart.types'
-import type { AddCartItemRequest, UpdateCartItemRequest } from '@/types/cart.types'
+import type { AddCartItemRequest, ApiCartResponse, UpdateCartItemRequest } from '@/types/cart.types'
 
 const cartService = {
   getCart: async (): Promise<ApiCartResponse> => {
@@ -13,14 +12,8 @@ const cartService = {
     return data
   },
 
-  updateItem: async (
-    itemId: string,
-    request: UpdateCartItemRequest,
-  ): Promise<ApiCartResponse> => {
-    const { data } = await axiosInstance.put<ApiCartResponse>(
-      `/cart/items/${itemId}`,
-      request,
-    )
+  updateItem: async (itemId: string, request: UpdateCartItemRequest): Promise<ApiCartResponse> => {
+    const { data } = await axiosInstance.put<ApiCartResponse>(`/cart/items/${itemId}`, request)
     return data
   },
 

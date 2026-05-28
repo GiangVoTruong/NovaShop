@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { productDetailPath } from '@/router/paths'
-import { Heart, ShoppingCart, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useCategories } from '../../catalog/hooks/useCategories'
@@ -18,7 +18,6 @@ import {
   isProductOutOfStock,
 } from '../../catalog/lib/productApi'
 import { formatCurrency } from '@/features/NovaShop/shared/format'
-import { useShop } from '@/features/NovaShop/shared/store/useShop'
 import type { ApiProductResponse } from '@/types/product.types'
 import StarRating from '@/features/NovaShop/shared/ui/StarRating'
 import { CategoryTag } from '@/features/NovaShop/shared/ui/StatusBadge'
@@ -30,14 +29,12 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { t: translate } = useTranslation()
-  const { addToCart, toggleWishlist, isWished } = useShop()
   const categoriesQuery = useCategories()
   const categorySlugById = useMemo(
     () => buildCategorySlugMap(categoriesQuery.data ?? []),
     [categoriesQuery.data],
   )
 
-  const wished = isWished(product.id)
   const discount = getProductDiscountPercent(product)
   const isHot = isProductHot(product)
   const outOfStock = isProductOutOfStock(product)
@@ -83,37 +80,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={(event) => {
-            event.preventDefault()
-            toggleWishlist(product.id)
-          }}
-          aria-label={
-            wished ? translate('product.card.removeFromWishlist') : translate('product.card.addToWishlist')
-          }
-          className={cx(
-            'absolute right-3 top-3 grid size-10 place-items-center rounded-full transition-all duration-200',
-            wished
-              ? 'bg-linear-to-br from-rose-500 to-pink-500 text-white shadow-lg shadow-pink-500/35'
-              : 'bg-white/90 text-slate-700 hover:scale-105 hover:bg-white',
-          )}
-        >
-          <Heart className={cx('size-4', wished && 'fill-white')} />
-        </button>
-
-        <button
-          type="button"
-          disabled={outOfStock}
-          onClick={(event) => {
-            event.preventDefault()
-            addToCart(product.id)
-          }}
-          className="absolute inset-x-3 bottom-3 flex h-11 translate-y-14 items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-fuchsia-500 via-purple-500 to-indigo-500 text-sm font-semibold text-white opacity-0 shadow-[0_10px_30px_-5px_rgba(217,70,239,0.55)] transition-all duration-300 group-hover/card:translate-y-0 group-hover/card:opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <ShoppingCart className="size-4" />
-          {translate('product.card.addToCart')}
-        </button>
       </Link>
 
       <div className="flex flex-1 flex-col gap-2 p-4">

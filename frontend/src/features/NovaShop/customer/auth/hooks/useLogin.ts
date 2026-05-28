@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query'
 import { message } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { getApiErrorMessage } from '@/lib/axios/instances'
+import { isEmailNotVerifiedError } from '../lib/authErrors'
 import authService from '../services/authService'
 import { useAuth } from './useAuth'
 
@@ -20,6 +21,9 @@ export default function useLogin() {
       })
     },
     onError: (error) => {
+      if (isEmailNotVerifiedError(error)) {
+        return
+      }
       message.error(getApiErrorMessage(error, translate('common.error')))
     },
   })
