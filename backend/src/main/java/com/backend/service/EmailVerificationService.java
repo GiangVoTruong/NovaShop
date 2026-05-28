@@ -90,8 +90,22 @@ public class EmailVerificationService {
     @Transactional
     public void resendVerification(String email) {
         User user = requireUnverifiedUser(email);
+        resendVerificationForUser(user);
+    }
 
-        emailVerificationRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId())
+    /**
+     * Gửi lại OTP cho user chưa xác thực (đăng nhập lại, resend thủ công, …).
+     * Tuân thủ cooldown giữa các lần gửi.
+     */
+    @Transactional
+    public void resendVerificationForUser(User user) {
+        assertNotVerified(user);
+        assertResendCooldown(user.getId());
+        sendVerificationForUser(user);
+    }
+
+    private void assertResendCooldown(UUID userId) {
+        emailVerificationRepository.findFirstByUserIdOrderByCreatedAtDesc(userId)
                 .ifPresent(latest -> {
                     OffsetDateTime cooldownEndsAt = latest.getCreatedAt()
                             .plus(verificationProperties.getResendCooldown());
@@ -99,8 +113,6 @@ public class EmailVerificationService {
                         throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, RESEND_COOLDOWN);
                     }
                 });
-
-        sendVerificationForUser(user);
     }
 
     private User requireUnverifiedUser(String email) {

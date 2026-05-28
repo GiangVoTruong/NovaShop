@@ -31,7 +31,8 @@ public class AuthService {
     private static final String INVALID_CREDENTIALS = "Invalid email or password";
     private static final String REGISTER_SUCCESS = "Registration successful. Please verify your email with the OTP sent to your inbox.";
     private static final String EMAIL_ALREADY_REGISTERED = "Email already registered";
-    private static final String EMAIL_NOT_VERIFIED = "Email not verified. Please check your inbox.";
+    private static final String EMAIL_NOT_VERIFIED
+            = "Email not verified. A new verification code has been sent to your inbox.";
     private static final String ACCOUNT_DISABLED = "Account is disabled";
     private static final String INVALID_REFRESH_TOKEN = "Invalid refresh token";
 
@@ -82,15 +83,22 @@ public class AuthService {
         return buildAuthResponse(user);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthLoginResponseDto login(AuthLoginRequestDto request) {
         User user = userRepository.findByEmailIgnoreCase(normalizeEmail(request.getEmail()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS));
 
-        assertAccountActive(user);
-
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS);
+        }
+
+        if (user.getEmailVerifiedAt() == null) {
+            emailVerificationService.resendVerificationForUser(user);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, EMAIL_NOT_VERIFIED);
+        }
+
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ACCOUNT_DISABLED);
         }
 
         return buildAuthResponse(user);
