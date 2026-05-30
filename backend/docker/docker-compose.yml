@@ -1,0 +1,13 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: novashop-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - ../.env
+    environment:
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+    restart: unless-stopped
