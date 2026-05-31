@@ -14,8 +14,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'https://novashop-e4ir.onrender.com',
         changeOrigin: true,
+        secure: true,
       },
     },
   },
