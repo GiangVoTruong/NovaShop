@@ -5,7 +5,12 @@ import type { ApiErrorBody } from '@/types/api.types'
 import type { AuthLoginResponse } from '@/types/auth.types'
 import type { ApiResponse } from '@/types/product.types'
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || '/api'
+const defaultApiBaseUrl = import.meta.env.PROD
+  ? 'https://novashop-e4ir.onrender.com/api'
+  : '/api'
+
+const apiBaseUrl =
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || defaultApiBaseUrl
 
 const ACCESS_TOKEN_KEY = 'novashop.accessToken'
 const REFRESH_TOKEN_KEY = 'novashop.refreshToken'

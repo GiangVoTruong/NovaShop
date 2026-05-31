@@ -45,8 +45,10 @@ frontend/skills-lock.json
 # Secrets & local config (không commit bất kỳ file .env*, kể cả .env.example)
 .env
 .env.*
+!frontend/.env.production
 **/.env
 **/.env.*
+!frontend/.env.production
 backend/src/main/resources/application-local.properties
 
 # Database scripts (chạy local / Supabase — không đưa lên GitHub)
