@@ -22,7 +22,7 @@ export default function CustomerLayout() {
       </div>
 
       <CustomerHeader />
-      <main className="relative z-0 flex-1">
+      <main className="relative z-0 min-w-0 flex-1">
         <Outlet />
       </main>
       <CustomerFooter />

@@ -1,37 +1,47 @@
-import { PATHS } from '@/router/paths'
-import { message } from 'antd'
-import { CreditCard, MapPin, Pencil, ShieldCheck } from 'lucide-react'
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 import { CUSTOMERS } from '@/features/NovaShop/shared/data/customers'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import { cx } from '@/features/NovaShop/shared/ui/cx'
+import { PATHS } from '@/router/paths'
+import { message } from 'antd'
+import { CreditCard, LogOut, MapPin, Pencil, ShieldCheck } from 'lucide-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useNavigate } from 'react-router-dom'
 import { PROFILE_TABS } from '../constants/profile.constants'
 
 export default function ProfilePage() {
   const { t: translate } = useTranslation()
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
   const profile = CUSTOMERS[0]
   const [tab, setTab] = useState<string>('profile')
 
+  const handleLogout = () => {
+    logout()
+    navigate(PATHS.HOME)
+  }
+
+  const displayName = user?.fullName ?? profile.name
+
   return (
-    <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 xl:px-14">
-      <header className="relative mb-8 overflow-hidden rounded-3xl bg-linear-to-br from-fuchsia-500 via-purple-600 to-indigo-600 p-8 text-white shadow-[0_30px_60px_-15px_rgba(168,85,247,0.4)]">
+    <div className="mx-auto w-full min-w-0 max-w-[1440px] px-4 py-6 sm:px-6 sm:py-8 lg:px-10 xl:px-14">
+      <header className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-fuchsia-500 via-purple-600 to-indigo-600 p-5 text-white shadow-[0_30px_60px_-15px_rgba(168,85,247,0.4)] sm:mb-8 sm:p-8">
         <div className="absolute -right-10 -top-10 size-72 rounded-full bg-pink-300/30 blur-3xl" />
         <div className="absolute -bottom-10 -left-10 size-80 rounded-full bg-cyan-300/30 blur-3xl" />
 
-        <div className="relative flex flex-wrap items-center gap-5">
+        <div className="relative flex min-w-0 flex-wrap items-center gap-4 sm:gap-5">
           <img
             src={profile.avatar}
             alt={profile.name}
-            className="size-20 rounded-3xl object-cover ring-4 ring-white/40"
+            className="size-16 shrink-0 rounded-3xl object-cover ring-4 ring-white/40 sm:size-20"
           />
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/70">
               {translate('profile.memberBadge')}
             </p>
-            <h1 className="text-3xl font-extrabold tracking-tight">
-              {translate('profile.greeting', { name: profile.name })}
+            <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+              {translate('profile.greeting', { name: displayName })}
             </h1>
             <p className="mt-1 text-sm text-white/80">
               {translate('profile.meta', {
@@ -40,22 +50,37 @@ export default function ProfilePage() {
               })}
             </p>
           </div>
-          <Button variant="white" leftIcon={<Pencil className="size-4" />}>
-            {translate('profile.edit')}
-          </Button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <Button
+              variant="white"
+              leftIcon={<Pencil className="size-4" />}
+              className="w-full sm:w-auto"
+            >
+              {translate('profile.edit')}
+            </Button>
+            <Button
+              type="button"
+              variant="white"
+              leftIcon={<LogOut className="size-4" />}
+              className="w-full text-rose-600 sm:w-auto"
+              onClick={handleLogout}
+            >
+              {translate('auth.logout')}
+            </Button>
+          </div>
         </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-        <aside className="rounded-3xl border border-white/60 bg-white/85 p-3 backdrop-blur-xl lg:sticky lg:top-24 lg:self-start">
-          <nav className="flex flex-row overflow-x-auto lg:flex-col">
+      <div className="grid w-full min-w-0 gap-4 sm:gap-6 lg:grid-cols-[280px_1fr]">
+        <aside className="min-w-0 max-w-full overflow-hidden rounded-3xl border border-white/60 bg-white/85 p-2 backdrop-blur-xl sm:p-3 lg:sticky lg:top-24 lg:self-start">
+          <nav className="flex gap-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-none] lg:flex-col lg:overflow-visible [&::-webkit-scrollbar]:hidden">
             {PROFILE_TABS.map((entry) => (
               <button
                 key={entry.id}
                 type="button"
                 onClick={() => setTab(entry.id)}
                 className={cx(
-                  'flex items-center gap-3 whitespace-nowrap rounded-2xl px-4 py-3 text-sm font-bold transition-colors',
+                  'flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-2xl px-3 py-2.5 text-sm font-bold transition-colors sm:gap-3 sm:px-4 sm:py-3 lg:shrink lg:whitespace-normal',
                   tab === entry.id
                     ? 'bg-slate-900 text-white'
                     : 'text-slate-600 hover:bg-slate-100',
@@ -75,10 +100,10 @@ export default function ProfilePage() {
           </nav>
         </aside>
 
-        <div className="min-w-0">
+        <div className="min-w-0 w-full">
           {tab === 'profile' && <ProfileForm profile={profile} />}
           {tab === 'orders' && (
-            <div className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl">
+            <div className="min-w-0 rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:p-6">
               <h2 className="text-xl font-extrabold tracking-tight">
                 {translate('profile.ordersTab.title')}
               </h2>
@@ -92,7 +117,7 @@ export default function ProfilePage() {
             </div>
           )}
           {tab === 'wishlist' && (
-            <div className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl">
+            <div className="min-w-0 rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:p-6">
               <h2 className="text-xl font-extrabold tracking-tight">
                 {translate('profile.wishlistTab.title')}
               </h2>
@@ -124,30 +149,32 @@ function ProfileForm({ profile }: { profile: (typeof CUSTOMERS)[number] }) {
         event.preventDefault()
         message.success(translate('profile.form.success'))
       }}
-      className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl"
+      className="min-w-0 w-full rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:p-6"
     >
-      <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
+      <h2 className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
         {translate('profile.form.title')}
       </h2>
       <p className="text-sm text-slate-500">{translate('profile.form.subtitle')}</p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
         {[
           { labelKey: 'profile.form.fullName', value: profile.name },
           { labelKey: 'profile.form.email', value: profile.email },
           { labelKey: 'profile.form.phone', value: profile.phone },
           { labelKey: 'profile.form.joinedAt', value: profile.joinedAt },
         ].map((field) => (
-          <div key={field.labelKey}>
-            <p className="mb-1.5 text-sm font-semibold text-slate-700">{translate(field.labelKey)}</p>
+          <div key={field.labelKey} className="min-w-0">
+            <p className="mb-1.5 text-sm font-semibold text-slate-700">
+              {translate(field.labelKey)}
+            </p>
             <input
               defaultValue={field.value}
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
+              className="box-border h-11 w-full min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
             />
           </div>
         ))}
       </div>
-      <Button type="submit" className="mt-6" glow>
+      <Button type="submit" className="mt-6 w-full sm:w-auto" glow>
         {translate('profile.form.save')}
       </Button>
     </form>
@@ -158,8 +185,8 @@ function AddressSection() {
   const { t: translate } = useTranslation()
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="min-w-0 space-y-4">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
           {translate('profile.address.title')}
         </h2>
@@ -179,13 +206,13 @@ function AddressSection() {
       ].map((entry) => (
         <article
           key={entry.nameKey}
-          className="flex items-start justify-between gap-4 rounded-3xl border border-white/60 bg-white/85 p-5 backdrop-blur-xl"
+          className="flex min-w-0 flex-col gap-4 rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:flex-row sm:items-start sm:justify-between sm:p-5"
         >
-          <div className="flex items-start gap-3">
+          <div className="flex min-w-0 items-start gap-3">
             <span className="grid size-10 place-items-center rounded-xl bg-linear-to-br from-emerald-400 to-teal-500 text-white shadow-md">
               <MapPin className="size-5" />
             </span>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <p className="font-bold text-slate-900">{translate(entry.nameKey)}</p>
                 {entry.default && (
@@ -210,8 +237,8 @@ function PaymentSection() {
   const { t: translate } = useTranslation()
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="min-w-0 space-y-4">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
           {translate('profile.payment.title')}
         </h2>
@@ -233,9 +260,9 @@ function PaymentSection() {
       ].map((card) => (
         <article
           key={card.last4}
-          className="relative flex items-center justify-between overflow-hidden rounded-3xl border border-white/60 bg-white/85 p-5 backdrop-blur-xl"
+          className="relative flex min-w-0 flex-col gap-4 overflow-hidden rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-5"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <span
               className={cx(
                 'grid size-12 place-items-center rounded-2xl text-white shadow-md',
@@ -244,7 +271,7 @@ function PaymentSection() {
             >
               <CreditCard className="size-5" />
             </span>
-            <div>
+            <div className="min-w-0">
               <p className="font-mono font-bold text-slate-900">
                 {card.brand} •••• {card.last4}
               </p>
@@ -271,7 +298,7 @@ function NotificationSection() {
   const { t: translate } = useTranslation()
 
   return (
-    <div className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl">
+    <div className="min-w-0 rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:p-6">
       <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
         {translate('profile.notifications.title')}
       </h2>
@@ -279,9 +306,9 @@ function NotificationSection() {
         {NOTIFICATION_ITEM_KEYS.map((labelKey) => (
           <li
             key={labelKey}
-            className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3"
+            className="flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3"
           >
-            <span className="text-sm text-slate-700">{translate(labelKey)}</span>
+            <span className="min-w-0 text-sm text-slate-700">{translate(labelKey)}</span>
             <input type="checkbox" defaultChecked className="size-5 accent-fuchsia-600" />
           </li>
         ))}
@@ -294,35 +321,37 @@ function SecuritySection() {
   const { t: translate } = useTranslation()
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-3xl border border-emerald-100 bg-linear-to-br from-emerald-50 to-teal-50 p-6">
-        <div className="flex items-center gap-3">
-          <span className="grid size-12 place-items-center rounded-2xl bg-linear-to-br from-emerald-400 to-teal-500 text-white shadow-md">
+    <div className="min-w-0 space-y-4">
+      <div className="rounded-3xl border border-emerald-100 bg-linear-to-br from-emerald-50 to-teal-50 p-4 sm:p-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-emerald-400 to-teal-500 text-white shadow-md">
             <ShieldCheck className="size-5" />
           </span>
-          <div>
-            <p className="font-bold text-slate-900">{translate('profile.security.twoFactorTitle')}</p>
+          <div className="min-w-0">
+            <p className="font-bold text-slate-900">
+              {translate('profile.security.twoFactorTitle')}
+            </p>
             <p className="text-sm text-slate-600">{translate('profile.security.twoFactorDesc')}</p>
           </div>
         </div>
       </div>
-      <div className="rounded-3xl border border-white/60 bg-white/85 p-6 backdrop-blur-xl">
-        <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
+      <div className="min-w-0 rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:p-6">
+        <h2 className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
           {translate('profile.security.changePassword')}
         </h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="mt-4 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
           <input
             type="password"
             placeholder={translate('profile.security.currentPassword')}
-            className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
+            className="box-border h-11 w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
           />
           <input
             type="password"
             placeholder={translate('profile.security.newPassword')}
-            className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
+            className="box-border h-11 w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-3 text-sm focus:border-fuchsia-500 focus:outline-none"
           />
         </div>
-        <Button className="mt-4" glow>
+        <Button className="mt-4 w-full sm:w-auto" glow>
           {translate('profile.security.updatePassword')}
         </Button>
       </div>

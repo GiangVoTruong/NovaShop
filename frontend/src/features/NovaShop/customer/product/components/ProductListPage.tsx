@@ -265,7 +265,7 @@ export default function ProductListPage() {
             <div
               className={cx(
                 view === 'grid'
-                  ? 'grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'
+                  ? 'grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4'
                   : 'flex flex-col gap-4',
               )}
             >

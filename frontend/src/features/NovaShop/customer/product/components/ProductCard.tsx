@@ -46,13 +46,13 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <article
       className={cx(
-        'customer-card group/card relative flex flex-col overflow-hidden rounded-3xl transition-all duration-300',
+        'customer-card group/card relative flex flex-col overflow-hidden rounded-2xl transition-all duration-300 sm:rounded-3xl',
         'hover:-translate-y-1.5',
       )}
     >
       <Link
         to={productDetailPath(product.id)}
-        className="relative block aspect-4/5 overflow-hidden bg-slate-100"
+        className="relative block aspect-square overflow-hidden bg-slate-100 sm:aspect-4/5"
       >
         <img
           src={images[0]}
@@ -62,15 +62,15 @@ export default function ProductCard({ product }: ProductCardProps) {
         />
         <div className="absolute inset-0 bg-linear-to-t from-slate-900/35 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover/card:opacity-100" />
 
-        <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+        <div className="absolute left-2 top-2 flex flex-col gap-1 sm:left-3 sm:top-3 sm:gap-1.5">
           {discount > 0 && (
-            <span className="rounded-full bg-linear-to-r from-rose-500 to-pink-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-md">
+            <span className="rounded-full bg-linear-to-r from-rose-500 to-pink-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-md sm:px-2.5 sm:py-1 sm:text-[11px]">
               -{discount}%
             </span>
           )}
           {isHot && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-linear-to-r from-amber-400 to-orange-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-md">
-              <Sparkles className="size-3" /> {translate('product.card.hot')}
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-linear-to-r from-amber-400 to-orange-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-md sm:gap-1 sm:px-2.5 sm:py-1 sm:text-[11px]">
+              <Sparkles className="size-2.5 sm:size-3" /> {translate('product.card.hot')}
             </span>
           )}
           {outOfStock && (
@@ -82,27 +82,30 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       </Link>
 
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-1 flex-col gap-1.5 p-2.5 sm:gap-2 sm:p-4">
+        <div className="flex items-center justify-between gap-1.5 sm:gap-2">
           <CategoryTag category={categorySlug} />
-          <span className="text-xs font-medium text-slate-400">{product.sellerName}</span>
+          <span className="hidden truncate text-xs font-medium text-slate-400 sm:inline">
+            {product.sellerName}
+          </span>
         </div>
 
         <Link
           to={productDetailPath(product.id)}
-          className="line-clamp-2 text-[15px] font-bold leading-snug tracking-tight text-slate-900 transition-colors hover:text-fuchsia-600"
+          className="line-clamp-2 text-sm font-bold leading-snug tracking-tight text-slate-900 transition-colors hover:text-fuchsia-600 sm:text-[15px]"
         >
           {product.name}
         </Link>
 
-        <div className="flex items-center gap-2">
-          <StarRating value={getProductRating(product)} size={14} />
-          <span className="text-xs text-slate-500">({product.reviewCount})</span>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <StarRating value={getProductRating(product)} size={12} className="sm:hidden" />
+          <StarRating value={getProductRating(product)} size={14} className="hidden sm:flex" />
+          <span className="text-[11px] text-slate-500 sm:text-xs">({product.reviewCount})</span>
         </div>
 
-        <div className="mt-auto flex items-end justify-between gap-2 pt-1">
+        <div className="mt-auto flex items-end justify-between gap-2 pt-0.5 sm:pt-1">
           <div>
-            <p className="text-xl font-extrabold tracking-tight text-gradient">
+            <p className="text-base font-extrabold tracking-tight text-gradient sm:text-xl">
               {formatCurrency(salePrice)}
             </p>
             {discount > 0 && (
