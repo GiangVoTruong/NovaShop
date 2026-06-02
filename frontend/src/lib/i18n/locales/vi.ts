@@ -14,6 +14,10 @@ import { wishlist } from './partials/vi/wishlist'
 export const vi = {
   common: {
     error: 'Có lỗi xảy ra',
+    apiTimeout:
+      'Máy chủ không phản hồi kịp (API có thể đang khởi động trên Render). Thử lại sau vài giây.',
+    apiNetwork: 'Không kết nối được tới API. Kiểm tra mạng hoặc URL trong .env.',
+    retry: 'Thử lại',
     or: 'hoặc',
     email: 'Email',
     password: 'Mật khẩu',

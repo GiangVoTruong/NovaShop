@@ -14,6 +14,10 @@ import { wishlist } from './partials/en/wishlist'
 export const en = {
   common: {
     error: 'Something went wrong',
+    apiTimeout:
+      'The server did not respond in time (the API may be waking up on Render). Try again in a few seconds.',
+    apiNetwork: 'Could not reach the API. Check your network or .env URL.',
+    retry: 'Retry',
     or: 'or',
     email: 'Email',
     password: 'Password',

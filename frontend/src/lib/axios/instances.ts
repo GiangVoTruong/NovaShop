@@ -1,6 +1,7 @@
 import axios from 'axios'
 import i18n from 'i18next'
 
+import { isApiTimeoutError } from '@/lib/axios/apiError'
 import type { ApiErrorBody } from '@/types/api.types'
 import type { AuthLoginResponse } from '@/types/auth.types'
 import type { ApiResponse } from '@/types/product.types'
@@ -43,9 +44,15 @@ export function getApiErrorMessage(
   error: unknown,
   fallback = i18n.t('common.error'),
 ): string {
+  if (isApiTimeoutError(error)) {
+    return i18n.t('common.apiTimeout')
+  }
   if (axios.isAxiosError(error)) {
     const body = error.response?.data as ApiErrorBody | undefined
     if (body?.message) return body.message
+    if (error.code === 'ERR_NETWORK') {
+      return i18n.t('common.apiNetwork')
+    }
     return error.message
   }
   if (error instanceof Error) return error.message
@@ -54,7 +61,8 @@ export function getApiErrorMessage(
 
 export const axiosInstance = axios.create({
   baseURL: apiBaseUrl,
-  timeout: 30_000,
+  // Prod/Render cold start có thể >30s; dev local giữ ngắn để báo lỗi sớm
+  timeout: import.meta.env.PROD ? 90_000 : 30_000,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
