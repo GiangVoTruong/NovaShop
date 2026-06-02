@@ -1,56 +1,51 @@
 import { useState } from 'react'
-import { Input, Select } from 'antd'
-import { Mail, Search, UserPlus } from 'lucide-react'
+import { Input, Select, Spin } from 'antd'
+import { Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { CUSTOMERS } from '@/features/NovaShop/shared/data/customers'
-import { formatCurrency, formatDate } from '@/features/NovaShop/shared/format'
-import type { Customer } from '@/features/NovaShop/shared/types'
+import { formatDate } from '@/features/NovaShop/shared/format'
+import type { AdminUser } from '@/types/admin.types'
 import Badge from '@/features/NovaShop/shared/ui/Badge'
-import Button from '@/features/NovaShop/shared/ui/Button'
 import AdminListPage from '../../layout/components/AdminListPage'
 import AdminTable from '../../layout/components/AdminTable'
-import { adminTableAvatarLg, adminTableText } from '../../layout/constants/adminTableStyles'
-
-const CUSTOMER_STATUS_FILTER_VALUES = ['active', 'inactive'] as const
+import { adminTableText } from '../../layout/constants/adminTableStyles'
+import { useAdminUsers } from '../../hooks/useAdminUsers'
 
 export default function CustomersPage() {
   const { t: translate } = useTranslation()
+  const usersQuery = useAdminUsers()
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [roleFilter, setRoleFilter] = useState<string>('all')
 
-  const filteredCustomers = CUSTOMERS.filter((customer) => {
-    if (statusFilter !== 'all' && customer.status !== statusFilter) return false
-    if (!search) return true
+  const filteredCustomers = (usersQuery.data ?? []).filter((customer) => {
+    if (roleFilter !== 'all' && customer.role !== roleFilter) {
+      return false
+    }
+    if (!search) {
+      return true
+    }
     const keyword = search.toLowerCase()
     return (
-      customer.name.toLowerCase().includes(keyword) ||
+      customer.fullName.toLowerCase().includes(keyword) ||
       customer.email.toLowerCase().includes(keyword) ||
       customer.phone.includes(keyword)
     )
   })
 
-  const statusFilterOptions = [
+  const roleFilterOptions = [
     { value: 'all', label: translate('admin.customers.filterAll') },
-    ...CUSTOMER_STATUS_FILTER_VALUES.map((status) => ({
-      value: status,
-      label:
-        status === 'inactive'
-          ? translate('status.customer.inactiveFull')
-          : translate(`status.customer.${status}`),
-    })),
+    { value: 'CUSTOMER', label: translate('admin.customers.filterCustomer') },
+    { value: 'SELLER', label: translate('admin.customers.filterSeller') },
+    { value: 'ADMIN', label: translate('admin.customers.filterAdmin') },
   ]
 
   const columns = [
     {
       title: translate('admin.customers.columns.customer'),
       key: 'customer',
-      render: (_: unknown, customer: Customer) => (
-        <div className="flex items-center gap-3">
-          <img src={customer.avatar} alt={customer.name} className={adminTableAvatarLg} />
-          <div>
-            <p className={adminTableText.primary}>{customer.name}</p>
-            <p className={adminTableText.secondary}>{customer.email}</p>
-          </div>
+      render: (_: unknown, customer: AdminUser) => (
+        <div>
+          <p className={adminTableText.primary}>{customer.fullName}</p>
+          <p className={adminTableText.secondary}>{customer.email}</p>
         </div>
       ),
     },
@@ -61,49 +56,47 @@ export default function CustomersPage() {
       render: (phone: string) => <span className={adminTableText.body}>{phone}</span>,
     },
     {
-      title: translate('admin.customers.columns.orders'),
-      dataIndex: 'totalOrders',
-      key: 'totalOrders',
-      render: (totalOrders: number) => (
-        <span className={adminTableText.emphasis}>{totalOrders}</span>
-      ),
-    },
-    {
-      title: translate('admin.customers.columns.spent'),
-      dataIndex: 'totalSpent',
-      key: 'totalSpent',
-      render: (totalSpent: number) => (
-        <span className={adminTableText.money}>{formatCurrency(totalSpent)}</span>
+      title: translate('admin.customers.columns.role'),
+      dataIndex: 'role',
+      key: 'role',
+      render: (role: AdminUser['role']) => (
+        <span className={adminTableText.body}>{role}</span>
       ),
     },
     {
       title: translate('admin.customers.columns.joinedAt'),
-      dataIndex: 'joinedAt',
-      key: 'joinedAt',
-      render: (joinedAt: string) => (
-        <span className={adminTableText.muted}>{formatDate(joinedAt)}</span>
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (createdAt: string) => (
+        <span className={adminTableText.muted}>{formatDate(createdAt)}</span>
       ),
     },
     {
       title: translate('admin.customers.columns.status'),
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: Customer['status']) => (
-        <Badge tone={status === 'active' ? 'emerald' : 'rose'} dot>
-          {translate(`status.customer.${status}`)}
+      dataIndex: 'isActive',
+      key: 'isActive',
+      render: (isActive: boolean) => (
+        <Badge tone={isActive ? 'emerald' : 'rose'} dot>
+          {translate(isActive ? 'status.customer.active' : 'status.customer.inactive')}
         </Badge>
       ),
     },
-    {
-      title: '',
-      key: 'actions',
-      render: () => (
-        <Button variant="ghost" size="sm" leftIcon={<Mail className="size-4" />}>
-          {translate('admin.customers.contact')}
-        </Button>
-      ),
-    },
   ]
+
+  if (usersQuery.isLoading) {
+    return (
+      <AdminListPage
+        eyebrow={translate('admin.customers.eyebrow')}
+        title={translate('admin.customers.title')}
+        titleHighlight={translate('admin.customers.titleHighlight')}
+        description={translate('admin.customers.description')}
+      >
+        <div className="flex min-h-40 items-center justify-center">
+          <Spin size="large" />
+        </div>
+      </AdminListPage>
+    )
+  }
 
   return (
     <AdminListPage
@@ -111,9 +104,6 @@ export default function CustomersPage() {
       title={translate('admin.customers.title')}
       titleHighlight={translate('admin.customers.titleHighlight')}
       description={translate('admin.customers.description')}
-      actions={
-        <Button leftIcon={<UserPlus className="size-4" />}>{translate('admin.customers.add')}</Button>
-      }
       toolbar={
         <>
           <Input
@@ -125,10 +115,10 @@ export default function CustomersPage() {
             allowClear
           />
           <Select
-            value={statusFilter}
-            onChange={setStatusFilter}
+            value={roleFilter}
+            onChange={setRoleFilter}
             className="w-full sm:w-44"
-            options={statusFilterOptions}
+            options={roleFilterOptions}
           />
         </>
       }

@@ -13,6 +13,7 @@ export const PATHS = {
   CHECKOUT: '/checkout',
   WISHLIST: '/wishlist',
   ORDERS: '/orders',
+  ORDER_DETAIL: '/orders/:id',
   PROFILE: '/profile',
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
@@ -21,6 +22,7 @@ export const PATHS = {
   ADMIN: '/admin',
   ADMIN_PRODUCTS: '/admin/products',
   ADMIN_ORDERS: '/admin/orders',
+  ADMIN_ORDER_DETAIL: '/admin/orders/:id',
   ADMIN_CUSTOMERS: '/admin/customers',
   ADMIN_CATEGORIES: '/admin/categories',
   ADMIN_INVENTORY: '/admin/inventory',
@@ -33,4 +35,12 @@ export type AppPath = (typeof PATHS)[keyof typeof PATHS]
 
 export function productDetailPath(productId: string): string {
   return `/products/${productId}`
+}
+
+export function orderDetailPath(orderId: string): string {
+  return `/orders/${orderId}`
+}
+
+export function adminOrderDetailPath(orderId: string): string {
+  return `/admin/orders/${orderId}`
 }

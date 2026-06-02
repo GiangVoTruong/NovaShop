@@ -1,11 +1,11 @@
-import { Line } from '@ant-design/charts'
-import { ArrowUpRight, Plus } from 'lucide-react'
+import { Column } from '@ant-design/charts'
+import { ArrowUpRight, DollarSign, Package, Plus, ShoppingCart, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { PATHS } from '@/router/paths'
-import { ANALYTICS } from '@/features/NovaShop/shared/data/analytics'
-import { ORDERS } from '@/features/NovaShop/shared/data/orders'
-import { formatCurrency, formatDateTime } from '@/features/NovaShop/shared/format'
+import { Spin } from 'antd'
+import { PATHS, adminOrderDetailPath } from '@/router/paths'
+import { formatCurrency, formatDateTime, formatNumber } from '@/features/NovaShop/shared/format'
+import type { AdminOrderResponse } from '@/types/admin.types'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import { OrderStatusBadge } from '@/features/NovaShop/shared/ui/StatusBadge'
 import AdminPageHeader from '../../layout/components/AdminPageHeader'
@@ -13,56 +13,61 @@ import AdminSection from '../../layout/components/AdminSection'
 import AdminShell from '../../layout/components/AdminShell'
 import AdminTable from '../../layout/components/AdminTable'
 import StatCard from '../../layout/components/StatCard'
-import { adminTableAvatar, adminTableText } from '../../layout/constants/adminTableStyles'
-import { DASHBOARD_ACTIVITY, DASHBOARD_STATS } from '../constants/dashboard.constants'
-import type { Order } from '@/features/NovaShop/shared/types'
-
-const ACTIVITY_DOT_COLORS = ['bg-fuchsia-400', 'bg-amber-400', 'bg-cyan-400', 'bg-indigo-400']
+import { adminTableText } from '../../layout/constants/adminTableStyles'
+import { useAdminAnalytics } from '../../hooks/useAdminAnalytics'
+import { useAdminOrders } from '../../hooks/useAdminOrders'
+import { getAdminOrderCode, getAdminOrderTotal, toAdminOrderUiStatus, toAdminAmount } from '../../lib/adminApi'
 
 export default function DashboardPage() {
   const { t: translate } = useTranslation()
-  const chartData = ANALYTICS.slice(-6).flatMap((point) => [
-    {
-      month: point.month,
-      value: point.revenue / 1_000_000,
-      type: translate('admin.dashboard.chart.revenueSeries'),
-    },
-    {
-      month: point.month,
-      value: point.orders,
-      type: translate('admin.dashboard.chart.ordersSeries'),
-    },
-  ])
+  const analyticsQuery = useAdminAnalytics()
+  const recentOrdersQuery = useAdminOrders({ page: 0, size: 5, sortBy: 'createdAt', sortDir: 'desc' })
+  const overview = analyticsQuery.data
+  const recentOrders = recentOrdersQuery.data?.data ?? []
+
+  if (analyticsQuery.isLoading || !overview) {
+    return (
+      <AdminShell className="flex min-h-[50vh] items-center justify-center">
+        <Spin size="large" />
+      </AdminShell>
+    )
+  }
+
+  const revenueChartData = overview.revenueByMonth.map((point) => ({
+    month: point.month,
+    value: toAdminAmount(point.revenue) / 1_000_000,
+  }))
 
   const recentOrderColumns = [
     {
       title: translate('admin.dashboard.recentOrders.columns.code'),
-      dataIndex: 'code',
       key: 'code',
-      render: (code: string) => <span className={adminTableText.code}>{code}</span>,
+      render: (_: unknown, order: AdminOrderResponse) => (
+        <Link to={adminOrderDetailPath(order.id)} className={adminTableText.code}>
+          {getAdminOrderCode(order)}
+        </Link>
+      ),
     },
     {
       title: translate('admin.dashboard.recentOrders.columns.customer'),
       key: 'customer',
-      render: (_: unknown, order: Order) => (
-        <div className="flex items-center gap-2.5">
-          <img src={order.customerAvatar} alt={order.customerName} className={adminTableAvatar} />
-          <span className={adminTableText.primary}>{order.customerName}</span>
-        </div>
+      render: (_: unknown, order: AdminOrderResponse) => (
+        <span className={adminTableText.primary}>{order.customerFullName}</span>
       ),
     },
     {
       title: translate('admin.dashboard.recentOrders.columns.total'),
       key: 'total',
-      render: (_: unknown, order: Order) => (
-        <span className={adminTableText.money}>{formatCurrency(order.total)}</span>
+      render: (_: unknown, order: AdminOrderResponse) => (
+        <span className={adminTableText.money}>{formatCurrency(getAdminOrderTotal(order))}</span>
       ),
     },
     {
       title: translate('admin.dashboard.recentOrders.columns.status'),
-      dataIndex: 'status',
       key: 'status',
-      render: (status: Order['status']) => <OrderStatusBadge status={status} />,
+      render: (_: unknown, order: AdminOrderResponse) => (
+        <OrderStatusBadge status={toAdminOrderUiStatus(order.status)} />
+      ),
     },
     {
       title: translate('admin.dashboard.recentOrders.columns.time'),
@@ -70,6 +75,31 @@ export default function DashboardPage() {
       key: 'createdAt',
       render: (createdAt: string) => (
         <span className={adminTableText.muted}>{formatDateTime(createdAt)}</span>
+      ),
+    },
+  ]
+
+  const topProductColumns = [
+    {
+      title: translate('admin.dashboard.topProducts.columns.name'),
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string) => <span className={adminTableText.primary}>{name}</span>,
+    },
+    {
+      title: translate('admin.dashboard.topProducts.columns.sold'),
+      dataIndex: 'soldCount',
+      key: 'soldCount',
+      render: (soldCount: number) => (
+        <span className={adminTableText.emphasis}>{formatNumber(soldCount)}</span>
+      ),
+    },
+    {
+      title: translate('admin.dashboard.topProducts.columns.revenue'),
+      dataIndex: 'revenue',
+      key: 'revenue',
+      render: (revenue: number) => (
+        <span className={adminTableText.money}>{formatCurrency(toAdminAmount(revenue))}</span>
       ),
     },
   ]
@@ -98,18 +128,30 @@ export default function DashboardPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {DASHBOARD_STATS.map((stat) => (
-          <StatCard
-            key={stat.labelKey}
-            label={translate(stat.labelKey)}
-            value={stat.value}
-            change={
-              'changeKey' in stat ? translate(stat.changeKey, stat.changeParams) : stat.change
-            }
-            icon={<stat.icon className="size-5" />}
-            tone={stat.tone}
-          />
-        ))}
+        <StatCard
+          label={translate('admin.dashboard.stats.monthlyRevenue')}
+          value={formatCurrency(toAdminAmount(overview.totalRevenue))}
+          icon={<DollarSign className="size-5" />}
+          tone="fuchsia"
+        />
+        <StatCard
+          label={translate('admin.dashboard.stats.orders')}
+          value={formatNumber(overview.totalOrders)}
+          icon={<ShoppingCart className="size-5" />}
+          tone="cyan"
+        />
+        <StatCard
+          label={translate('admin.dashboard.stats.customers')}
+          value={formatNumber(overview.totalCustomers)}
+          icon={<Users className="size-5" />}
+          tone="indigo"
+        />
+        <StatCard
+          label={translate('admin.dashboard.stats.activeProducts')}
+          value={formatNumber(overview.totalProducts)}
+          icon={<Package className="size-5" />}
+          tone="emerald"
+        />
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-12">
@@ -118,43 +160,30 @@ export default function DashboardPage() {
           title={translate('admin.dashboard.chart.title')}
           subtitle={translate('admin.dashboard.chart.subtitle')}
         >
-          <Line
-            data={chartData}
+          <Column
+            data={revenueChartData}
             xField="month"
             yField="value"
-            colorField="type"
             height={280}
-            smooth
+            style={{ fill: '#d946ef', radiusTopLeft: 8, radiusTopRight: 8 }}
             axis={{
               x: { labelFill: '#94a3b8', lineStroke: '#334155' },
               y: { labelFill: '#94a3b8', gridStroke: '#1e293b' },
             }}
-            legend={{ color: { itemLabelFill: '#cbd5e1' } }}
           />
         </AdminSection>
 
-        <AdminSection className="xl:col-span-4" title={translate('admin.dashboard.activity.title')}>
+        <AdminSection className="xl:col-span-4" title={translate('admin.dashboard.ordersByStatus.title')}>
           <ul className="space-y-3">
-            {DASHBOARD_ACTIVITY.map((activity, index) => (
+            {overview.ordersByStatus.map((entry) => (
               <li
-                key={activity.id}
-                className="flex gap-3 rounded-xl px-1 py-1 transition hover:bg-white/5"
+                key={entry.status}
+                className="flex items-center justify-between rounded-xl border border-white/10 px-3 py-2"
               >
-                <span
-                  className={`mt-1.5 size-2 shrink-0 rounded-full ${ACTIVITY_DOT_COLORS[index % ACTIVITY_DOT_COLORS.length]}`}
-                />
-                <div>
-                  <p className="text-sm text-slate-200">
-                    {'textParams' in activity && activity.textParams
-                      ? translate(activity.textKey, activity.textParams)
-                      : translate(activity.textKey)}
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    {'timeParams' in activity && activity.timeParams
-                      ? translate(activity.timeKey, activity.timeParams)
-                      : translate(activity.timeKey)}
-                  </p>
-                </div>
+                <span className="text-sm text-slate-300">
+                  {translate(`status.order.${entry.status.toLowerCase()}`)}
+                </span>
+                <span className="font-bold text-white">{entry.count}</span>
               </li>
             ))}
           </ul>
@@ -177,7 +206,23 @@ export default function DashboardPage() {
         <AdminTable
           rowKey="id"
           columns={recentOrderColumns}
-          dataSource={ORDERS.slice(0, 5)}
+          dataSource={recentOrders}
+          loading={recentOrdersQuery.isLoading}
+          pagination={false}
+          scroll={{ x: 720 }}
+        />
+      </AdminSection>
+
+      <AdminSection
+        className="mt-6"
+        flush
+        title={translate('admin.dashboard.topProducts.title')}
+        subtitle={translate('admin.dashboard.topProducts.subtitle')}
+      >
+        <AdminTable
+          rowKey="productId"
+          columns={topProductColumns}
+          dataSource={overview.topProducts}
           pagination={false}
           scroll={{ x: 720 }}
         />

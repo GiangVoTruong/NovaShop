@@ -1,49 +1,37 @@
-import { Column, Line } from '@ant-design/charts'
-import { DollarSign, Eye, ShoppingCart } from 'lucide-react'
+import { Column, Pie } from '@ant-design/charts'
+import { DollarSign, Package, ShoppingCart } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { ANALYTICS } from '@/features/NovaShop/shared/data/analytics'
+import { Spin } from 'antd'
 import { formatCurrency, formatNumber } from '@/features/NovaShop/shared/format'
+import { useAdminAnalytics } from '../../hooks/useAdminAnalytics'
+import { toAdminAmount } from '../../lib/adminApi'
 import AdminPageHeader from '../../layout/components/AdminPageHeader'
 import AdminSection from '../../layout/components/AdminSection'
 import AdminShell from '../../layout/components/AdminShell'
 import StatCard from '../../layout/components/StatCard'
 
-const latest = ANALYTICS[ANALYTICS.length - 1]
-const previous = ANALYTICS[ANALYTICS.length - 2]
-
-const revenueChange = (
-  ((latest.revenue - previous.revenue) / previous.revenue) *
-  100
-).toFixed(1)
-const ordersChange = (
-  ((latest.orders - previous.orders) / previous.orders) *
-  100
-).toFixed(1)
-const visitorsChange = (
-  ((latest.visitors - previous.visitors) / previous.visitors) *
-  100
-).toFixed(1)
-
 export default function AnalyticsPage() {
   const { t: translate } = useTranslation()
+  const analyticsQuery = useAdminAnalytics()
+  const overview = analyticsQuery.data
 
-  const revenueData = ANALYTICS.map((point) => ({
+  if (analyticsQuery.isLoading || !overview) {
+    return (
+      <AdminShell className="flex min-h-[50vh] items-center justify-center">
+        <Spin size="large" />
+      </AdminShell>
+    )
+  }
+
+  const revenueData = overview.revenueByMonth.map((point) => ({
     month: point.month,
-    value: point.revenue / 1_000_000,
+    value: toAdminAmount(point.revenue) / 1_000_000,
   }))
 
-  const visitorsChartData = ANALYTICS.flatMap((point) => [
-    {
-      month: point.month,
-      value: point.visitors,
-      type: translate('admin.analytics.visitorsChart.visitors'),
-    },
-    {
-      month: point.month,
-      value: point.orders * 50,
-      type: translate('admin.analytics.visitorsChart.ordersScaled'),
-    },
-  ])
+  const ordersByStatusData = overview.ordersByStatus.map((entry) => ({
+    status: translate(`status.order.${entry.status.toLowerCase()}`),
+    count: entry.count,
+  }))
 
   return (
     <AdminShell>
@@ -56,24 +44,21 @@ export default function AnalyticsPage() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
-          label={translate('admin.analytics.stats.monthlyRevenue')}
-          value={formatCurrency(latest.revenue)}
-          change={`+${revenueChange}%`}
+          label={translate('admin.analytics.stats.totalRevenue')}
+          value={formatCurrency(toAdminAmount(overview.totalRevenue))}
           icon={<DollarSign className="size-5" />}
           tone="fuchsia"
         />
         <StatCard
           label={translate('admin.analytics.stats.orders')}
-          value={formatNumber(latest.orders)}
-          change={`+${ordersChange}%`}
+          value={formatNumber(overview.totalOrders)}
           icon={<ShoppingCart className="size-5" />}
           tone="cyan"
         />
         <StatCard
-          label={translate('admin.analytics.stats.visitors')}
-          value={formatNumber(latest.visitors)}
-          change={`+${visitorsChange}%`}
-          icon={<Eye className="size-5" />}
+          label={translate('admin.analytics.stats.products')}
+          value={formatNumber(overview.totalProducts)}
+          icon={<Package className="size-5" />}
           tone="indigo"
         />
       </div>
@@ -96,21 +81,12 @@ export default function AnalyticsPage() {
           />
         </AdminSection>
 
-        <AdminSection
-          title={translate('admin.analytics.visitorsChart.title')}
-          subtitle={translate('admin.analytics.visitorsChart.subtitle')}
-        >
-          <Line
-            data={visitorsChartData}
-            xField="month"
-            yField="value"
-            colorField="type"
+        <AdminSection title={translate('admin.analytics.ordersByStatus.title')}>
+          <Pie
+            data={ordersByStatusData}
+            angleField="count"
+            colorField="status"
             height={300}
-            smooth
-            axis={{
-              x: { labelFill: '#94a3b8', lineStroke: '#334155' },
-              y: { labelFill: '#94a3b8', gridStroke: '#1e293b' },
-            }}
             legend={{ color: { itemLabelFill: '#cbd5e1' } }}
           />
         </AdminSection>

@@ -82,6 +82,18 @@ export const admin = {
         time: 'Thời gian',
       },
     },
+    ordersByStatus: {
+      title: 'Đơn theo trạng thái',
+    },
+    topProducts: {
+      title: 'Sản phẩm bán chạy',
+      subtitle: 'Theo doanh thu từ API analytics',
+      columns: {
+        name: 'Sản phẩm',
+        sold: 'Đã bán',
+        revenue: 'Doanh thu',
+      },
+    },
   },
   products: {
     eyebrow: 'Quản lý sản phẩm',
@@ -119,6 +131,30 @@ export const admin = {
       createdAt: 'Ngày đặt',
     },
     detail: 'Chi tiết',
+    messages: {
+      statusUpdated: 'Cập nhật trạng thái thành công',
+      statusFailed: 'Không thể cập nhật trạng thái',
+    },
+    detailPage: {
+      eyebrow: 'Chi tiết đơn hàng',
+      backToList: 'Quay lại danh sách đơn',
+      notFound: 'Không tìm thấy đơn hàng',
+      placedAt: 'Đặt lúc {{time}}',
+      customerTitle: 'Khách hàng',
+      customerName: 'Họ tên',
+      customerEmail: 'Email',
+      customerPhone: 'Số điện thoại',
+      summaryTitle: 'Tóm tắt đơn',
+      subtotal: 'Tạm tính',
+      total: 'Tổng cộng',
+      payment: 'Thanh toán',
+      shippingTitle: 'Địa chỉ giao hàng',
+      note: 'Ghi chú khách hàng',
+      noShippingAddress: 'Chưa có địa chỉ giao hàng',
+      itemsTitle: 'Sản phẩm trong đơn',
+      quantity: 'Số lượng: {{count}}',
+      noItems: 'Không có sản phẩm',
+    },
   },
   customers: {
     eyebrow: 'Quản lý khách hàng',
@@ -131,11 +167,15 @@ export const admin = {
     columns: {
       customer: 'Khách hàng',
       phone: 'Số điện thoại',
+      role: 'Vai trò',
       orders: 'Đơn hàng',
       spent: 'Chi tiêu',
       joinedAt: 'Ngày tham gia',
       status: 'Trạng thái',
     },
+    filterCustomer: 'Khách hàng',
+    filterSeller: 'Người bán',
+    filterAdmin: 'Admin',
     contact: 'Liên hệ',
   },
   categories: {
@@ -146,6 +186,7 @@ export const admin = {
     add: 'Thêm danh mục',
     productCount: '{{count}} sản phẩm',
     edit: 'Sửa',
+    empty: 'Chưa có danh mục',
   },
   inventory: {
     eyebrow: 'Quản lý kho',
@@ -185,6 +226,25 @@ export const admin = {
     edit: 'Sửa',
     pause: 'Tạm dừng',
     activate: 'Kích hoạt',
+    empty: 'Chưa có mã giảm giá',
+    deleteConfirm: 'Xóa mã giảm giá này?',
+    form: {
+      code: 'Mã',
+      type: 'Loại',
+      typePercent: 'Phần trăm (%)',
+      typeFixed: 'Số tiền cố định',
+      value: 'Giá trị',
+      minOrder: 'Đơn tối thiểu',
+      usageLimit: 'Giới hạn lượt dùng',
+      required: 'Vui lòng nhập đầy đủ',
+      save: 'Tạo mã',
+    },
+    messages: {
+      created: 'Tạo mã thành công',
+      updated: 'Cập nhật mã thành công',
+      deleted: 'Xóa mã thành công',
+      failed: 'Thao tác thất bại',
+    },
   },
   analytics: {
     eyebrow: 'Phân tích kinh doanh',
@@ -193,8 +253,10 @@ export const admin = {
     description: 'Phân tích doanh thu, lượt truy cập và xu hướng đơn hàng theo tháng.',
     stats: {
       monthlyRevenue: 'Doanh thu tháng này',
+      totalRevenue: 'Tổng doanh thu',
       orders: 'Đơn hàng',
       visitors: 'Lượt truy cập',
+      products: 'Sản phẩm',
     },
     revenueChart: {
       title: 'Doanh thu theo tháng',
@@ -205,6 +267,9 @@ export const admin = {
       subtitle: '12 tháng gần nhất',
       visitors: 'Truy cập',
       ordersScaled: 'Đơn hàng (x50)',
+    },
+    ordersByStatus: {
+      title: 'Đơn theo trạng thái',
     },
   },
   settings: {
@@ -224,6 +289,10 @@ export const admin = {
       currencyVnd: 'VND — Việt Nam Đồng',
       currencyUsd: 'USD — US Dollar',
       freeShipping: 'Miễn phí ship từ (VND)',
+      supportPhone: 'Hotline hỗ trợ',
+      phoneRequired: 'Nhập số điện thoại',
+      shippingFee: 'Phí ship mặc định (VND)',
+      taxRate: 'Thuế suất (0–1)',
     },
     operations: {
       title: 'Vận hành',
@@ -234,6 +303,7 @@ export const admin = {
     },
     messages: {
       saved: 'Đã lưu cài đặt cửa hàng',
+      saveFailed: 'Không thể lưu cài đặt',
       validationError: 'Vui lòng kiểm tra lại thông tin',
     },
   },
@@ -241,5 +311,6 @@ export const admin = {
     all: 'Tất cả',
     edit: 'Sửa',
     actions: 'Thao tác',
+    cancel: 'Huỷ',
   },
 } as const

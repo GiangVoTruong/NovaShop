@@ -82,6 +82,18 @@ export const admin = {
         time: 'Time',
       },
     },
+    ordersByStatus: {
+      title: 'Orders by status',
+    },
+    topProducts: {
+      title: 'Top products',
+      subtitle: 'By revenue from analytics API',
+      columns: {
+        name: 'Product',
+        sold: 'Sold',
+        revenue: 'Revenue',
+      },
+    },
   },
   products: {
     eyebrow: 'Product management',
@@ -119,6 +131,30 @@ export const admin = {
       createdAt: 'Order date',
     },
     detail: 'Details',
+    messages: {
+      statusUpdated: 'Order status updated',
+      statusFailed: 'Could not update order status',
+    },
+    detailPage: {
+      eyebrow: 'Order detail',
+      backToList: 'Back to orders',
+      notFound: 'Order not found',
+      placedAt: 'Placed at {{time}}',
+      customerTitle: 'Customer',
+      customerName: 'Full name',
+      customerEmail: 'Email',
+      customerPhone: 'Phone',
+      summaryTitle: 'Order summary',
+      subtotal: 'Subtotal',
+      total: 'Total',
+      payment: 'Payment',
+      shippingTitle: 'Shipping address',
+      note: 'Customer note',
+      noShippingAddress: 'No shipping address recorded',
+      itemsTitle: 'Order items',
+      quantity: 'Qty: {{count}}',
+      noItems: 'No items',
+    },
   },
   customers: {
     eyebrow: 'Customer management',
@@ -131,11 +167,15 @@ export const admin = {
     columns: {
       customer: 'Customer',
       phone: 'Phone',
+      role: 'Role',
       orders: 'Orders',
       spent: 'Total spent',
       joinedAt: 'Joined',
       status: 'Status',
     },
+    filterCustomer: 'Customer',
+    filterSeller: 'Seller',
+    filterAdmin: 'Admin',
     contact: 'Contact',
   },
   categories: {
@@ -146,6 +186,7 @@ export const admin = {
     add: 'Add category',
     productCount: '{{count}} products',
     edit: 'Edit',
+    empty: 'No categories yet',
   },
   inventory: {
     eyebrow: 'Inventory management',
@@ -185,6 +226,25 @@ export const admin = {
     edit: 'Edit',
     pause: 'Pause',
     activate: 'Activate',
+    empty: 'No coupons yet',
+    deleteConfirm: 'Delete this coupon?',
+    form: {
+      code: 'Code',
+      type: 'Type',
+      typePercent: 'Percent (%)',
+      typeFixed: 'Fixed amount',
+      value: 'Value',
+      minOrder: 'Minimum order',
+      usageLimit: 'Usage limit',
+      required: 'This field is required',
+      save: 'Create coupon',
+    },
+    messages: {
+      created: 'Coupon created',
+      updated: 'Coupon updated',
+      deleted: 'Coupon deleted',
+      failed: 'Operation failed',
+    },
   },
   analytics: {
     eyebrow: 'Business analytics',
@@ -193,8 +253,10 @@ export const admin = {
     description: 'Analyze revenue, traffic, and monthly order trends.',
     stats: {
       monthlyRevenue: 'Revenue this month',
+      totalRevenue: 'Total revenue',
       orders: 'Orders',
       visitors: 'Visitors',
+      products: 'Products',
     },
     revenueChart: {
       title: 'Monthly revenue',
@@ -205,6 +267,9 @@ export const admin = {
       subtitle: 'Last 12 months',
       visitors: 'Visitors',
       ordersScaled: 'Orders (x50)',
+    },
+    ordersByStatus: {
+      title: 'Orders by status',
     },
   },
   settings: {
@@ -224,6 +289,10 @@ export const admin = {
       currencyVnd: 'VND — Vietnamese Dong',
       currencyUsd: 'USD — US Dollar',
       freeShipping: 'Free shipping from (VND)',
+      supportPhone: 'Support phone',
+      phoneRequired: 'Enter phone number',
+      shippingFee: 'Default shipping fee (VND)',
+      taxRate: 'Tax rate (0–1)',
     },
     operations: {
       title: 'Operations',
@@ -234,6 +303,7 @@ export const admin = {
     },
     messages: {
       saved: 'Store settings saved',
+      saveFailed: 'Could not save settings',
       validationError: 'Please check your information',
     },
   },
@@ -241,5 +311,6 @@ export const admin = {
     all: 'All',
     edit: 'Edit',
     actions: 'Actions',
+    cancel: 'Cancel',
   },
 } as const

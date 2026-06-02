@@ -1,10 +1,19 @@
-import { Plus } from 'lucide-react'
+import { Form, Input, InputNumber, Modal, Select, Spin, message } from 'antd'
+import type { FormProps } from 'antd'
+import { Plus, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { COUPONS } from '@/features/NovaShop/shared/data/coupons'
 import { formatCurrency, formatDate } from '@/features/NovaShop/shared/format'
-import type { Coupon } from '@/features/NovaShop/shared/types'
+import type { AdminCoupon, CreateAdminCouponRequest } from '@/types/admin.types'
 import Badge from '@/features/NovaShop/shared/ui/Badge'
 import Button from '@/features/NovaShop/shared/ui/Button'
+import {
+  useAdminCoupons,
+  useCreateAdminCoupon,
+  useDeleteAdminCoupon,
+  useUpdateAdminCoupon,
+} from '../../hooks/useAdminCoupons'
+import { getCouponStatus, toAdminAmount } from '../../lib/adminApi'
 import AdminPageHeader from '../../layout/components/AdminPageHeader'
 import AdminShell from '../../layout/components/AdminShell'
 
@@ -16,6 +25,18 @@ const COUPON_STATUS_TONE = {
 
 export default function CouponsPage() {
   const { t: translate } = useTranslation()
+  const couponsQuery = useAdminCoupons()
+  const [createOpen, setCreateOpen] = useState(false)
+
+  if (couponsQuery.isLoading) {
+    return (
+      <AdminShell className="flex min-h-[50vh] items-center justify-center">
+        <Spin size="large" />
+      </AdminShell>
+    )
+  }
+
+  const coupons = couponsQuery.data ?? []
 
   return (
     <AdminShell>
@@ -25,26 +46,62 @@ export default function CouponsPage() {
         titleHighlight={translate('admin.coupons.titleHighlight')}
         description={translate('admin.coupons.description')}
         actions={
-          <Button leftIcon={<Plus className="size-4" />}>{translate('admin.coupons.create')}</Button>
+          <Button leftIcon={<Plus className="size-4" />} onClick={() => setCreateOpen(true)}>
+            {translate('admin.coupons.create')}
+          </Button>
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {COUPONS.map((coupon) => (
-          <CouponCard key={coupon.id} coupon={coupon} />
-        ))}
-      </div>
+      {coupons.length === 0 ? (
+        <p className="rounded-3xl border border-dashed border-white/20 p-8 text-center text-slate-400">
+          {translate('admin.coupons.empty')}
+        </p>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {coupons.map((coupon) => (
+            <CouponCard key={coupon.id} coupon={coupon} />
+          ))}
+        </div>
+      )}
+
+      <CreateCouponModal open={createOpen} onClose={() => setCreateOpen(false)} />
     </AdminShell>
   )
 }
 
-function CouponCard({ coupon }: { coupon: Coupon }) {
+function CouponCard({ coupon }: { coupon: AdminCoupon }) {
   const { t: translate } = useTranslation()
-  const usagePercent = Math.round((coupon.used / coupon.limit) * 100)
+  const updateMutation = useUpdateAdminCoupon()
+  const deleteMutation = useDeleteAdminCoupon()
+  const status = getCouponStatus(coupon)
+  const usagePercent =
+    coupon.usageLimit > 0 ? Math.round((coupon.usedCount / coupon.usageLimit) * 100) : 0
   const discountLabel =
-    coupon.type === 'percent'
-      ? translate('admin.coupons.discountPercent', { value: coupon.value })
-      : translate('admin.coupons.discountFixed', { amount: formatCurrency(coupon.value) })
+    coupon.type === 'PERCENT'
+      ? translate('admin.coupons.discountPercent', { value: toAdminAmount(coupon.value) })
+      : translate('admin.coupons.discountFixed', {
+          amount: formatCurrency(toAdminAmount(coupon.value)),
+        })
+
+  const handleToggleActive = () => {
+    updateMutation.mutate(
+      { couponId: coupon.id, request: { active: !coupon.active } },
+      {
+        onSuccess: () => message.success(translate('admin.coupons.messages.updated')),
+        onError: () => message.error(translate('admin.coupons.messages.failed')),
+      },
+    )
+  }
+
+  const handleDelete = () => {
+    Modal.confirm({
+      title: translate('admin.coupons.deleteConfirm'),
+      onOk: () =>
+        deleteMutation.mutateAsync(coupon.id).then(() => {
+          message.success(translate('admin.coupons.messages.deleted'))
+        }),
+    })
+  }
 
   return (
     <article className="glass-dark rounded-3xl p-5 ring-1 ring-white/10 transition duration-200 hover:-translate-y-0.5 hover:ring-fuchsia-400/20">
@@ -53,8 +110,8 @@ function CouponCard({ coupon }: { coupon: Coupon }) {
           <p className="font-mono text-xl font-extrabold tracking-tight text-white">{coupon.code}</p>
           <p className="mt-1 text-sm text-fuchsia-300">{discountLabel}</p>
         </div>
-        <Badge tone={COUPON_STATUS_TONE[coupon.status]} dot>
-          {translate(`status.coupon.${coupon.status}`)}
+        <Badge tone={COUPON_STATUS_TONE[status]} dot>
+          {translate(`status.coupon.${status}`)}
         </Badge>
       </div>
 
@@ -62,17 +119,21 @@ function CouponCard({ coupon }: { coupon: Coupon }) {
         <div className="flex justify-between text-slate-400">
           <dt>{translate('admin.coupons.minOrder')}</dt>
           <dd className="font-semibold text-slate-200">
-            {coupon.minOrder > 0 ? formatCurrency(coupon.minOrder) : translate('admin.coupons.none')}
+            {coupon.minOrderAmount
+              ? formatCurrency(toAdminAmount(coupon.minOrderAmount))
+              : translate('admin.coupons.none')}
           </dd>
         </div>
         <div className="flex justify-between text-slate-400">
           <dt>{translate('admin.coupons.expires')}</dt>
-          <dd className="font-semibold text-slate-200">{formatDate(coupon.expiresAt)}</dd>
+          <dd className="font-semibold text-slate-200">
+            {coupon.endAt ? formatDate(coupon.endAt) : translate('admin.coupons.none')}
+          </dd>
         </div>
         <div className="flex justify-between text-slate-400">
           <dt>{translate('admin.coupons.used')}</dt>
           <dd className="font-semibold text-slate-200">
-            {coupon.used} / {coupon.limit}
+            {coupon.usedCount} / {coupon.usageLimit}
           </dd>
         </div>
       </dl>
@@ -91,15 +152,106 @@ function CouponCard({ coupon }: { coupon: Coupon }) {
       </div>
 
       <div className="mt-5 flex gap-2">
-        <Button variant="outline" size="sm" fullWidth>
-          {translate('admin.coupons.edit')}
+        <Button
+          variant="ghost"
+          size="sm"
+          fullWidth
+          loading={updateMutation.isPending}
+          onClick={handleToggleActive}
+        >
+          {coupon.active
+            ? translate('admin.coupons.pause')
+            : translate('admin.coupons.activate')}
         </Button>
-        <Button variant="ghost" size="sm" fullWidth>
-          {coupon.status === 'paused'
-            ? translate('admin.coupons.activate')
-            : translate('admin.coupons.pause')}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-rose-400"
+          loading={deleteMutation.isPending}
+          onClick={handleDelete}
+        >
+          <Trash2 className="size-4" />
         </Button>
       </div>
     </article>
+  )
+}
+
+function CreateCouponModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t: translate } = useTranslation()
+  const [form] = Form.useForm<CreateAdminCouponRequest>()
+  const createMutation = useCreateAdminCoupon()
+
+  const handleSubmit: FormProps<CreateAdminCouponRequest>['onFinish'] = (values) => {
+    createMutation.mutate(
+      { ...values, code: values.code.trim().toUpperCase() },
+      {
+        onSuccess: () => {
+          message.success(translate('admin.coupons.messages.created'))
+          form.resetFields()
+          onClose()
+        },
+        onError: () => message.error(translate('admin.coupons.messages.failed')),
+      },
+    )
+  }
+
+  return (
+    <Modal
+      open={open}
+      title={translate('admin.coupons.create')}
+      onCancel={onClose}
+      footer={null}
+      destroyOnHidden
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        className="mt-4"
+        initialValues={{ type: 'PERCENT', usageLimit: 100, active: true }}
+        onFinish={handleSubmit}
+      >
+        <Form.Item
+          name="code"
+          label={translate('admin.coupons.form.code')}
+          rules={[{ required: true, message: translate('admin.coupons.form.required') }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item name="type" label={translate('admin.coupons.form.type')}>
+          <Select
+            options={[
+              { value: 'PERCENT', label: translate('admin.coupons.form.typePercent') },
+              { value: 'FIXED', label: translate('admin.coupons.form.typeFixed') },
+            ]}
+          />
+        </Form.Item>
+        <Form.Item
+          name="value"
+          label={translate('admin.coupons.form.value')}
+          rules={[{ required: true, message: translate('admin.coupons.form.required') }]}
+        >
+          <InputNumber className="w-full" min={1} />
+        </Form.Item>
+        <Form.Item name="minOrderAmount" label={translate('admin.coupons.form.minOrder')}>
+          <InputNumber className="w-full" min={0} />
+        </Form.Item>
+        <Form.Item
+          name="usageLimit"
+          label={translate('admin.coupons.form.usageLimit')}
+          rules={[{ required: true, message: translate('admin.coupons.form.required') }]}
+        >
+          <InputNumber className="w-full" min={1} />
+        </Form.Item>
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" type="button" onClick={onClose}>
+            {translate('admin.common.cancel')}
+          </Button>
+          <Button type="submit" glow loading={createMutation.isPending}>
+            {translate('admin.coupons.form.save')}
+          </Button>
+        </div>
+      </Form>
+    </Modal>
   )
 }
