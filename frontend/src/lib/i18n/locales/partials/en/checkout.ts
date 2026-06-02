@@ -13,6 +13,20 @@ export const checkout = {
     delivery: 'Delivery method',
     payment: 'Payment method',
   },
+  address: {
+    empty: 'You have no shipping addresses yet.',
+    addLink: 'Add one in Profile',
+    default: 'Default',
+  },
+  coupon: {
+    title: 'Coupon code',
+    placeholder: 'Enter code',
+    apply: 'Apply',
+    applied: 'Coupon applied',
+    invalid: 'Invalid coupon',
+    failed: 'Could not validate coupon',
+    discount: 'Discount {{amount}}',
+  },
   fields: {
     fullName: 'Full name',
     phone: 'Phone number',
@@ -67,10 +81,19 @@ export const checkout = {
       title: 'Cash on delivery',
       desc: 'Pay when you receive the order',
     },
+    vnpay: {
+      title: 'VNPAY',
+      desc: 'Pay via VNPAY gateway',
+    },
+    stripe: {
+      title: 'Stripe',
+      desc: 'International cards via Stripe',
+    },
   },
   order: {
     title: 'Your order',
     subtotal: 'Subtotal',
+    discount: 'Discount',
     shipping: 'Shipping',
     tax: 'Tax (5%)',
     total: 'Total',
@@ -81,6 +104,8 @@ export const checkout = {
     termsSuffix: '',
   },
   messages: {
-    success: '🎉 Order placed! Order code: NS-2026-99999',
+    success: '🎉 Order placed successfully!',
+    failed: 'Could not place order. Please try again.',
+    noAddress: 'Please select a shipping address',
   },
 } as const

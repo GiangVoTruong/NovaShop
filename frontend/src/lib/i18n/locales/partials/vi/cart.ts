@@ -33,5 +33,8 @@ export const cart = {
   messages: {
     applied: 'Đã áp dụng mã NOVA20 — giảm 20%',
     invalid: 'Mã giảm giá không hợp lệ',
+    updateFailed: 'Không thể cập nhật số lượng',
+    removeFailed: 'Không thể xóa sản phẩm',
+    clearFailed: 'Không thể xóa giỏ hàng',
   },
 } as const

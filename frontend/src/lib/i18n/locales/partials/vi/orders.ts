@@ -29,9 +29,15 @@ export const orders = {
   total: 'Tổng tiền',
   payment: 'Thanh toán',
   shippingAddress: 'Giao đến',
+  note: 'Ghi chú đơn hàng',
+  noShippingAddress: 'Chưa có địa chỉ giao hàng',
   viewDetail: 'Xem chi tiết',
   reorder: 'Mua lại',
   cancel: 'Huỷ đơn',
+  detail: {
+    notFound: 'Không tìm thấy đơn hàng',
+    backToList: 'Quay lại danh sách đơn',
+  },
   messages: {
     cancelled: 'Đã huỷ đơn hàng',
   },

@@ -51,3 +51,15 @@ export type UserProfile = {
   createdAt: string
   updatedAt: string
 }
+
+export type UpdateUserProfileRequest = {
+  fullName: string
+  phone: string
+  avatarUrl?: string
+}
+
+export type ChangePasswordRequest = {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
+}

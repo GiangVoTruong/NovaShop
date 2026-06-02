@@ -1,4 +1,4 @@
-import type { ApiOrderResponse, ApiOrderStatus, ApiPaymentMethod } from '@/types/order.types'
+import type { ApiOrderResponse, ApiOrderShippingAddress, ApiOrderStatus, ApiPaymentMethod } from '@/types/order.types'
 import type { OrderStatus } from '@/features/NovaShop/shared/types'
 
 export const ORDER_ITEM_PLACEHOLDER_IMAGE =
@@ -44,4 +44,31 @@ export function getPaymentMethodLabel(method: ApiPaymentMethod): string {
 
 export function isOrderCancellable(order: ApiOrderResponse): boolean {
   return order.status === 'PENDING' || order.status === 'CONFIRMED'
+}
+
+export function formatShippingAddress(
+  shippingAddress: ApiOrderShippingAddress | null | undefined,
+  fallback = '—',
+): string {
+  if (!shippingAddress) {
+    return fallback
+  }
+
+  const location = [
+    shippingAddress.detail,
+    shippingAddress.ward,
+    shippingAddress.district,
+    shippingAddress.province,
+  ]
+    .filter(Boolean)
+    .join(', ')
+
+  const contact = [shippingAddress.fullName, shippingAddress.phone].filter(Boolean).join(' · ')
+  const parts = [contact, location].filter(Boolean)
+
+  return parts.length > 0 ? parts.join(' — ') : fallback
+}
+
+export function getOrderShippingLine(order: ApiOrderResponse, fallback = '—'): string {
+  return formatShippingAddress(order.shippingAddress, fallback)
 }

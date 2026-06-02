@@ -4,11 +4,12 @@ import EmptyState from '@/features/NovaShop/shared/ui/EmptyState'
 import { cx } from '@/features/NovaShop/shared/ui/cx'
 import { Pagination, Slider, Spin } from 'antd'
 import { Filter, Grid2X2, List, Search, SlidersHorizontal } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCategories } from '../../catalog/hooks/useCategories'
 import { useProducts } from '../../catalog/hooks/useProducts'
+import { PATHS } from '@/router/paths'
 import {
   LISTING_MODE_OPTIONS,
   SORT_OPTIONS,
@@ -25,13 +26,20 @@ function listingModeKey(mode: ReturnType<typeof parseListingMode>) {
 
 export default function ProductListPage() {
   const { t: translate } = useTranslation()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const mode = parseListingMode(searchParams.get('mode'))
   const categoryParam = searchParams.get('cat') as CategorySlug | null
+  const keywordParam = searchParams.get('keyword')?.trim() ?? ''
   const modeKey = listingModeKey(mode)
-  const listingKey = `${mode}:${categoryParam ?? ''}`
+  const listingKey = `${mode}:${categoryParam ?? ''}:${keywordParam}`
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [pagination, setPagination] = useState({ listingKey, page: 1 })
+  const [localKeyword, setLocalKeyword] = useState(keywordParam)
+
+  useEffect(() => {
+    setLocalKeyword(keywordParam)
+  }, [keywordParam])
 
   if (pagination.listingKey !== listingKey) {
     setPagination({ listingKey, page: 1 })
@@ -40,6 +48,7 @@ export default function ProductListPage() {
   const page = pagination.page
 
   const productsQuery = useProducts({
+    keyword: keywordParam || undefined,
     page: page - 1,
     size: PAGE_SIZE,
     category: categoryParam ?? undefined,
@@ -53,6 +62,21 @@ export default function ProductListPage() {
   const pageItems = productsQuery.data?.data ?? []
   const totalCount = productsQuery.data?.total ?? 0
   const brands = Array.from(new Set(pageItems.map((product) => product.sellerName)))
+
+  const handleProductSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const params = new URLSearchParams(searchParams)
+    const nextKeyword = localKeyword.trim()
+
+    if (nextKeyword) {
+      params.set('keyword', nextKeyword)
+    } else {
+      params.delete('keyword')
+    }
+
+    const query = params.toString()
+    navigate(query ? `${PATHS.PRODUCTS}?${query}` : PATHS.PRODUCTS)
+  }
 
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 xl:px-14">
@@ -194,11 +218,15 @@ export default function ProductListPage() {
         </aside>
 
         <div className="min-w-0 flex-1 space-y-6">
-          <div className="customer-panel flex flex-col gap-3 rounded-3xl p-3 sm:flex-row sm:items-center sm:justify-between">
+          <form
+            onSubmit={handleProductSearch}
+            className="customer-panel flex flex-col gap-3 rounded-3xl p-3 sm:flex-row sm:items-center sm:justify-between"
+          >
             <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 sm:max-w-sm sm:flex-1">
               <Search className="size-4 text-slate-400" />
               <input
-                readOnly
+                value={localKeyword}
+                onChange={(event) => setLocalKeyword(event.target.value)}
                 placeholder={translate('product.filters.searchPlaceholder')}
                 className="h-10 flex-1 bg-transparent text-sm focus:outline-none"
               />
@@ -250,7 +278,7 @@ export default function ProductListPage() {
                 <Filter className="size-4" />
               </button>
             </div>
-          </div>
+          </form>
 
           {productsQuery.isLoading ? (
             <div className="flex min-h-[240px] items-center justify-center">

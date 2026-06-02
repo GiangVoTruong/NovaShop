@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { PATHS, productDetailPath } from '@/router/paths'
+import { orderDetailPath, PATHS, productDetailPath } from '@/router/paths'
 import {
   CUSTOMER_ORDER_TABS,
   ORDER_STATUS_ACCENT,
@@ -22,6 +22,7 @@ import {
 import { useCancelOrder, useOrders } from '../hooks/useOrders'
 import {
   getOrderCode,
+  getOrderShippingLine,
   getOrderTotal,
   getPaymentMethodLabel,
   isOrderCancellable,
@@ -323,7 +324,7 @@ export default function OrdersPage() {
                           {translate('orders.shippingAddress')}
                         </p>
                         <p className="line-clamp-2 text-sm font-semibold text-slate-800">
-                          —
+                          {getOrderShippingLine(order, translate('orders.noShippingAddress'))}
                         </p>
                       </div>
                     </div>
@@ -352,9 +353,11 @@ export default function OrdersPage() {
                       <Button variant="outline" size="md" leftIcon={<RotateCcw className="size-4" />}>
                         {translate('orders.reorder')}
                       </Button>
-                      <Button size="md" rightIcon={<ArrowRight className="size-4" />}>
-                        {translate('orders.viewDetail')}
-                      </Button>
+                      <Link to={orderDetailPath(order.id)}>
+                        <Button size="md" rightIcon={<ArrowRight className="size-4" />}>
+                          {translate('orders.viewDetail')}
+                        </Button>
+                      </Link>
                     </div>
                   </footer>
                 </div>

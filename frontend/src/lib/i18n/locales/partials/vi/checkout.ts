@@ -13,6 +13,20 @@ export const checkout = {
     delivery: 'Phương thức giao hàng',
     payment: 'Phương thức thanh toán',
   },
+  address: {
+    empty: 'Bạn chưa có địa chỉ giao hàng.',
+    addLink: 'Thêm tại Hồ sơ',
+    default: 'Mặc định',
+  },
+  coupon: {
+    title: 'Mã giảm giá',
+    placeholder: 'Nhập mã',
+    apply: 'Áp dụng',
+    applied: 'Áp dụng mã thành công',
+    invalid: 'Mã không hợp lệ',
+    failed: 'Không thể kiểm tra mã',
+    discount: 'Giảm {{amount}}',
+  },
   fields: {
     fullName: 'Họ và tên',
     phone: 'Số điện thoại',
@@ -67,10 +81,19 @@ export const checkout = {
       title: 'COD - Tiền mặt',
       desc: 'Thanh toán khi nhận hàng',
     },
+    vnpay: {
+      title: 'VNPAY',
+      desc: 'Thanh toán qua cổng VNPAY',
+    },
+    stripe: {
+      title: 'Stripe',
+      desc: 'Thẻ quốc tế qua Stripe',
+    },
   },
   order: {
     title: 'Đơn hàng của bạn',
     subtotal: 'Tạm tính',
+    discount: 'Giảm giá',
     shipping: 'Phí giao hàng',
     tax: 'Thuế (5%)',
     total: 'Tổng cộng',
@@ -81,6 +104,8 @@ export const checkout = {
     termsSuffix: 'của NovaShop',
   },
   messages: {
-    success: '🎉 Đặt hàng thành công! Mã đơn: NS-2026-99999',
+    success: '🎉 Đặt hàng thành công!',
+    failed: 'Không thể đặt hàng. Vui lòng thử lại.',
+    noAddress: 'Vui lòng chọn địa chỉ giao hàng',
   },
 } as const

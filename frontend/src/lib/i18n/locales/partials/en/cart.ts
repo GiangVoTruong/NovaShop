@@ -33,5 +33,8 @@ export const cart = {
   messages: {
     applied: 'Applied NOVA20 — 20% off',
     invalid: 'Invalid coupon code',
+    updateFailed: 'Could not update quantity',
+    removeFailed: 'Could not remove item',
+    clearFailed: 'Could not clear cart',
   },
 } as const

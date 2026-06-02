@@ -8,4 +8,5 @@ export const wishlist = {
     description: 'Tap the heart icon on a product to add it to your wishlist.',
     explore: 'Browse products',
   },
+  remove: 'Remove from wishlist',
 } as const

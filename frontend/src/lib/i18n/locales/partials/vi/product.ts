@@ -103,6 +103,16 @@ export const product = {
       eyebrow: 'Có thể bạn thích',
       title: 'Sản phẩm liên quan',
     },
+    reviewsSection: {
+      title: 'Đánh giá từ khách hàng',
+      empty: 'Chưa có đánh giá nào.',
+      writeTitle: 'Viết đánh giá',
+      rating: 'Số sao',
+      commentPlaceholder: 'Chia sẻ trải nghiệm của bạn…',
+      submit: 'Gửi đánh giá',
+      success: 'Gửi đánh giá thành công',
+      error: 'Không thể gửi đánh giá (cần mua và nhận hàng trước)',
+    },
     messages: {
       addedToCart: 'Đã thêm vào giỏ hàng',
     },

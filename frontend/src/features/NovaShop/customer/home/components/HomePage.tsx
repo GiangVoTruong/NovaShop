@@ -1,4 +1,5 @@
 import { formatCurrency } from '@/features/NovaShop/shared/format'
+import CatalogLoadErrorAlert from '@/features/NovaShop/shared/ui/CatalogLoadErrorAlert'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import StarRating from '@/features/NovaShop/shared/ui/StarRating'
 import { PATHS, productDetailPath } from '@/router/paths'
@@ -66,6 +67,16 @@ export default function HomePage() {
   const sideProductA = featured[1]
   const sideProductB = featured[2]
   const isLoadingProducts = featuredQuery.isLoading || flashSaleQuery.isLoading
+  const catalogError =
+    featuredQuery.error ?? flashSaleQuery.error ?? categoriesQuery.error
+  const isCatalogRetrying =
+    featuredQuery.isFetching || flashSaleQuery.isFetching || categoriesQuery.isFetching
+
+  const refetchCatalog = () => {
+    void featuredQuery.refetch()
+    void flashSaleQuery.refetch()
+    void categoriesQuery.refetch()
+  }
 
   return (
     <>
@@ -238,6 +249,14 @@ export default function HomePage() {
       </section>
 
       <div className="mx-auto max-w-[1440px] space-y-24 px-4 py-6 sm:px-6 lg:px-10 xl:px-14">
+        {catalogError ? (
+          <CatalogLoadErrorAlert
+            error={catalogError}
+            onRetry={refetchCatalog}
+            isRetrying={isCatalogRetrying}
+          />
+        ) : null}
+
         <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {USP_ITEMS.map((feature) => (
             <div

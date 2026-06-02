@@ -1,3 +1,4 @@
+import { requireApiData } from '@/lib/api/requireApiData'
 import { axiosInstance } from '@/lib/axios/instances'
 import type {
   AuthLoginRequest,
@@ -7,16 +8,11 @@ import type {
   AuthRegisterResponse,
   AuthResendVerificationRequest,
   AuthVerifyEmailRequest,
+  ChangePasswordRequest,
+  UpdateUserProfileRequest,
   UserProfile,
 } from '@/types/auth.types'
 import type { ApiResponse } from '@/types/product.types'
-
-function requireApiData<T>(body: ApiResponse<T>, fallbackMessage: string): T {
-  if (!body.success || body.data == null) {
-    throw new Error(body.message || fallbackMessage)
-  }
-  return body.data
-}
 
 const authService = {
   login: async (request: AuthLoginRequest): Promise<AuthLoginResponse> => {
@@ -58,6 +54,15 @@ const authService = {
 
   resendVerification: async (request: AuthResendVerificationRequest): Promise<void> => {
     await axiosInstance.post('/auth/resend-verification', request)
+  },
+
+  updateMe: async (request: UpdateUserProfileRequest): Promise<UserProfile> => {
+    const { data } = await axiosInstance.put<ApiResponse<UserProfile>>('/users/me', request)
+    return requireApiData(data, 'Failed to update profile')
+  },
+
+  changePassword: async (request: ChangePasswordRequest): Promise<void> => {
+    await axiosInstance.post('/auth/change-password', request)
   },
 }
 

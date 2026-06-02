@@ -8,6 +8,14 @@ export function useOrders() {
   })
 }
 
+export function useOrder(orderId: string | undefined) {
+  return useQuery({
+    queryKey: ['orders', orderId],
+    queryFn: () => orderService.getById(orderId!),
+    enabled: Boolean(orderId),
+  })
+}
+
 export function useCheckout() {
   const queryClient = useQueryClient()
 

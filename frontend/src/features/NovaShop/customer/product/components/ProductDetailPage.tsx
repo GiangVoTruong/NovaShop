@@ -1,14 +1,18 @@
-import { formatCurrency } from '@/features/NovaShop/shared/format'
+import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
+import { useAddToCart } from '../../cart/hooks/useCart'
+import { useToggleWishlist } from '../../wishlist/hooks/useWishlist'
+import { formatCurrency, formatDate } from '@/features/NovaShop/shared/format'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import StarRating from '@/features/NovaShop/shared/ui/StarRating'
 import { CategoryTag } from '@/features/NovaShop/shared/ui/StatusBadge'
 import { cx } from '@/features/NovaShop/shared/ui/cx'
 import { PATHS } from '@/router/paths'
-import { Spin } from 'antd'
+import { message, Spin } from 'antd'
 import {
   ArrowLeft,
   CheckCircle2,
   ChevronRight,
+  Heart,
   Minus,
   Plus,
   RotateCcw,
@@ -18,7 +22,7 @@ import {
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useCategories } from '../../catalog/hooks/useCategories'
 import { useProduct, useProducts } from '../../catalog/hooks/useProducts'
 import { buildCategorySlugMap } from '../../catalog/lib/categoryApi'
@@ -31,6 +35,7 @@ import {
   getProductSalePrice,
 } from '../../catalog/lib/productApi'
 import ProductCard from './ProductCard'
+import { useCreateReview, useProductReviews } from '../hooks/useReviews'
 
 const DETAIL_PERKS = [
   {
@@ -57,6 +62,12 @@ export default function ProductDetailPage() {
   const { t: translate } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { isAuthenticated } = useAuth()
+  const addToCartMutation = useAddToCart()
+  const { inWishlist, isPending: wishlistPending, toggle: toggleWishlist } = useToggleWishlist(id)
+  const reviewsQuery = useProductReviews(id)
+  const createReviewMutation = useCreateReview(id)
   const productQuery = useProduct(id)
   const product = productQuery.data
   const categoriesQuery = useCategories()
@@ -76,6 +87,8 @@ export default function ProductDetailPage() {
   })
   const [activeImage, setActiveImage] = useState<number>(0)
   const [quantity, setQuantity] = useState<number>(1)
+  const [reviewRating, setReviewRating] = useState<number>(5)
+  const [reviewComment, setReviewComment] = useState('')
 
   const related = product
     ? (relatedQuery.data?.data ?? []).filter((entry) => entry.id !== product.id).slice(0, 4)
@@ -108,6 +121,62 @@ export default function ProductDetailPage() {
   const listPrice = getProductListPrice(product)
   const discount = getProductDiscountPercent(product)
   const stock = product.stock ?? 0
+
+  const requireLogin = () => {
+    navigate(PATHS.LOGIN, { state: { from: location.pathname } })
+  }
+
+  const handleAddToCart = (redirectToCheckout = false) => {
+    if (!isAuthenticated) {
+      requireLogin()
+      return
+    }
+
+    if (stock <= 0) {
+      return
+    }
+
+    addToCartMutation.mutate(
+      { productId: product.id, quantity },
+      {
+        onSuccess: () => {
+          message.success(translate('product.detail.messages.addedToCart'))
+          if (redirectToCheckout) {
+            navigate(PATHS.CHECKOUT)
+          }
+        },
+      },
+    )
+  }
+
+  const handleToggleWishlist = () => {
+    if (!isAuthenticated) {
+      requireLogin()
+      return
+    }
+
+    toggleWishlist()
+  }
+
+  const handleSubmitReview = () => {
+    if (!isAuthenticated) {
+      requireLogin()
+      return
+    }
+
+    createReviewMutation.mutate(
+      { rating: reviewRating, comment: reviewComment.trim() || undefined },
+      {
+        onSuccess: () => {
+          message.success(translate('product.detail.reviewsSection.success'))
+          setReviewComment('')
+        },
+        onError: () => message.error(translate('product.detail.reviewsSection.error')),
+      },
+    )
+  }
+
+  const reviews = reviewsQuery.data ?? []
 
   return (
     <div className="mx-auto max-w-[1440px] space-y-16 px-4 py-8 sm:px-6 lg:px-10 xl:px-14">
@@ -233,9 +302,44 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" variant="dark" fullWidth onClick={() => navigate(PATHS.PRODUCTS)}>
-              {translate('product.detail.backToList')}
+            <Button
+              size="lg"
+              glow
+              fullWidth
+              loading={addToCartMutation.isPending}
+              disabled={stock <= 0}
+              onClick={() => handleAddToCart(false)}
+            >
+              {translate('product.detail.addToCart')}
             </Button>
+            <Button
+              size="lg"
+              variant="dark"
+              fullWidth
+              loading={addToCartMutation.isPending}
+              disabled={stock <= 0}
+              onClick={() => handleAddToCart(true)}
+            >
+              {translate('product.detail.buyNow')}
+            </Button>
+            <button
+              type="button"
+              className={cx(
+                'grid h-13 w-13 shrink-0 place-items-center rounded-2xl border-2 bg-white transition-colors',
+                inWishlist
+                  ? 'border-rose-300 text-rose-500 hover:border-rose-400'
+                  : 'border-slate-200 text-slate-600 hover:border-slate-900',
+              )}
+              aria-label={
+                inWishlist
+                  ? translate('product.card.removeFromWishlist')
+                  : translate('product.card.addToWishlist')
+              }
+              disabled={wishlistPending}
+              onClick={handleToggleWishlist}
+            >
+              <Heart className={cx('size-5', inWishlist && 'fill-current')} />
+            </button>
             <button
               type="button"
               className="grid h-13 w-13 shrink-0 place-items-center rounded-2xl border-2 border-slate-200 bg-white text-slate-600 hover:border-slate-900"
@@ -283,6 +387,75 @@ export default function ProductDetailPage() {
               {translate('product.detail.description.originValue')}
             </li>
           </ul>
+        </div>
+      </section>
+
+      <section className="rounded-4xl border border-slate-200/60 bg-white/85 p-8 backdrop-blur-xl">
+        <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">
+          {translate('product.detail.reviewsSection.title')}
+        </h2>
+
+        {reviewsQuery.isLoading ? (
+          <div className="mt-6 flex justify-center">
+            <Spin />
+          </div>
+        ) : reviews.length === 0 ? (
+          <p className="mt-4 text-sm text-slate-500">
+            {translate('product.detail.reviewsSection.empty')}
+          </p>
+        ) : (
+          <ul className="mt-6 space-y-4">
+            {reviews.map((review) => (
+              <li key={review.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-bold text-slate-900">{review.userFullName}</p>
+                  <StarRating value={review.rating} size={14} />
+                </div>
+                {review.comment && (
+                  <p className="mt-2 text-sm text-slate-600">{review.comment}</p>
+                )}
+                <p className="mt-2 text-xs text-slate-400">{formatDate(review.createdAt)}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="mt-8 rounded-2xl border border-dashed border-slate-200 p-4">
+          <h3 className="text-sm font-bold text-slate-900">
+            {translate('product.detail.reviewsSection.writeTitle')}
+          </h3>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <label className="text-sm text-slate-600" htmlFor="review-rating">
+              {translate('product.detail.reviewsSection.rating')}
+            </label>
+            <select
+              id="review-rating"
+              value={reviewRating}
+              onChange={(event) => setReviewRating(Number(event.target.value))}
+              className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+            >
+              {[5, 4, 3, 2, 1].map((rating) => (
+                <option key={rating} value={rating}>
+                  {rating} ★
+                </option>
+              ))}
+            </select>
+          </div>
+          <textarea
+            value={reviewComment}
+            onChange={(event) => setReviewComment(event.target.value)}
+            placeholder={translate('product.detail.reviewsSection.commentPlaceholder')}
+            rows={3}
+            className="mt-4 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm focus:border-fuchsia-500 focus:outline-none"
+          />
+          <Button
+            className="mt-4"
+            glow
+            loading={createReviewMutation.isPending}
+            onClick={handleSubmitReview}
+          >
+            {translate('product.detail.reviewsSection.submit')}
+          </Button>
         </div>
       </section>
 

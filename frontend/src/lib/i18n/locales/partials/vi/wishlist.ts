@@ -8,4 +8,5 @@ export const wishlist = {
     description: 'Nhấn vào biểu tượng trái tim trên sản phẩm để thêm vào danh sách yêu thích.',
     explore: 'Khám phá sản phẩm',
   },
+  remove: 'Xóa khỏi wishlist',
 } as const

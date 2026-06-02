@@ -62,6 +62,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryClient.setQueryData(AUTH_ME_QUERY_KEY, null)
     queryClient.removeQueries({ queryKey: ['cart'] })
     queryClient.removeQueries({ queryKey: ['orders'] })
+    queryClient.removeQueries({ queryKey: ['wishlist'] })
+    queryClient.removeQueries({ queryKey: ['addresses'] })
+    queryClient.removeQueries({ queryKey: ['notifications'] })
   }, [queryClient])
 
   const value = useMemo<AuthContextValue>(

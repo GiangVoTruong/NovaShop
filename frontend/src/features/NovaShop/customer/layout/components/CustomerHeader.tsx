@@ -2,16 +2,32 @@ import { cx } from '@/features/NovaShop/shared/ui/cx'
 import LanguageSwitcher from '@/lib/i18n/LanguageSwitcher'
 import { PATHS } from '@/router/paths'
 import { Heart, Search, ShoppingCart, Sparkles, User } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
+import { useCartItemCount } from '@/features/NovaShop/customer/cart/hooks/useCart'
 import { CUSTOMER_NAV_LINKS } from '../constants/layout.constants'
+
+function CartBadge({ count }: { count: number }) {
+  if (count <= 0) {
+    return null
+  }
+
+  return (
+    <span className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-linear-to-r from-fuchsia-500 to-purple-500 px-1 text-[10px] font-bold text-white">
+      {count > 99 ? '99+' : count}
+    </span>
+  )
+}
 
 export default function CustomerHeader() {
   const { t: translate } = useTranslation()
-  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+  const { user, isAuthenticated } = useAuth()
+  const cartItemCount = useCartItemCount()
   const [scrolled, setScrolled] = useState(false)
+  const [searchKeyword, setSearchKeyword] = useState('')
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 16)
@@ -19,6 +35,18 @@ export default function CustomerHeader() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const keyword = searchKeyword.trim()
+    if (!keyword) {
+      navigate(PATHS.PRODUCTS)
+      return
+    }
+
+    const params = new URLSearchParams({ keyword })
+    navigate(`${PATHS.PRODUCTS}?${params.toString()}`)
+  }
 
   return (
     <header
@@ -64,22 +92,27 @@ export default function CustomerHeader() {
           </nav>
 
           <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-1.5 sm:gap-2">
-            <label htmlFor="customer-search" className="sr-only">
-              {translate('nav.searchPlaceholder')}
-            </label>
-            <div className="hidden min-w-0 max-w-sm flex-1 items-center gap-2 rounded-2xl border border-slate-200/70 bg-white/90 px-3 shadow-sm transition focus-within:border-fuchsia-300/80 focus-within:ring-2 focus-within:ring-fuchsia-100/80 md:flex lg:max-w-md">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="hidden min-w-0 max-w-sm flex-1 items-center gap-2 rounded-2xl border border-slate-200/70 bg-white/90 px-3 shadow-sm transition focus-within:border-fuchsia-300/80 focus-within:ring-2 focus-within:ring-fuchsia-100/80 md:flex lg:max-w-md"
+            >
               <Search className="size-4 shrink-0 text-fuchsia-400" />
+              <label htmlFor="customer-search" className="sr-only">
+                {translate('nav.searchPlaceholder')}
+              </label>
               <input
                 id="customer-search"
                 name="customerSearch"
                 type="search"
+                value={searchKeyword}
+                onChange={(event) => setSearchKeyword(event.target.value)}
                 placeholder={translate('nav.searchPlaceholder')}
                 className="h-10 min-w-0 flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
               />
               <kbd className="hidden shrink-0 rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] text-slate-400 lg:inline">
-                ⌘K
+                Enter
               </kbd>
-            </div>
+            </form>
 
             <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
               <LanguageSwitcher />
@@ -96,8 +129,9 @@ export default function CustomerHeader() {
                 aria-label={translate('nav.cart')}
               >
                 <ShoppingCart className="size-5" />
+                <CartBadge count={cartItemCount} />
               </Link>
-              {!isAuthenticated && (
+              {!isAuthenticated ? (
                 <>
                   <Link
                     to={PATHS.LOGIN}
@@ -113,6 +147,25 @@ export default function CustomerHeader() {
                     {translate('auth.register')}
                   </Link>
                 </>
+              ) : (
+                <Link
+                  to={PATHS.PROFILE}
+                  className="hidden h-10 max-w-[180px] shrink-0 items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:border-fuchsia-300 hover:text-fuchsia-600 lg:inline-flex"
+                  aria-label={translate('nav.profile')}
+                >
+                  {user?.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt=""
+                      className="size-7 shrink-0 rounded-full object-cover ring-2 ring-fuchsia-100"
+                    />
+                  ) : (
+                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-linear-to-br from-fuchsia-500 to-purple-500 text-white">
+                      <User className="size-3.5" />
+                    </span>
+                  )}
+                  <span className="truncate">{user?.fullName ?? translate('nav.profile')}</span>
+                </Link>
               )}
             </div>
           </div>

@@ -29,9 +29,15 @@ export const orders = {
   total: 'Total',
   payment: 'Payment',
   shippingAddress: 'Ship to',
+  note: 'Order note',
+  noShippingAddress: 'No shipping address',
   viewDetail: 'View details',
   reorder: 'Buy again',
   cancel: 'Cancel order',
+  detail: {
+    notFound: 'Order not found',
+    backToList: 'Back to orders',
+  },
   messages: {
     cancelled: 'Order cancelled',
   },

@@ -103,6 +103,16 @@ export const product = {
       eyebrow: 'You may also like',
       title: 'Related products',
     },
+    reviewsSection: {
+      title: 'Customer reviews',
+      empty: 'No reviews yet.',
+      writeTitle: 'Write a review',
+      rating: 'Rating',
+      commentPlaceholder: 'Share your experience…',
+      submit: 'Submit review',
+      success: 'Review submitted',
+      error: 'Could not submit review (purchase and delivery required)',
+    },
     messages: {
       addedToCart: 'Added to cart',
     },
