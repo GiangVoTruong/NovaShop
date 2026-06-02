@@ -43,6 +43,31 @@ public class ShopOrder {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "address_id")
+    private Address shippingAddress;
+
+    @Column(name = "shipping_full_name", length = 100)
+    private String shippingFullName;
+
+    @Column(name = "shipping_phone", length = 20)
+    private String shippingPhone;
+
+    @Column(name = "shipping_province", length = 100)
+    private String shippingProvince;
+
+    @Column(name = "shipping_district", length = 100)
+    private String shippingDistrict;
+
+    @Column(name = "shipping_ward", length = 100)
+    private String shippingWard;
+
+    @Column(name = "shipping_detail", length = 255)
+    private String shippingDetail;
+
+    @Column(length = 500)
+    private String note;
+
     @Column(name = "total_amount", precision = 15, scale = 2)
     private BigDecimal totalAmount;
 

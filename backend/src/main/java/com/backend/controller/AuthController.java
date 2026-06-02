@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.dto.auth.AuthLoginRequestDto;
+import com.backend.dto.auth.ChangePasswordRequestDto;
 import com.backend.dto.auth.AuthLoginResponseDto;
 import com.backend.dto.auth.AuthRefreshRequestDto;
 import com.backend.dto.auth.AuthRegisterRequestDto;
@@ -15,6 +16,7 @@ import com.backend.dto.auth.AuthResendVerificationRequestDto;
 import com.backend.dto.auth.AuthVerifyEmailRequestDto;
 import com.backend.dto.common.ApiResponse;
 import com.backend.dto.common.ApiResponses;
+import com.backend.dto.common.MessageResponseDto;
 import com.backend.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,6 +64,18 @@ public class AuthController {
             description = "Xác minh mã OTP/email code và kích hoạt tài khoản.")
     public ResponseEntity<ApiResponse<AuthLoginResponseDto>> verifyEmail(@Valid @RequestBody AuthVerifyEmailRequestDto request) {
         return ApiResponses.ok(authService.verifyEmail(request), "Email verified successfully");
+    }
+
+    @PostMapping("/change-password")
+    @Operation(
+            summary = "Đổi mật khẩu",
+            description = "Đổi mật khẩu cho người dùng đang đăng nhập.")
+    public ResponseEntity<ApiResponse<MessageResponseDto>> changePassword(
+            @Valid @RequestBody ChangePasswordRequestDto request) {
+        authService.changePassword(request);
+        return ApiResponses.ok(
+                MessageResponseDto.builder().message("Password changed successfully").build(),
+                "Password changed successfully");
     }
 
     @PostMapping("/resend-verification")

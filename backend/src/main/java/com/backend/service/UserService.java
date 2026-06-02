@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.backend.dto.users.CreateUserRequestDto;
 import com.backend.dto.users.GetUserReponseDto;
+import com.backend.dto.users.UpdateUserProfileRequestDto;
 import com.backend.entity.User;
 import com.backend.mapper.UserMapper;
 import com.backend.repository.UserRepository;
@@ -43,6 +44,19 @@ public class UserService {
     @Transactional(readOnly = true)
     public GetUserReponseDto getCurrentUser() {
         return getUserById(SecurityUtils.getCurrentUserId());
+    }
+
+    @Transactional
+    public GetUserReponseDto updateCurrentUser(UpdateUserProfileRequestDto request) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        user.setFullName(request.getFullName().trim());
+        user.setPhone(request.getPhone().trim());
+        user.setAvatarUrl(request.getAvatarUrl());
+        user.setUpdatedAt(OffsetDateTime.now());
+        return userMapper.toDto(userRepository.save(user));
     }
 
     @Transactional

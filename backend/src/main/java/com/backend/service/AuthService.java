@@ -3,6 +3,7 @@ package com.backend.service;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.backend.dto.auth.AuthLoginRequestDto;
+import com.backend.dto.auth.ChangePasswordRequestDto;
 import com.backend.dto.auth.AuthLoginResponseDto;
 import com.backend.dto.auth.AuthRefreshRequestDto;
 import com.backend.dto.auth.AuthRegisterRequestDto;
@@ -21,6 +23,7 @@ import com.backend.entity.User;
 import com.backend.enums.UserRole;
 import com.backend.repository.UserRepository;
 import com.backend.security.JwtService;
+import com.backend.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +38,9 @@ public class AuthService {
             = "Email not verified. A new verification code has been sent to your inbox.";
     private static final String ACCOUNT_DISABLED = "Account is disabled";
     private static final String INVALID_REFRESH_TOKEN = "Invalid refresh token";
+    private static final String CURRENT_PASSWORD_INCORRECT = "Current password is incorrect";
+    private static final String PASSWORDS_DO_NOT_MATCH = "New password and confirm password do not match";
+    private static final String PASSWORD_UNCHANGED = "New password must be different from current password";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -102,6 +108,28 @@ public class AuthService {
         }
 
         return buildAuthResponse(user);
+    }
+
+    @Transactional
+    public void changePassword(ChangePasswordRequestDto request) {
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, PASSWORDS_DO_NOT_MATCH);
+        }
+        if (request.getNewPassword().equals(request.getCurrentPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, PASSWORD_UNCHANGED);
+        }
+
+        UUID userId = SecurityUtils.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CURRENT_PASSWORD_INCORRECT);
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        user.setUpdatedAt(OffsetDateTime.now());
+        userRepository.save(user);
     }
 
     // --- Private helpers ---

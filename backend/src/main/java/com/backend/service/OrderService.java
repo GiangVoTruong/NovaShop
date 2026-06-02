@@ -1,20 +1,29 @@
 package com.backend.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.backend.dto.orders.AdminOrderResponseDto;
 import com.backend.dto.orders.CreateOrderRequestDto;
 import com.backend.dto.orders.GetOrderItemResponseDto;
 import com.backend.dto.orders.GetOrderResponseDto;
+import com.backend.dto.orders.OrderShippingAddressDto;
 import com.backend.dto.orders.UpdateOrderStatusRequestDto;
+import com.backend.entity.Address;
 import com.backend.entity.Cart;
 import com.backend.entity.CartItem;
 import com.backend.entity.Notification;
@@ -22,6 +31,7 @@ import com.backend.entity.OrderItem;
 import com.backend.entity.Product;
 import com.backend.entity.ShopOrder;
 import com.backend.entity.User;
+import com.backend.enums.NotificationType;
 import com.backend.enums.OrderStatus;
 import com.backend.enums.PaymentStatusType;
 import com.backend.enums.ProductStatus;
@@ -33,7 +43,10 @@ import com.backend.repository.OrderRepository;
 import com.backend.repository.ProductRepository;
 import com.backend.repository.UserRepository;
 import com.backend.security.SecurityUtils;
+import com.backend.util.PaginationUtils;
 
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -45,6 +58,7 @@ public class OrderService {
     private static final String FORBIDDEN_ORDER = "You can only access your own orders";
     private static final String INVALID_STATUS_TRANSITION = "Invalid order status transition";
     private static final String ORDER_NOT_CANCELLABLE = "Order cannot be cancelled";
+    private static final Set<String> ADMIN_ORDER_SORT_FIELDS = Set.of("createdAt", "finalAmount", "status");
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -53,6 +67,8 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
+    private final AddressService addressService;
+    private final CouponService couponService;
 
     @Transactional
     public GetOrderResponseDto checkout(CreateOrderRequestDto request) {
@@ -100,11 +116,33 @@ public class OrderService {
                     .build());
         }
 
+        Address shippingAddress = addressService.getOwnedAddress(userId, request.getAddressId());
+        String orderNote = normalizeNote(request.getNote());
+
+        BigDecimal shippingFee = BigDecimal.ZERO;
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
+            discountAmount = couponService.computeDiscountForCheckout(request.getCouponCode(), totalAmount);
+        }
+
+        BigDecimal finalAmount = totalAmount.subtract(discountAmount).add(shippingFee);
+        if (finalAmount.compareTo(BigDecimal.ZERO) < 0) {
+            finalAmount = BigDecimal.ZERO;
+        }
+
         OffsetDateTime now = OffsetDateTime.now();
         ShopOrder order = ShopOrder.builder()
                 .user(user)
+                .shippingAddress(shippingAddress)
+                .shippingFullName(shippingAddress.getFullName())
+                .shippingPhone(shippingAddress.getPhone())
+                .shippingProvince(shippingAddress.getProvince())
+                .shippingDistrict(shippingAddress.getDistrict())
+                .shippingWard(shippingAddress.getWard())
+                .shippingDetail(shippingAddress.getDetail())
+                .note(orderNote)
                 .totalAmount(totalAmount)
-                .finalAmount(totalAmount)
+                .finalAmount(finalAmount)
                 .status(OrderStatus.PENDING)
                 .paymentMethod(request.getPaymentMethod())
                 .paymentStatus(PaymentStatusType.UNPAID)
@@ -121,6 +159,7 @@ public class OrderService {
 
         notificationRepository.save(Notification.builder()
                 .user(user)
+                .type(NotificationType.ORDER_STATUS)
                 .title("Order placed successfully")
                 .message("Your order #" + savedOrder.getId() + " has been placed.")
                 .build());
@@ -142,6 +181,31 @@ public class OrderService {
         return toOrderResponse(order, orderItemRepository.findByOrderId(order.getId()));
     }
 
+    @Transactional(readOnly = true)
+    public Page<AdminOrderResponseDto> getAllOrdersAdmin(
+            OrderStatus status,
+            String keyword,
+            LocalDate fromDate,
+            LocalDate toDate,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir) {
+        SecurityUtils.requireRole(UserRole.ADMIN);
+        Pageable pageable = PaginationUtils.toPageable(page, size, resolveAdminSortField(sortBy), sortDir);
+        Specification<ShopOrder> specification = buildAdminOrderSpecification(status, keyword, fromDate, toDate);
+        return orderRepository.findAll(specification, pageable)
+                .map(order -> toAdminOrderDto(order, false));
+    }
+
+    @Transactional(readOnly = true)
+    public AdminOrderResponseDto getAdminOrderById(UUID orderId) {
+        SecurityUtils.requireRole(UserRole.ADMIN);
+        ShopOrder order = orderRepository.findDetailedById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ORDER_NOT_FOUND));
+        return toAdminOrderDto(order, true);
+    }
+
     @Transactional
     public GetOrderResponseDto cancelOrder(UUID orderId) {
         ShopOrder order = findAccessibleOrder(orderId);
@@ -157,6 +221,7 @@ public class OrderService {
 
         notificationRepository.save(Notification.builder()
                 .user(order.getUser())
+                .type(NotificationType.ORDER_STATUS)
                 .title("Order cancelled")
                 .message("Your order #" + order.getId() + " has been cancelled.")
                 .build());
@@ -180,6 +245,7 @@ public class OrderService {
 
         notificationRepository.save(Notification.builder()
                 .user(order.getUser())
+                .type(NotificationType.ORDER_STATUS)
                 .title("Order status updated")
                 .message("Your order #" + order.getId() + " is now " + request.getStatus().name() + ".")
                 .build());
@@ -211,15 +277,88 @@ public class OrderService {
         }
     }
 
+    private Specification<ShopOrder> buildAdminOrderSpecification(
+            OrderStatus status,
+            String keyword,
+            LocalDate fromDate,
+            LocalDate toDate) {
+        return (root, query, criteriaBuilder) -> {
+            if (Long.class != query.getResultType() && long.class != query.getResultType()) {
+                root.fetch("user", JoinType.INNER);
+                query.distinct(true);
+            }
+
+            List<Predicate> predicates = new ArrayList<>();
+            if (status != null) {
+                predicates.add(criteriaBuilder.equal(root.get("status"), status));
+            }
+            if (keyword != null && !keyword.isBlank()) {
+                String pattern = "%" + keyword.trim().toLowerCase() + "%";
+                var userJoin = root.join("user", JoinType.INNER);
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.like(criteriaBuilder.lower(userJoin.get("email")), pattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(userJoin.get("fullName")), pattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("id").as(String.class)), pattern)));
+            }
+            if (fromDate != null) {
+                OffsetDateTime from = fromDate.atStartOfDay().atOffset(ZoneOffset.UTC);
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), from));
+            }
+            if (toDate != null) {
+                OffsetDateTime toExclusive = toDate.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
+                predicates.add(criteriaBuilder.lessThan(root.get("createdAt"), toExclusive));
+            }
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
+        };
+    }
+
+    private String resolveAdminSortField(String sortBy) {
+        if (sortBy != null && ADMIN_ORDER_SORT_FIELDS.contains(sortBy)) {
+            return sortBy;
+        }
+        return "createdAt";
+    }
+
+    private AdminOrderResponseDto toAdminOrderDto(ShopOrder order, boolean includeItems) {
+        User customer = order.getUser();
+        long itemCount = orderItemRepository.countByOrder_Id(order.getId());
+        List<GetOrderItemResponseDto> items = includeItems
+                ? orderItemRepository.findByOrderId(order.getId()).stream().map(this::toOrderItemDto).toList()
+                : List.of();
+
+        return AdminOrderResponseDto.builder()
+                .id(order.getId())
+                .userId(customer.getId())
+                .customerFullName(customer.getFullName())
+                .customerEmail(customer.getEmail())
+                .customerPhone(customer.getPhone())
+                .totalAmount(order.getTotalAmount())
+                .finalAmount(order.getFinalAmount())
+                .status(order.getStatus())
+                .paymentMethod(order.getPaymentMethod())
+                .paymentStatus(order.getPaymentStatus())
+                .shippingAddress(toShippingAddressDto(order))
+                .note(order.getNote())
+                .itemCount((int) itemCount)
+                .items(items)
+                .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
+                .build();
+    }
+
     private void assertValidTransition(OrderStatus currentStatus, OrderStatus newStatus) {
         if (currentStatus == newStatus) {
             return;
         }
         boolean valid = switch (currentStatus) {
-            case PENDING -> newStatus == OrderStatus.CONFIRMED || newStatus == OrderStatus.CANCELLED;
-            case CONFIRMED -> newStatus == OrderStatus.SHIPPING || newStatus == OrderStatus.CANCELLED;
-            case SHIPPING -> newStatus == OrderStatus.DELIVERED;
-            case DELIVERED, CANCELLED -> false;
+            case PENDING ->
+                newStatus == OrderStatus.CONFIRMED || newStatus == OrderStatus.CANCELLED;
+            case CONFIRMED ->
+                newStatus == OrderStatus.SHIPPING || newStatus == OrderStatus.CANCELLED;
+            case SHIPPING ->
+                newStatus == OrderStatus.DELIVERED;
+            case DELIVERED, CANCELLED ->
+                false;
         };
         if (!valid) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, INVALID_STATUS_TRANSITION);
@@ -235,6 +374,8 @@ public class OrderService {
                 .status(order.getStatus())
                 .paymentMethod(order.getPaymentMethod())
                 .paymentStatus(order.getPaymentStatus())
+                .shippingAddress(toShippingAddressDto(order))
+                .note(order.getNote())
                 .items(orderItems.stream().map(this::toOrderItemDto).toList())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
@@ -250,5 +391,34 @@ public class OrderService {
                 .quantity(orderItem.getQuantity())
                 .subtotal(orderItem.getSubtotal())
                 .build();
+    }
+
+    private OrderShippingAddressDto toShippingAddressDto(ShopOrder order) {
+        if (order.getShippingFullName() == null
+                && order.getShippingPhone() == null
+                && order.getShippingProvince() == null
+                && order.getShippingDistrict() == null
+                && order.getShippingWard() == null
+                && order.getShippingDetail() == null) {
+            return null;
+        }
+        UUID addressId = order.getShippingAddress() != null ? order.getShippingAddress().getId() : null;
+        return OrderShippingAddressDto.builder()
+                .addressId(addressId)
+                .fullName(order.getShippingFullName())
+                .phone(order.getShippingPhone())
+                .province(order.getShippingProvince())
+                .district(order.getShippingDistrict())
+                .ward(order.getShippingWard())
+                .detail(order.getShippingDetail())
+                .build();
+    }
+
+    private String normalizeNote(String note) {
+        if (note == null) {
+            return null;
+        }
+        String trimmed = note.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

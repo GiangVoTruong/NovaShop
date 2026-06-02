@@ -18,6 +18,7 @@ import com.backend.dto.permissions.GetUserPermissionsResponseDto;
 import com.backend.dto.permissions.UpdateUserPermissionsRequestDto;
 import com.backend.dto.users.CreateUserRequestDto;
 import com.backend.dto.users.GetUserReponseDto;
+import com.backend.dto.users.UpdateUserProfileRequestDto;
 import com.backend.service.PermissionService;
 import com.backend.service.UserService;
 
@@ -49,6 +50,15 @@ public class UserController {
             description = "Trả về thông tin hồ sơ của người dùng đang đăng nhập.")
     public ResponseEntity<ApiResponse<GetUserReponseDto>> getCurrentUser() {
         return ApiResponses.ok(userService.getCurrentUser(), "Lấy thông tin người dùng thành công");
+    }
+
+    @PutMapping("/me")
+    @Operation(
+            summary = "Cập nhật hồ sơ người dùng hiện tại",
+            description = "Cập nhật fullName, phone, avatarUrl của người dùng đang đăng nhập.")
+    public ResponseEntity<ApiResponse<GetUserReponseDto>> updateCurrentUser(
+            @Valid @RequestBody UpdateUserProfileRequestDto request) {
+        return ApiResponses.ok(userService.updateCurrentUser(request), "Cập nhật hồ sơ thành công");
     }
 
     @GetMapping("/{id}")

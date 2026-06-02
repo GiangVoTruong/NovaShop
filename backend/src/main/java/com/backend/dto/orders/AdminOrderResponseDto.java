@@ -20,10 +20,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GetOrderResponseDto {
+public class AdminOrderResponseDto {
 
     private UUID id;
     private UUID userId;
+    private String customerFullName;
+    private String customerEmail;
+    private String customerPhone;
     private BigDecimal totalAmount;
     private BigDecimal finalAmount;
     private OrderStatus status;
@@ -31,6 +34,7 @@ public class GetOrderResponseDto {
     private PaymentStatusType paymentStatus;
     private OrderShippingAddressDto shippingAddress;
     private String note;
+    private int itemCount;
     private List<GetOrderItemResponseDto> items;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
