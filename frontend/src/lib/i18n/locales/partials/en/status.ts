@@ -4,6 +4,7 @@ export const status = {
     confirmed: 'Confirmed',
     packing: 'Packing',
     shipping: 'Shipping',
+    delivered_pending_receiver_confirm: 'Awaiting receiver confirmation',
     delivered: 'Delivered',
     cancelled: 'Cancelled',
   },

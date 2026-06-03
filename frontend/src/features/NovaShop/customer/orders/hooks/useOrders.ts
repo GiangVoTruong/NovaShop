@@ -1,10 +1,16 @@
+import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import orderService from '../services/orderService'
 
+export const ORDERS_QUERY_KEY = ['orders'] as const
+
 export function useOrders() {
+  const { isAuthenticated } = useAuth()
+
   return useQuery({
-    queryKey: ['orders'],
+    queryKey: ORDERS_QUERY_KEY,
     queryFn: orderService.getMyOrders,
+    enabled: isAuthenticated,
   })
 }
 
@@ -23,7 +29,7 @@ export function useCheckout() {
     mutationKey: ['checkout'],
     mutationFn: orderService.checkout,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['orders'] })
+      await queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY })
       await queryClient.invalidateQueries({ queryKey: ['cart'] })
     },
   })
@@ -36,7 +42,7 @@ export function useCancelOrder() {
     mutationKey: ['cancel-order'],
     mutationFn: (orderId: string) => orderService.cancelOrder(orderId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['orders'] })
+      await queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY })
     },
   })
 }

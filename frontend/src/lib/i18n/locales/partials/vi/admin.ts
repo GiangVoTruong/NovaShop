@@ -134,6 +134,7 @@ export const admin = {
     messages: {
       statusUpdated: 'Cập nhật trạng thái thành công',
       statusFailed: 'Không thể cập nhật trạng thái',
+      deliveredCodPaid: 'Đơn hoàn tất. Thanh toán COD sẽ được ghi nhận PAID trên hệ thống.',
     },
     detailPage: {
       eyebrow: 'Chi tiết đơn hàng',
@@ -154,6 +155,18 @@ export const admin = {
       itemsTitle: 'Sản phẩm trong đơn',
       quantity: 'Số lượng: {{count}}',
       noItems: 'Không có sản phẩm',
+      workflowTitle: 'Luồng xử lý đơn (tạm)',
+      workflowHint:
+        'CONFIRMED → Shop giao shipper → SHIPPING → Shipper chụp ảnh → chờ khách → DELIVERED',
+      workflowCurrent: '← hiện tại',
+      shopConfirm: 'SHOP: Đã xác nhận',
+      shopStartShipping: 'SHOP: Đang giao',
+      shipperDeliveredWithPhoto: 'SHIPPER: Chụp ảnh + đã giao',
+      customerConfirmReceived: 'KHÁCH: Xác nhận đã nhận',
+      deliveryProofLabel: 'Ảnh giao hàng (placeholder tạm)',
+      deliveryProofPlaceholder:
+        'Nhập link ảnh tạm để bật bước Shipper chụp ảnh + đã giao',
+      codDeliveredNote: 'Khi khách xác nhận, đơn DELIVERED và COD chuyển PAID (BE).',
     },
   },
   customers: {

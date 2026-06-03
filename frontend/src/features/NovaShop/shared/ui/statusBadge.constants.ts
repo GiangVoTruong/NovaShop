@@ -6,6 +6,7 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   packing: 'Đang đóng gói',
   shipping: 'Đang giao',
   delivered: 'Đã giao',
+  delivered_pending_receiver_confirm: 'Chờ người nhận xác nhận',
   cancelled: 'Đã huỷ',
 }
 
@@ -18,6 +19,7 @@ export const ORDER_STATUS_TONE: Record<
   packing: 'purple',
   shipping: 'cyan',
   delivered: 'emerald',
+  delivered_pending_receiver_confirm: 'blue',
   cancelled: 'rose',
 }
 

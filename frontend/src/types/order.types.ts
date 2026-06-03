@@ -1,4 +1,10 @@
-export type ApiOrderStatus = 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED'
+export type ApiOrderStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'SHIPPING'
+  | 'DELIVERED_PENDING_RECEIVER_CONFIRM'
+  | 'DELIVERED'
+  | 'CANCELLED'
 
 export type ApiPaymentMethod = 'COD' | 'VNPAY' | 'STRIPE'
 

@@ -1,5 +1,10 @@
-import type { ApiOrderResponse, ApiOrderShippingAddress, ApiOrderStatus, ApiPaymentMethod } from '@/types/order.types'
 import type { OrderStatus } from '@/features/NovaShop/shared/types'
+import type {
+  ApiOrderResponse,
+  ApiOrderShippingAddress,
+  ApiOrderStatus,
+  ApiPaymentMethod,
+} from '@/types/order.types'
 
 export const ORDER_ITEM_PLACEHOLDER_IMAGE =
   'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&auto=format&fit=crop'
@@ -8,8 +13,13 @@ const CUSTOMER_ORDER_STATUS: Record<ApiOrderStatus, OrderStatus> = {
   PENDING: 'pending',
   CONFIRMED: 'confirmed',
   SHIPPING: 'shipping',
+  DELIVERED_PENDING_RECEIVER_CONFIRM: 'delivered_pending_receiver_confirm',
   DELIVERED: 'delivered',
   CANCELLED: 'cancelled',
+}
+
+export function normalizeApiOrderStatus(status: string): ApiOrderStatus {
+  return status as ApiOrderStatus
 }
 
 const PAYMENT_METHOD_LABELS: Record<ApiPaymentMethod, string> = {
@@ -34,8 +44,8 @@ export function getOrderSubtotal(order: ApiOrderResponse): number {
   return toOrderNumber(order.totalAmount)
 }
 
-export function toCustomerOrderStatus(status: ApiOrderStatus): OrderStatus {
-  return CUSTOMER_ORDER_STATUS[status]
+export function toCustomerOrderStatus(status: ApiOrderStatus | string): OrderStatus {
+  return CUSTOMER_ORDER_STATUS[normalizeApiOrderStatus(status)]
 }
 
 export function getPaymentMethodLabel(method: ApiPaymentMethod): string {

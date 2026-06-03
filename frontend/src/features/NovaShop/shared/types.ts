@@ -41,6 +41,7 @@ export type OrderStatus =
   | 'confirmed'
   | 'packing'
   | 'shipping'
+  | 'delivered_pending_receiver_confirm'
   | 'delivered'
   | 'cancelled'
 

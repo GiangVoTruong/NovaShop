@@ -17,6 +17,7 @@ import {
   getAdminOrderCode,
   getAdminOrderTotal,
 } from '../../lib/adminApi'
+import { normalizeApiOrderStatus } from '@/features/NovaShop/customer/orders/lib/orderApi'
 
 export default function AdminOrdersPage() {
   const { t: translate } = useTranslation()
@@ -107,7 +108,7 @@ export default function AdminOrdersPage() {
       render: (_: unknown, order: AdminOrderResponse) => (
         <Select
           size="small"
-          value={order.status}
+          value={normalizeApiOrderStatus(order.status)}
           options={statusSelectOptions}
           loading={updateStatusMutation.isPending}
           className="min-w-[140px]"

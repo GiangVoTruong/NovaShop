@@ -134,6 +134,7 @@ export const admin = {
     messages: {
       statusUpdated: 'Order status updated',
       statusFailed: 'Could not update order status',
+      deliveredCodPaid: 'Order completed. COD payment will be marked PAID on the server.',
     },
     detailPage: {
       eyebrow: 'Order detail',
@@ -154,6 +155,17 @@ export const admin = {
       itemsTitle: 'Order items',
       quantity: 'Qty: {{count}}',
       noItems: 'No items',
+      workflowTitle: 'Order workflow (temporary)',
+      workflowHint:
+        'CONFIRMED → Shop dispatches → SHIPPING → Shipper photo → awaiting customer → DELIVERED',
+      workflowCurrent: '← current',
+      shopConfirm: 'SHOP: Confirm order',
+      shopStartShipping: 'SHOP: Out for delivery',
+      shipperDeliveredWithPhoto: 'SHIPPER: Photo + delivered',
+      customerConfirmReceived: 'CUSTOMER: Confirm received',
+      deliveryProofLabel: 'Delivery photo (temporary placeholder)',
+      deliveryProofPlaceholder: 'Enter a temporary photo URL to enable shipper delivery step',
+      codDeliveredNote: 'When the customer confirms, order becomes DELIVERED and COD becomes PAID (BE).',
     },
   },
   customers: {

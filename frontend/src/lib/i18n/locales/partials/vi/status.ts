@@ -4,6 +4,7 @@ export const status = {
     confirmed: 'Đã xác nhận',
     packing: 'Đang đóng gói',
     shipping: 'Đang giao',
+    delivered_pending_receiver_confirm: 'Chờ người nhận xác nhận',
     delivered: 'Đã giao',
     cancelled: 'Đã huỷ',
   },
