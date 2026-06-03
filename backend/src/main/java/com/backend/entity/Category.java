@@ -40,4 +40,7 @@ public class Category {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Category parent;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
 }

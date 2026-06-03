@@ -19,4 +19,5 @@ public class GetCategoryResponseDto {
     private String name;
     private String slug;
     private UUID parentId;
+    private String imageUrl;
 }
