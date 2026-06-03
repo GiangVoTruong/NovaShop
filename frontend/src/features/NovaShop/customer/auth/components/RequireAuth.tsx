@@ -16,7 +16,13 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
   }
 
   if (!isAuthenticated) {
-    return <Navigate to={PATHS.LOGIN} state={{ from: location.pathname }} replace />
+    return (
+      <Navigate
+        to={PATHS.LOGIN}
+        state={{ from: `${location.pathname}${location.search}` }}
+        replace
+      />
+    )
   }
 
   return children

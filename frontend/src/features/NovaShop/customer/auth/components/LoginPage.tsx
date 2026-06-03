@@ -1,19 +1,15 @@
 import Button from '@/features/NovaShop/shared/ui/Button'
 import { PATHS } from '@/router/paths'
-import { message } from 'antd'
 import { Eye, EyeOff, Lock, Mail, Sparkles } from 'lucide-react'
 import type { ComponentType, ReactNode } from 'react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation, useNavigate, Link } from 'react-router-dom'
-import { isEmailNotVerifiedError } from '../lib/authErrors'
+import { Link } from 'react-router-dom'
 import useLogin from '../hooks/useLogin'
 
 export default function LoginPage() {
   const { t: translate } = useTranslation()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const loginMutation = useLogin()
+  const { login, isPending } = useLogin()
   const [showPassword, setShowPassword] = useState(false)
 
   const heroStats = [
@@ -22,41 +18,14 @@ export default function LoginPage() {
     { value: '15K+', label: translate('auth.statProducts') },
   ]
 
-  const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
 
     const email = String(formData.get('email') ?? '').trim()
     const password = String(formData.get('password') ?? '')
 
-    loginMutation.mutate(
-      { email, password },
-      {
-        onSuccess: (data) => {
-          message.success(translate('auth.loginSuccess'))
-
-          if (data.role === 'ADMIN' && data.portalType === 'ADMIN') {
-            navigate(PATHS.ADMIN, { replace: true })
-            return
-          }
-
-          const redirectTo =
-            (location.state as { from?: string } | null)?.from ?? PATHS.HOME
-          navigate(redirectTo, { replace: true })
-        },
-        onError: (error) => {
-          if (!isEmailNotVerifiedError(error)) {
-            return
-          }
-
-          message.info(translate('auth.verificationEmailResent'))
-          navigate(PATHS.VERIFY_EMAIL, {
-            replace: true,
-            state: { email, fromLogin: true },
-          })
-        },
-      },
-    )
+    await login(email, password)
   }
 
   return (
@@ -169,8 +138,8 @@ export default function LoginPage() {
                 </a>
               </div>
 
-              <Button type="submit" size="lg" fullWidth glow disabled={loginMutation.isPending}>
-                {loginMutation.isPending ? translate('auth.loggingIn') : translate('auth.loginNow')}
+              <Button type="submit" size="lg" fullWidth glow disabled={isPending}>
+                {isPending ? translate('auth.loggingIn') : translate('auth.loginNow')}
               </Button>
 
               <div className="flex items-center gap-3">
