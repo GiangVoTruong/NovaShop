@@ -1,10 +1,10 @@
-import { PATHS } from '@/router/paths'
-import { ArrowUpRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { getCategoryImage, normalizeCategorySlug } from '../../catalog/lib/categoryApi'
-import type { ApiCategoryResponse } from '@/types/product.types'
 import { CATEGORY_GLOW } from '@/features/NovaShop/shared/ui/categoryTokens'
 import { cx } from '@/features/NovaShop/shared/ui/cx'
+import { PATHS } from '@/router/paths'
+import type { ApiCategoryResponse } from '@/types/product.types'
+import { ArrowUpRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { normalizeCategorySlug } from '../../catalog/lib/categoryApi'
 import { CATEGORY_CARD_VARIANT_RATIO } from '../constants/product.constants'
 
 interface CategoryCardProps {
@@ -32,7 +32,7 @@ export default function CategoryCard({
     >
       <div className="absolute inset-0 overflow-hidden">
         <img
-          src={getCategoryImage(category.slug)}
+          src={category.imageUrl ?? ''}
           alt={category.name}
           loading="lazy"
           className="size-full object-cover transition-transform duration-700 group-hover/cat:scale-105"

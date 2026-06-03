@@ -9,7 +9,6 @@ import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { getCategoryImage } from '../../catalog/lib/categoryApi'
 import {
   LISTING_MODE_OPTIONS,
   parseListingMode,
@@ -307,7 +306,7 @@ export default function ProductFiltersSidebar({
                     )}
                   >
                     <img
-                      src={getCategoryImage(category.slug)}
+                      src={category.imageUrl ?? ''}
                       alt=""
                       className="size-9 shrink-0 rounded-lg object-cover ring-1 ring-white"
                     />
