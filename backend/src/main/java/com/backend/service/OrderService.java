@@ -26,7 +26,6 @@ import com.backend.dto.orders.UpdateOrderStatusRequestDto;
 import com.backend.entity.Address;
 import com.backend.entity.Cart;
 import com.backend.entity.CartItem;
-import com.backend.entity.Notification;
 import com.backend.entity.OrderItem;
 import com.backend.entity.Product;
 import com.backend.entity.ShopOrder;
@@ -37,7 +36,6 @@ import com.backend.enums.PaymentStatusType;
 import com.backend.enums.ProductStatus;
 import com.backend.enums.UserRole;
 import com.backend.repository.CartRepository;
-import com.backend.repository.NotificationRepository;
 import com.backend.repository.OrderItemRepository;
 import com.backend.repository.OrderRepository;
 import com.backend.repository.ProductRepository;
@@ -66,7 +64,7 @@ public class OrderService {
     private final CartService cartService;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
-    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
     private final AddressService addressService;
     private final CouponService couponService;
 
@@ -157,12 +155,11 @@ public class OrderService {
         orderItemRepository.saveAll(orderItems);
         cartService.clearCart(cart.getId());
 
-        notificationRepository.save(Notification.builder()
-                .user(user)
-                .type(NotificationType.ORDER_STATUS)
-                .title("Order placed successfully")
-                .message("Your order #" + savedOrder.getId() + " has been placed.")
-                .build());
+        notificationService.create(
+                user,
+                NotificationType.ORDER_STATUS,
+                "Order placed successfully",
+                "Your order #" + savedOrder.getId() + " has been placed.");
 
         return toOrderResponse(savedOrder, orderItems);
     }
@@ -219,14 +216,26 @@ public class OrderService {
         order.setUpdatedAt(OffsetDateTime.now());
         orderRepository.save(order);
 
-        notificationRepository.save(Notification.builder()
-                .user(order.getUser())
-                .type(NotificationType.ORDER_STATUS)
-                .title("Order cancelled")
-                .message("Your order #" + order.getId() + " has been cancelled.")
-                .build());
+        notificationService.create(
+                order.getUser(),
+                NotificationType.ORDER_STATUS,
+                "Order cancelled",
+                "Your order #" + order.getId() + " has been cancelled.");
 
         return toOrderResponse(order, orderItemRepository.findByOrderId(order.getId()));
+    }
+
+    @Transactional
+    public GetOrderResponseDto confirmOrderReceived(UUID orderId) {
+        ShopOrder order = findAccessibleOrder(orderId);
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        if (!order.getUser().getId().equals(currentUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, FORBIDDEN_ORDER);
+        }
+        if (order.getStatus() != OrderStatus.DELIVERED_PENDING_RECEIVER_CONFIRM) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is not awaiting receiver confirmation");
+        }
+        return applyStatusChange(order, OrderStatus.DELIVERED);
     }
 
     @Transactional
@@ -235,20 +244,23 @@ public class OrderService {
         ShopOrder order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ORDER_NOT_FOUND));
 
-        assertValidTransition(order.getStatus(), request.getStatus());
-        order.setStatus(request.getStatus());
-        if (request.getStatus() == OrderStatus.DELIVERED) {
+        return applyStatusChange(order, request.getStatus());
+    }
+
+    private GetOrderResponseDto applyStatusChange(ShopOrder order, OrderStatus newStatus) {
+        assertValidTransition(order.getStatus(), newStatus);
+        order.setStatus(newStatus);
+        if (newStatus == OrderStatus.DELIVERED) {
             order.setPaymentStatus(PaymentStatusType.PAID);
         }
         order.setUpdatedAt(OffsetDateTime.now());
         orderRepository.save(order);
 
-        notificationRepository.save(Notification.builder()
-                .user(order.getUser())
-                .type(NotificationType.ORDER_STATUS)
-                .title("Order status updated")
-                .message("Your order #" + order.getId() + " is now " + request.getStatus().name() + ".")
-                .build());
+        notificationService.create(
+                order.getUser(),
+                NotificationType.ORDER_STATUS,
+                "Order status updated",
+                "Your order #" + order.getId() + " is now " + newStatus.name() + ".");
 
         return toOrderResponse(order, orderItemRepository.findByOrderId(order.getId()));
     }
@@ -356,6 +368,8 @@ public class OrderService {
             case CONFIRMED ->
                 newStatus == OrderStatus.SHIPPING || newStatus == OrderStatus.CANCELLED;
             case SHIPPING ->
+                newStatus == OrderStatus.DELIVERED_PENDING_RECEIVER_CONFIRM;
+            case DELIVERED_PENDING_RECEIVER_CONFIRM ->
                 newStatus == OrderStatus.DELIVERED;
             case DELIVERED, CANCELLED ->
                 false;

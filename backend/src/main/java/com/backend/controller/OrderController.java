@@ -64,6 +64,14 @@ public class OrderController {
         return ApiResponses.ok(orderService.cancelOrder(id), "Hủy đơn hàng thành công");
     }
 
+    @PostMapping("/{id}/confirm-received")
+    @Operation(
+            summary = "Khách xác nhận đã nhận hàng",
+            description = "Chuyển đơn từ DELIVERED_PENDING_RECEIVER_CONFIRM sang DELIVERED.")
+    public ResponseEntity<ApiResponse<GetOrderResponseDto>> confirmOrderReceived(@PathVariable UUID id) {
+        return ApiResponses.ok(orderService.confirmOrderReceived(id), "Xác nhận đã nhận hàng thành công");
+    }
+
     @PutMapping("/{id}/status")
     @Operation(
             summary = "Cập nhật trạng thái đơn hàng",
