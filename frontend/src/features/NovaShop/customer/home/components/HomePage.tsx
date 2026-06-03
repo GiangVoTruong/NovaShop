@@ -82,12 +82,6 @@ export default function HomePage() {
     <>
       {/* ====== HERO — full width banner ====== */}
       <section className="customer-hero-banner relative isolate w-full overflow-hidden mesh-hero">
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="blob animate-float-slow left-[-5%] top-[-10%] size-[420px] bg-fuchsia-500/60" />
-          <div className="blob animate-float-slower right-[-5%] top-[10%] size-[480px] bg-cyan-400/40" />
-          <div className="blob animate-float-slow bottom-[-15%] left-[30%] size-[440px] bg-purple-500/60" />
-        </div>
-
         <div className="mx-auto grid max-w-[1440px] gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-12 lg:items-center lg:gap-8 lg:px-10 lg:py-24 xl:px-14">
           {/* LEFT */}
           <div className="space-y-7 text-white lg:col-span-6">
@@ -257,7 +251,7 @@ export default function HomePage() {
           />
         ) : null}
 
-        <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <section className="customer-scroll-section grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {USP_ITEMS.map((feature) => (
             <div
               key={feature.titleKey}
@@ -277,7 +271,7 @@ export default function HomePage() {
         </section>
 
         {/* ====== CATEGORIES BENTO ====== */}
-        <section>
+        <section className="customer-scroll-section">
           <SectionHeading
             eyebrow={translate('home.categories.eyebrow')}
             title={translate('home.categories.title')}
@@ -298,10 +292,10 @@ export default function HomePage() {
         </section>
 
         {/* ====== FLASH SALE ====== */}
-        <section className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 p-6 text-white sm:p-10">
-          <div className="pointer-events-none absolute inset-0 z-0">
-            <div className="absolute -right-10 -top-10 size-72 rounded-full bg-rose-500/30 blur-3xl" />
-            <div className="absolute -bottom-10 -left-10 size-72 rounded-full bg-amber-500/30 blur-3xl" />
+        <section className="customer-scroll-section relative overflow-hidden rounded-[2.5rem] bg-slate-950 p-6 text-white sm:p-10">
+          <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
+            <div className="absolute -right-10 -top-10 size-72 rounded-full bg-rose-500/25" />
+            <div className="absolute -bottom-10 -left-10 size-72 rounded-full bg-amber-500/25" />
           </div>
 
           <div className="relative mb-8 flex flex-wrap items-center justify-between gap-4">
@@ -336,7 +330,7 @@ export default function HomePage() {
         </section>
 
         {/* ====== FEATURED PRODUCTS ====== */}
-        <section>
+        <section className="customer-scroll-section">
           <SectionHeading
             eyebrow={translate('home.featured.eyebrow')}
             title={translate('home.featured.title')}
@@ -352,7 +346,7 @@ export default function HomePage() {
         </section>
 
         {/* ====== BRANDS ====== */}
-        <section className="customer-panel relative overflow-hidden rounded-[2.5rem] p-10">
+        <section className="customer-scroll-section customer-panel relative overflow-hidden rounded-[2.5rem] p-10">
           <p className="text-center text-xs font-bold uppercase tracking-[0.25em] text-slate-400">
             {translate('home.brands.label')}
           </p>
@@ -369,7 +363,7 @@ export default function HomePage() {
         </section>
 
         {/* ====== TESTIMONIALS ====== */}
-        <section>
+        <section className="customer-scroll-section">
           <SectionHeading
             center
             eyebrow={translate('home.testimonials.eyebrow')}

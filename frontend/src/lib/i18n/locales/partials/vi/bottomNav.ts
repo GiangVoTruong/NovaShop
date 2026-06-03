@@ -4,4 +4,5 @@ export const bottomNav = {
   wish: 'Wish',
   cart: 'Cart',
   profile: 'Profile',
+  notifications: 'Thông báo',
 } as const

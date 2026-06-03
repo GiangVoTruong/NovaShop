@@ -32,8 +32,14 @@ export default function LoginPage() {
     loginMutation.mutate(
       { email, password },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           message.success(translate('auth.loginSuccess'))
+
+          if (data.role === 'ADMIN' && data.portalType === 'ADMIN') {
+            navigate(PATHS.ADMIN, { replace: true })
+            return
+          }
+
           const redirectTo =
             (location.state as { from?: string } | null)?.from ?? PATHS.HOME
           navigate(redirectTo, { replace: true })

@@ -1,3 +1,4 @@
+import { CategorySlugProvider } from '@/features/NovaShop/customer/catalog/context/CategorySlugProvider'
 import { Outlet } from 'react-router-dom'
 import CustomerBottomNav from './CustomerBottomNav'
 import CustomerFooter from './CustomerFooter'
@@ -5,11 +6,12 @@ import CustomerHeader from './CustomerHeader'
 
 export default function CustomerLayout() {
   return (
+    <CategorySlugProvider>
     <div className="customer-shell relative flex min-h-screen flex-col overflow-x-clip pb-24 lg:pb-0">
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="blob animate-float-slow left-[-12%] top-[-8%] size-[420px] bg-fuchsia-400/20" />
-        <div className="blob animate-float-slower right-[-10%] top-[18%] size-[460px] bg-cyan-400/15" />
-        <div className="blob animate-float-slow bottom-[8%] left-[35%] size-[400px] bg-violet-400/18" />
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden>
+        <div className="blob left-[-12%] top-[-8%] size-[420px] bg-fuchsia-400/18" />
+        <div className="blob right-[-10%] top-[18%] size-[460px] bg-cyan-400/12" />
+        <div className="blob bottom-[8%] left-[35%] size-[400px] bg-violet-400/15" />
         <div
           aria-hidden
           className="absolute inset-0 opacity-[0.35]"
@@ -28,5 +30,6 @@ export default function CustomerLayout() {
       <CustomerFooter />
       <CustomerBottomNav />
     </div>
+    </CategorySlugProvider>
   )
 }
