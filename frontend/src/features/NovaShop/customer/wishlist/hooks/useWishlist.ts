@@ -1,5 +1,6 @@
 import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { DEFAULT_QUERY_STALE_TIME_MS } from '@/lib/query/queryConfig'
 import wishlistService from '../services/wishlistService'
 
 export const WISHLIST_QUERY_KEY = ['wishlist'] as const
@@ -23,6 +24,8 @@ export function useWishlistCheck(productId: string | undefined) {
     queryFn: () => wishlistService.checkProduct(productId!),
     enabled: isAuthenticated && Boolean(productId),
     select: (response) => response.inWishlist,
+    staleTime: DEFAULT_QUERY_STALE_TIME_MS,
+    refetchOnMount: false,
   })
 }
 

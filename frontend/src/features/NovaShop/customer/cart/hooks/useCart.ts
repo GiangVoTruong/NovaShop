@@ -16,8 +16,16 @@ export function useCart() {
 }
 
 export function useCartItemCount(): number {
-  const cartQuery = useCart()
-  return cartQuery.data?.itemCount ?? 0
+  const { isAuthenticated } = useAuth()
+
+  const cartCountQuery = useQuery({
+    queryKey: CART_QUERY_KEY,
+    queryFn: cartService.getCart,
+    enabled: isAuthenticated,
+    select: (cart) => cart.itemCount,
+  })
+
+  return cartCountQuery.data ?? 0
 }
 
 export function useAddToCart() {
