@@ -7,18 +7,14 @@ import { PATHS } from '@/router/paths'
 import type { ApiAddressResponse } from '@/types/address.types'
 import type { UserProfile } from '@/types/auth.types'
 import type { NotificationPreferences } from '@/types/notification.types'
-import { Form, Input, Modal, Spin, Switch, message } from 'antd'
 import type { FormProps } from 'antd'
+import { Form, Input, Modal, Spin, Switch, message } from 'antd'
 import { LogOut, MapPin, Pencil, ShieldCheck, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { PROFILE_TABS } from '../constants/profile.constants'
-import {
-  useAddresses,
-  useDeleteAddress,
-  useSetDefaultAddress,
-} from '../hooks/useAddresses'
+import { useAddresses, useDeleteAddress, useSetDefaultAddress } from '../hooks/useAddresses'
 import {
   useChangePassword,
   useNotificationPreferences,
@@ -27,6 +23,7 @@ import {
 } from '../hooks/useProfile'
 import { formatAddressLine, getAddressLabel } from '../lib/addressApi'
 import AddressFormModal from './AddressFormModal'
+import ProfileTabPanel from './ProfileTabPanel'
 
 type ProfileFormValues = {
   fullName: string
@@ -44,8 +41,21 @@ export default function ProfilePage() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const ordersQuery = useOrders()
-  const [tab, setTab] = useState<string>('profile')
+  const [activeTab, setActiveTab] = useState('profile')
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => new Set(['profile']))
   const [isEditingProfile, setIsEditingProfile] = useState(false)
+
+  const selectTab = useCallback((tabId: string) => {
+    setActiveTab(tabId)
+    setVisitedTabs((previous) => {
+      if (previous.has(tabId)) {
+        return previous
+      }
+      const next = new Set(previous)
+      next.add(tabId)
+      return next
+    })
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -97,7 +107,7 @@ export default function ProfilePage() {
               leftIcon={<Pencil className="size-4" />}
               className="w-full sm:w-auto"
               onClick={() => {
-                setTab('profile')
+                selectTab('profile')
                 setIsEditingProfile((value) => !value)
               }}
             >
@@ -116,17 +126,17 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      <div className="grid w-full min-w-0 gap-4 sm:gap-6 lg:grid-cols-[280px_1fr]">
-        <aside className="min-w-0 max-w-full overflow-hidden rounded-3xl border border-white/60 bg-white/85 p-2 backdrop-blur-xl sm:p-3 lg:sticky lg:top-24 lg:self-start">
+      <div className="grid w-full min-w-0 gap-4 sm:gap-6 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
+        <aside className="min-w-0 max-w-full overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-2 sm:p-3 lg:sticky lg:top-24 lg:self-start">
           <nav className="flex gap-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-none] lg:flex-col lg:overflow-visible [&::-webkit-scrollbar]:hidden">
             {PROFILE_TABS.map((entry) => (
               <button
                 key={entry.id}
                 type="button"
-                onClick={() => setTab(entry.id)}
+                onClick={() => selectTab(entry.id)}
                 className={cx(
                   'flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-2xl px-3 py-2.5 text-sm font-bold transition-colors sm:gap-3 sm:px-4 sm:py-3 lg:shrink lg:whitespace-normal',
-                  tab === entry.id
+                  activeTab === entry.id
                     ? 'bg-slate-900 text-white'
                     : 'text-slate-600 hover:bg-slate-100',
                 )}
@@ -145,17 +155,26 @@ export default function ProfilePage() {
           </nav>
         </aside>
 
-        <div className="min-w-0 w-full">
-          {tab === 'profile' && (
+        <div className="min-w-0 w-full max-w-full overflow-hidden">
+          <ProfileTabPanel
+            tabId="profile"
+            activeTab={activeTab}
+            hasBeenVisited={visitedTabs.has('profile')}
+          >
             <ProfileForm
               user={user}
               joinedAt={joinedAt}
               isEditing={isEditingProfile}
               onSaved={() => setIsEditingProfile(false)}
             />
-          )}
-          {tab === 'orders' && (
-            <div className="min-w-0 rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:p-6">
+          </ProfileTabPanel>
+
+          <ProfileTabPanel
+            tabId="orders"
+            activeTab={activeTab}
+            hasBeenVisited={visitedTabs.has('orders')}
+          >
+            <div className="profile-panel min-w-0 w-full max-w-full rounded-3xl border border-slate-200/80 bg-white p-5 sm:p-8">
               <h2 className="text-xl font-extrabold tracking-tight">
                 {translate('profile.ordersTab.title')}
               </h2>
@@ -167,9 +186,14 @@ export default function ProfilePage() {
                 .
               </p>
             </div>
-          )}
-          {tab === 'wishlist' && (
-            <div className="min-w-0 rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:p-6">
+          </ProfileTabPanel>
+
+          <ProfileTabPanel
+            tabId="wishlist"
+            activeTab={activeTab}
+            hasBeenVisited={visitedTabs.has('wishlist')}
+          >
+            <div className="profile-panel min-w-0 w-full max-w-full rounded-3xl border border-slate-200/80 bg-white p-5 sm:p-8">
               <h2 className="text-xl font-extrabold tracking-tight">
                 {translate('profile.wishlistTab.title')}
               </h2>
@@ -181,11 +205,35 @@ export default function ProfilePage() {
                 .
               </p>
             </div>
-          )}
-          {tab === 'address' && <AddressSection />}
-          {tab === 'payment' && <PaymentSection />}
-          {tab === 'notifications' && <NotificationSection />}
-          {tab === 'security' && <SecuritySection />}
+          </ProfileTabPanel>
+
+          <ProfileTabPanel
+            tabId="address"
+            activeTab={activeTab}
+            hasBeenVisited={visitedTabs.has('address')}
+          >
+            <AddressSection />
+          </ProfileTabPanel>
+
+          <ProfileTabPanel tabId="payment" activeTab={activeTab} hasBeenVisited={visitedTabs.has('payment')}>
+            <PaymentSection />
+          </ProfileTabPanel>
+
+          <ProfileTabPanel
+            tabId="notifications"
+            activeTab={activeTab}
+            hasBeenVisited={visitedTabs.has('notifications')}
+          >
+            <NotificationSection />
+          </ProfileTabPanel>
+
+          <ProfileTabPanel
+            tabId="security"
+            activeTab={activeTab}
+            hasBeenVisited={visitedTabs.has('security')}
+          >
+            <SecuritySection />
+          </ProfileTabPanel>
         </div>
       </div>
     </div>
@@ -225,11 +273,10 @@ function ProfileForm({
   }
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={handleSubmit}
-      className="min-w-0 w-full rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:p-6"
+    <div
+      className={
+        'profile-panel min-w-0 w-full max-w-full rounded-3xl border border-slate-200/80 bg-white p-5 sm:p-8'
+      }
     >
       <h2 className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
         {translate('profile.form.title')}
@@ -238,41 +285,51 @@ function ProfileForm({
         {isEditing ? translate('profile.form.subtitle') : translate('profile.form.viewHint')}
       </p>
 
-      <div className="mt-6 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
-        <Form.Item
-          name="fullName"
-          label={translate('profile.form.fullName')}
-          rules={[{ required: true, message: translate('profile.form.required') }]}
-        >
-          <Input readOnly={!isEditing} className={!isEditing ? 'bg-slate-50' : undefined} />
-        </Form.Item>
-        <Form.Item label={translate('profile.form.email')}>
-          <Input readOnly value={user.email} className="bg-slate-50" />
-        </Form.Item>
-        <Form.Item
-          name="phone"
-          label={translate('profile.form.phone')}
-          rules={[
-            { required: true, message: translate('profile.form.required') },
-            {
-              pattern: /^0[0-9]{9,10}$/,
-              message: translate('profile.form.phoneInvalid'),
-            },
-          ]}
-        >
-          <Input readOnly={!isEditing} className={!isEditing ? 'bg-slate-50' : undefined} />
-        </Form.Item>
-        <Form.Item label={translate('profile.form.joinedAt')}>
-          <Input readOnly value={joinedAt} className="bg-slate-50" />
-        </Form.Item>
-      </div>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        className="profile-form mt-0 w-full max-w-full"
+        requiredMark={false}
+      >
+        <div className={'profile-form-grid mt-6 grid w-full gap-y-4 gap-x-6'}>
+          <Form.Item
+            name="fullName"
+            className="min-w-0"
+            label={translate('profile.form.fullName')}
+            rules={[{ required: true, message: translate('profile.form.required') }]}
+          >
+            <Input readOnly={!isEditing} className={!isEditing ? 'bg-slate-50' : undefined} />
+          </Form.Item>
+          <Form.Item className="min-w-0" label={translate('profile.form.email')}>
+            <Input readOnly value={user.email} className="bg-slate-50" />
+          </Form.Item>
+          <Form.Item
+            name="phone"
+            className="min-w-0"
+            label={translate('profile.form.phone')}
+            rules={[
+              { required: true, message: translate('profile.form.required') },
+              {
+                pattern: /^0[0-9]{9,10}$/,
+                message: translate('profile.form.phoneInvalid'),
+              },
+            ]}
+          >
+            <Input readOnly={!isEditing} className={!isEditing ? 'bg-slate-50' : undefined} />
+          </Form.Item>
+          <Form.Item className="min-w-0" label={translate('profile.form.joinedAt')}>
+            <Input readOnly value={joinedAt} className="bg-slate-50" />
+          </Form.Item>
+        </div>
 
-      {isEditing && (
-        <Button type="submit" glow loading={updateMutation.isPending} className="mt-2">
-          {translate('profile.form.save')}
-        </Button>
-      )}
-    </Form>
+        {isEditing && (
+          <Button type="submit" glow loading={updateMutation.isPending} className="mt-6">
+            {translate('profile.form.save')}
+          </Button>
+        )}
+      </Form>
+    </div>
   )
 }
 
@@ -342,7 +399,7 @@ function AddressSection() {
       {addresses.map((address) => (
         <article
           key={address.id}
-          className="flex min-w-0 flex-col gap-4 rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:flex-row sm:items-start sm:justify-between sm:p-5"
+          className="flex min-w-0 flex-col gap-4 rounded-3xl border border-slate-200/80 bg-white p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6"
         >
           <div className="flex min-w-0 items-start gap-3">
             <span className="grid size-10 place-items-center rounded-xl bg-linear-to-br from-emerald-400 to-teal-500 text-white shadow-md">
@@ -452,7 +509,11 @@ function NotificationSection() {
   }
 
   return (
-    <div className="min-w-0 rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:p-6">
+    <div
+      className={
+        'profile-panel min-w-0 w-full max-w-full rounded-3xl border border-slate-200/80 bg-white p-5 sm:p-8'
+      }
+    >
       <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
         {translate('profile.notifications.title')}
       </h2>
@@ -505,57 +566,71 @@ function SecuritySection() {
           </div>
         </div>
       </div>
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        className="min-w-0 rounded-3xl border border-white/60 bg-white/85 p-4 backdrop-blur-xl sm:p-6"
+      <div
+        className={
+          'profile-panel min-w-0 w-full max-w-full rounded-3xl border border-slate-200/80 bg-white p-5 sm:p-8'
+        }
       >
         <h2 className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
           {translate('profile.security.changePassword')}
         </h2>
-        <div className="mt-4 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
-          <Form.Item
-            name="currentPassword"
-            label={translate('profile.security.currentPassword')}
-            rules={[{ required: true, message: translate('profile.form.required') }]}
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          className="profile-form w-full max-w-full"
+          requiredMark={false}
+        >
+          <div className={'profile-form-grid mt-6 grid w-full gap-y-4 gap-x-6'}>
+            <Form.Item
+              name="currentPassword"
+              className="min-w-0"
+              label={translate('profile.security.currentPassword')}
+              rules={[{ required: true, message: translate('profile.form.required') }]}
+            >
+              <Input.Password />
+            </Form.Item>
+            <Form.Item
+              name="newPassword"
+              className="min-w-0"
+              label={translate('profile.security.newPassword')}
+              rules={[
+                { required: true, message: translate('profile.form.required') },
+                { min: 8, message: translate('profile.security.passwordMin') },
+              ]}
+            >
+              <Input.Password />
+            </Form.Item>
+            <Form.Item
+              name="confirmPassword"
+              label={translate('profile.security.confirmPassword')}
+              dependencies={['newPassword']}
+              rules={[
+                { required: true, message: translate('profile.form.required') },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue('newPassword') === value) {
+                      return Promise.resolve()
+                    }
+                    return Promise.reject(new Error(translate('profile.security.passwordMismatch')))
+                  },
+                }),
+              ]}
+              className="min-w-0 sm:col-span-2"
+            >
+              <Input.Password />
+            </Form.Item>
+          </div>
+          <Button
+            type="submit"
+            className="mt-6 w-full sm:w-auto"
+            glow
+            loading={changePasswordMutation.isPending}
           >
-            <Input.Password />
-          </Form.Item>
-          <Form.Item
-            name="newPassword"
-            label={translate('profile.security.newPassword')}
-            rules={[
-              { required: true, message: translate('profile.form.required') },
-              { min: 8, message: translate('profile.security.passwordMin') },
-            ]}
-          >
-            <Input.Password />
-          </Form.Item>
-          <Form.Item
-            name="confirmPassword"
-            label={translate('profile.security.confirmPassword')}
-            dependencies={['newPassword']}
-            rules={[
-              { required: true, message: translate('profile.form.required') },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue('newPassword') === value) {
-                    return Promise.resolve()
-                  }
-                  return Promise.reject(new Error(translate('profile.security.passwordMismatch')))
-                },
-              }),
-            ]}
-            className="sm:col-span-2"
-          >
-            <Input.Password />
-          </Form.Item>
-        </div>
-        <Button type="submit" className="mt-2 w-full sm:w-auto" glow loading={changePasswordMutation.isPending}>
-          {translate('profile.security.updatePassword')}
-        </Button>
-      </Form>
+            {translate('profile.security.updatePassword')}
+          </Button>
+        </Form>
+      </div>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 import authService from '@/features/NovaShop/customer/auth/services/authService'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ChangePasswordRequest, UpdateUserProfileRequest } from '@/types/auth.types'
@@ -26,9 +27,14 @@ export function useChangePassword() {
 }
 
 export function useNotificationPreferences() {
+  const { isAuthenticated } = useAuth()
+
   return useQuery({
     queryKey: NOTIFICATION_PREFS_QUERY_KEY,
     queryFn: notificationService.getPreferences,
+    enabled: isAuthenticated,
+    staleTime: Infinity,
+    refetchOnMount: false,
   })
 }
 

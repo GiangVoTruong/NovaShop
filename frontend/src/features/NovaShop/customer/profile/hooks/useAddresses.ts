@@ -12,6 +12,8 @@ export function useAddresses() {
     queryKey: ADDRESSES_QUERY_KEY,
     queryFn: addressService.getMyAddresses,
     enabled: isAuthenticated,
+    staleTime: Infinity,
+    refetchOnMount: false,
   })
 }
 
