@@ -21,7 +21,7 @@ export default function AdminSection({
   return (
     <section
       className={cx(
-        'glass-dark ring-1 ring-white/10',
+        'border border-slate-200 bg-white shadow-sm',
         flush ? 'overflow-hidden rounded-3xl' : 'rounded-3xl p-6',
         className,
       )}
@@ -29,11 +29,11 @@ export default function AdminSection({
       <div
         className={cx(
           'flex items-start justify-between gap-3',
-          flush ? 'border-b border-white/10 px-6 py-5' : 'mb-5',
+          flush ? 'border-b border-slate-200 px-6 py-5' : 'mb-5',
         )}
       >
         <div>
-          <h2 className="text-lg font-bold text-white">{title}</h2>
+          <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
           {subtitle && <p className="mt-0.5 text-sm text-slate-400">{subtitle}</p>}
         </div>
         {action}

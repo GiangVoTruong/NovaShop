@@ -7,5 +7,5 @@ interface AdminShellProps {
 }
 
 export default function AdminShell({ children, className }: AdminShellProps) {
-  return <div className={cx('mx-auto w-full max-w-[1440px]', className)}>{children}</div>
+  return <div className={cx('mx-auto w-full max-w-[1480px]', className)}>{children}</div>
 }

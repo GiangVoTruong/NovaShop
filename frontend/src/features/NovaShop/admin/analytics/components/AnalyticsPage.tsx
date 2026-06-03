@@ -5,9 +5,8 @@ import { Spin } from 'antd'
 import { formatCurrency, formatNumber } from '@/features/NovaShop/shared/format'
 import { useAdminAnalytics } from '../../hooks/useAdminAnalytics'
 import { toAdminAmount } from '../../lib/adminApi'
-import AdminPageHeader from '../../layout/components/AdminPageHeader'
+import AdminPage from '../../layout/components/AdminPage'
 import AdminSection from '../../layout/components/AdminSection'
-import AdminShell from '../../layout/components/AdminShell'
 import StatCard from '../../layout/components/StatCard'
 
 export default function AnalyticsPage() {
@@ -34,20 +33,18 @@ export default function AnalyticsPage() {
   }))
 
   return (
-    <AdminShell>
-      <AdminPageHeader
-        eyebrow={translate('admin.analytics.eyebrow')}
-        title={translate('admin.analytics.title')}
-        titleHighlight={translate('admin.analytics.titleHighlight')}
-        description={translate('admin.analytics.description')}
-      />
-
+    <AdminPage
+      eyebrow={translate('admin.analytics.eyebrow')}
+      title={translate('admin.analytics.title')}
+      titleHighlight={translate('admin.analytics.titleHighlight')}
+      description={translate('admin.analytics.description')}
+    >
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
           label={translate('admin.analytics.stats.totalRevenue')}
           value={formatCurrency(toAdminAmount(overview.totalRevenue))}
           icon={<DollarSign className="size-5" />}
-          tone="fuchsia"
+          tone="indigo"
         />
         <StatCard
           label={translate('admin.analytics.stats.orders')}
@@ -73,7 +70,7 @@ export default function AnalyticsPage() {
             xField="month"
             yField="value"
             height={300}
-            style={{ fill: '#d946ef', radiusTopLeft: 8, radiusTopRight: 8 }}
+            style={{ fill: '#2563eb', radiusTopLeft: 8, radiusTopRight: 8 }}
             axis={{
               x: { labelFill: '#94a3b8', lineStroke: '#334155' },
               y: { labelFill: '#94a3b8', gridStroke: '#1e293b' },
@@ -91,6 +88,6 @@ export default function AnalyticsPage() {
           />
         </AdminSection>
       </div>
-    </AdminShell>
+    </AdminPage>
   )
 }

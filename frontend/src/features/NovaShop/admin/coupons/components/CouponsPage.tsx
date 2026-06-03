@@ -14,8 +14,8 @@ import {
   useUpdateAdminCoupon,
 } from '../../hooks/useAdminCoupons'
 import { getCouponStatus, toAdminAmount } from '../../lib/adminApi'
-import AdminPageHeader from '../../layout/components/AdminPageHeader'
-import AdminShell from '../../layout/components/AdminShell'
+import AdminEmptyState from '../../layout/components/AdminEmptyState'
+import AdminPage from '../../layout/components/AdminPage'
 
 const COUPON_STATUS_TONE = {
   active: 'emerald',
@@ -30,32 +30,33 @@ export default function CouponsPage() {
 
   if (couponsQuery.isLoading) {
     return (
-      <AdminShell className="flex min-h-[50vh] items-center justify-center">
+      <AdminPage
+        eyebrow={translate('admin.coupons.eyebrow')}
+        title={translate('admin.coupons.title')}
+        titleHighlight={translate('admin.coupons.titleHighlight')}
+        description={translate('admin.coupons.description')}
+      >
         <Spin size="large" />
-      </AdminShell>
+      </AdminPage>
     )
   }
 
   const coupons = couponsQuery.data ?? []
 
   return (
-    <AdminShell>
-      <AdminPageHeader
-        eyebrow={translate('admin.coupons.eyebrow')}
-        title={translate('admin.coupons.title')}
-        titleHighlight={translate('admin.coupons.titleHighlight')}
-        description={translate('admin.coupons.description')}
-        actions={
-          <Button leftIcon={<Plus className="size-4" />} onClick={() => setCreateOpen(true)}>
-            {translate('admin.coupons.create')}
-          </Button>
-        }
-      />
-
+    <AdminPage
+      eyebrow={translate('admin.coupons.eyebrow')}
+      title={translate('admin.coupons.title')}
+      titleHighlight={translate('admin.coupons.titleHighlight')}
+      description={translate('admin.coupons.description')}
+      actions={
+        <Button leftIcon={<Plus className="size-4" />} onClick={() => setCreateOpen(true)}>
+          {translate('admin.coupons.create')}
+        </Button>
+      }
+    >
       {coupons.length === 0 ? (
-        <p className="rounded-3xl border border-dashed border-white/20 p-8 text-center text-slate-400">
-          {translate('admin.coupons.empty')}
-        </p>
+        <AdminEmptyState message={translate('admin.coupons.empty')} />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {coupons.map((coupon) => (
@@ -65,7 +66,7 @@ export default function CouponsPage() {
       )}
 
       <CreateCouponModal open={createOpen} onClose={() => setCreateOpen(false)} />
-    </AdminShell>
+    </AdminPage>
   )
 }
 
@@ -104,11 +105,11 @@ function CouponCard({ coupon }: { coupon: AdminCoupon }) {
   }
 
   return (
-    <article className="glass-dark rounded-3xl p-5 ring-1 ring-white/10 transition duration-200 hover:-translate-y-0.5 hover:ring-fuchsia-400/20">
+    <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition duration-200 hover:border-blue-300">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-mono text-xl font-extrabold tracking-tight text-white">{coupon.code}</p>
-          <p className="mt-1 text-sm text-fuchsia-300">{discountLabel}</p>
+          <p className="font-mono text-xl font-bold tracking-tight text-slate-900">{coupon.code}</p>
+          <p className="mt-1 text-sm text-blue-300">{discountLabel}</p>
         </div>
         <Badge tone={COUPON_STATUS_TONE[status]} dot>
           {translate(`status.coupon.${status}`)}
@@ -143,9 +144,9 @@ function CouponCard({ coupon }: { coupon: AdminCoupon }) {
           <span>{translate('admin.coupons.usageProgress')}</span>
           <span>{usagePercent}%</span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-white/10">
+        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
           <div
-            className="h-full rounded-full bg-linear-to-r from-fuchsia-500 to-indigo-500"
+            className="h-full rounded-full bg-linear-to-r from-blue-500 to-cyan-500"
             style={{ width: `${usagePercent}%` }}
           />
         </div>

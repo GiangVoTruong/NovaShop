@@ -11,9 +11,9 @@ interface AdminSidebarProps {
 }
 
 const QUICK_STAT_TONE_CLASS = {
-  amber: 'text-amber-300',
-  rose: 'text-rose-300',
-  emerald: 'text-emerald-300',
+  amber: 'text-amber-600',
+  rose: 'text-rose-600',
+  emerald: 'text-emerald-600',
 } as const
 
 export default function AdminSidebar({
@@ -25,22 +25,22 @@ export default function AdminSidebar({
   return (
     <aside
       className={cx(
-        'flex h-full flex-col border-r border-white/10 bg-slate-950/80 backdrop-blur-xl',
+        'flex h-full flex-col border-r border-slate-200 bg-white',
         collapsed ? 'w-[72px]' : 'w-64',
       )}
     >
       <div
         className={cx(
-          'flex items-center gap-3 border-b border-white/10 px-4 py-5',
+          'flex items-center gap-3 border-b border-slate-200 px-4 py-5',
           collapsed && 'justify-center px-2',
         )}
       >
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-fuchsia-500 to-indigo-600 shadow-lg shadow-fuchsia-500/30">
-          <Boxes className="size-5 text-white" />
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50">
+          <Boxes className="size-5 text-blue-600" />
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="truncate text-sm font-extrabold tracking-tight text-white">
+            <p className="truncate text-sm font-bold tracking-tight text-slate-900">
               {translate('admin.sidebar.brand')}
             </p>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
@@ -54,7 +54,7 @@ export default function AdminSidebar({
         {ADMIN_NAV_SECTIONS.map((section) => (
           <div key={section.labelKey}>
             {!collapsed && (
-              <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+              <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-500/90">
                 {translate(section.labelKey)}
               </p>
             )}
@@ -68,11 +68,11 @@ export default function AdminSidebar({
                   title={collapsed ? translate(item.labelKey) : undefined}
                   className={({ isActive }) =>
                     cx(
-                      'flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all duration-200',
+                      'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150',
                       collapsed && 'justify-center px-2',
                       isActive
-                        ? 'bg-linear-to-r from-fuchsia-500/25 to-indigo-500/25 text-white shadow-sm shadow-fuchsia-500/10 ring-1 ring-fuchsia-400/30'
-                        : 'text-slate-400 hover:bg-white/5 hover:text-white',
+                        ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200'
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900',
                     )
                   }
                 >
@@ -86,12 +86,12 @@ export default function AdminSidebar({
       </nav>
 
       {!collapsed && (
-        <div className="space-y-3 border-t border-white/10 px-4 py-4">
+        <div className="space-y-3 border-t border-slate-200 px-4 py-4">
           <div className="grid grid-cols-3 gap-2">
             {ADMIN_QUICK_STATS.map((stat) => (
               <div
                 key={stat.labelKey}
-                className="rounded-xl bg-white/5 px-2 py-2 text-center ring-1 ring-white/5"
+                className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center"
               >
                 <p
                   className={cx(
@@ -101,7 +101,7 @@ export default function AdminSidebar({
                 >
                   {stat.value}
                 </p>
-                <p className="mt-0.5 text-[9px] leading-tight text-slate-500">
+                <p className="mt-0.5 text-[9px] leading-tight text-slate-500/90">
                   {translate(stat.labelKey)}
                 </p>
               </div>
@@ -110,7 +110,7 @@ export default function AdminSidebar({
           <Link
             to={PATHS.HOME}
             onClick={onNavigate}
-            className="flex items-center justify-between rounded-2xl bg-linear-to-r from-fuchsia-500/10 to-indigo-500/10 px-3 py-2.5 text-sm font-semibold text-fuchsia-200 ring-1 ring-white/10 transition hover:from-fuchsia-500/15 hover:to-indigo-500/15"
+            className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50"
           >
             <span>{translate('admin.sidebar.viewStore')}</span>
             <ExternalLink className="size-3.5 opacity-70" />

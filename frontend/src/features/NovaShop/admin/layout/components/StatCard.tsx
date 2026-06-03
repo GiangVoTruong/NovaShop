@@ -2,12 +2,12 @@ import type { ReactNode } from 'react'
 import { cx } from '../../../shared/ui/cx'
 
 const TONE_CLASS = {
-  fuchsia: 'from-fuchsia-500/20 to-purple-500/10 text-fuchsia-300',
-  emerald: 'from-emerald-500/20 to-teal-500/10 text-emerald-300',
-  cyan: 'from-cyan-500/20 to-blue-500/10 text-cyan-300',
-  amber: 'from-amber-500/20 to-orange-500/10 text-amber-300',
-  rose: 'from-rose-500/20 to-pink-500/10 text-rose-300',
-  indigo: 'from-indigo-500/20 to-violet-500/10 text-indigo-300',
+  fuchsia: 'border-blue-200 bg-blue-50 text-blue-700',
+  emerald: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  cyan: 'border-cyan-200 bg-cyan-50 text-cyan-700',
+  amber: 'border-amber-200 bg-amber-50 text-amber-700',
+  rose: 'border-rose-200 bg-rose-50 text-rose-700',
+  indigo: 'border-indigo-200 bg-indigo-50 text-indigo-700',
 } as const
 
 interface StatCardProps {
@@ -26,24 +26,19 @@ export default function StatCard({
   tone = 'fuchsia',
 }: StatCardProps) {
   return (
-    <article className="glass-dark rounded-3xl p-5 ring-1 ring-white/10 transition duration-200 hover:-translate-y-0.5 hover:ring-fuchsia-400/20">
+    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-150 hover:border-slate-300">
       <div className="flex items-start justify-between gap-3">
-        <div
-          className={cx(
-            'flex size-11 items-center justify-center rounded-2xl bg-linear-to-br',
-            TONE_CLASS[tone],
-          )}
-        >
+        <div className={cx('flex size-11 items-center justify-center rounded-xl border', TONE_CLASS[tone])}>
           {icon}
         </div>
         {change && (
-          <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-bold text-emerald-300">
+          <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-xs font-bold text-emerald-300">
             {change}
           </span>
         )}
       </div>
-      <p className="mt-4 text-2xl font-extrabold tracking-tight text-white">{value}</p>
-      <p className="mt-1 text-sm text-slate-400">{label}</p>
+      <p className="mt-4 text-2xl font-bold tracking-tight text-slate-900">{value}</p>
+      <p className="mt-1 text-sm text-slate-500">{label}</p>
     </article>
   )
 }

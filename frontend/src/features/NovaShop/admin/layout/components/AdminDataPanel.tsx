@@ -11,12 +11,12 @@ export default function AdminDataPanel({ toolbar, children, className }: AdminDa
   return (
     <div
       className={cx(
-        'glass-dark overflow-hidden rounded-3xl ring-1 ring-white/10',
+        'overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm',
         className,
       )}
     >
       {toolbar && (
-        <div className="flex flex-col gap-3 border-b border-white/10 p-4 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center">
           {toolbar}
         </div>
       )}

@@ -30,7 +30,7 @@ export function getAdminOrderTotal(order: AdminOrderResponse): number {
   return toAdminAmount(order.finalAmount ?? order.totalAmount)
 }
 
-export function toAdminOrderUiStatus(status: ApiOrderStatus): OrderStatus {
+export function toAdminOrderUiStatus(status: ApiOrderStatus | string): OrderStatus {
   return toCustomerOrderStatus(status)
 }
 
@@ -38,6 +38,7 @@ export const ADMIN_ORDER_STATUSES: ApiOrderStatus[] = [
   'PENDING',
   'CONFIRMED',
   'SHIPPING',
+  'DELIVERED_PENDING_RECEIVER_CONFIRM',
   'DELIVERED',
   'CANCELLED',
 ]

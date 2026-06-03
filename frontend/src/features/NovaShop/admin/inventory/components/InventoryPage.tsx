@@ -1,12 +1,12 @@
-import { useState } from 'react'
-import { Input } from 'antd'
-import { AlertTriangle, PackagePlus, Search } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
 import { PRODUCTS } from '@/features/NovaShop/shared/data/products'
 import { formatNumber } from '@/features/NovaShop/shared/format'
 import type { Product } from '@/features/NovaShop/shared/types'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import { ProductStatusBadge } from '@/features/NovaShop/shared/ui/StatusBadge'
+import { Input } from 'antd'
+import { AlertTriangle, PackagePlus, Search } from 'lucide-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import AdminListPage from '../../layout/components/AdminListPage'
 import AdminTable from '../../layout/components/AdminTable'
 import StatCard from '../../layout/components/StatCard'
@@ -22,14 +22,11 @@ export default function InventoryPage() {
     if (!search) return true
     const keyword = search.toLowerCase()
     return (
-      product.name.toLowerCase().includes(keyword) ||
-      product.sku.toLowerCase().includes(keyword)
+      product.name.toLowerCase().includes(keyword) || product.sku.toLowerCase().includes(keyword)
     )
   }).sort((left, right) => left.stock - right.stock)
 
-  const lowStockCount = PRODUCTS.filter(
-    (product) => product.stock <= LOW_STOCK_THRESHOLD,
-  ).length
+  const lowStockCount = PRODUCTS.filter((product) => product.stock <= LOW_STOCK_THRESHOLD).length
   const outOfStockCount = PRODUCTS.filter(
     (product) => product.status === 'out_of_stock' || product.stock === 0,
   ).length
@@ -54,7 +51,9 @@ export default function InventoryPage() {
       dataIndex: 'stock',
       key: 'stock',
       render: (stock: number) => (
-        <span className={stock <= LOW_STOCK_THRESHOLD ? adminTableText.danger : adminTableText.emphasis}>
+        <span
+          className={stock <= LOW_STOCK_THRESHOLD ? adminTableText.danger : adminTableText.emphasis}
+        >
           {stock}
         </span>
       ),
@@ -74,7 +73,9 @@ export default function InventoryPage() {
             <AlertTriangle className="size-3.5" /> {translate('admin.inventory.columns.lowStock')}
           </span>
         ) : (
-          <span className={adminTableText.muted}>{translate('admin.inventory.columns.stable')}</span>
+          <span className={adminTableText.muted}>
+            {translate('admin.inventory.columns.stable')}
+          </span>
         ),
     },
     {
@@ -95,7 +96,7 @@ export default function InventoryPage() {
       titleHighlight={translate('admin.inventory.titleHighlight')}
       description={translate('admin.inventory.description')}
       actions={
-        <Button leftIcon={<PackagePlus className="size-4" />}>
+        <Button variant="dark" leftIcon={<PackagePlus className="size-4" />}>
           {translate('admin.inventory.import')}
         </Button>
       }
@@ -131,7 +132,12 @@ export default function InventoryPage() {
         />
       }
     >
-      <AdminTable rowKey="id" columns={columns} dataSource={inventoryProducts} scroll={{ x: 800 }} />
+      <AdminTable
+        rowKey="id"
+        columns={columns}
+        dataSource={inventoryProducts}
+        scroll={{ x: 800 }}
+      />
     </AdminListPage>
   )
 }

@@ -15,7 +15,7 @@ export default function AdminLayout() {
 
   return (
     <ConfigProvider locale={getAntdLocale(i18n.language)} theme={adminAntdTheme}>
-      <div className="mesh-bg-dark flex min-h-screen">
+      <div className="admin-app flex min-h-screen bg-slate-100 text-slate-900">
         <aside
           className={cx(
             'fixed inset-y-0 left-0 z-40 hidden lg:block',
@@ -31,7 +31,7 @@ export default function AdminLayout() {
           onClose={() => setMobileOpen(false)}
           size={280}
           styles={{
-            body: { padding: 0, background: '#020617' },
+            body: { padding: 0, background: '#ffffff' },
             header: { display: 'none' },
           }}
         >
@@ -50,11 +50,7 @@ export default function AdminLayout() {
             onToggleCollapse={() => setSidebarCollapsed((value) => !value)}
           />
 
-          <main className="relative flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
-            <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-              <div className="blob animate-float-slow left-[-5%] top-[5%] size-[360px] bg-fuchsia-500/20" />
-              <div className="blob animate-float-slower right-[-8%] top-[30%] size-[420px] bg-cyan-400/15" />
-            </div>
+          <main className="relative flex-1 overflow-x-hidden bg-slate-100 px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
             <Outlet />
           </main>
         </div>

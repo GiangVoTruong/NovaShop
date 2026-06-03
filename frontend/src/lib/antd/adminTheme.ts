@@ -2,20 +2,23 @@ import type { ThemeConfig } from 'antd'
 import { theme } from 'antd'
 import { ADMIN_FONT_FAMILY, adminColors } from '@/features/NovaShop/admin/layout/constants/adminColors'
 
-/** Theme tối cho shell admin (sidebar, toolbar input…) */
+/** Theme sáng cho shell admin (Ant Design Pro clean) */
 export const adminAntdTheme: ThemeConfig = {
-  algorithm: theme.darkAlgorithm,
+  algorithm: theme.defaultAlgorithm,
   token: {
     colorPrimary: adminColors.primary,
+    colorLink: '#1d4ed8',
+    colorLinkHover: '#1e40af',
+    colorLinkActive: '#1e3a8a',
     colorInfo: adminColors.textSecondary,
     colorSuccess: '#34d399',
     colorWarning: '#fbbf24',
     colorError: '#fb7185',
     borderRadius: 12,
     colorBgContainer: adminColors.surface,
-    colorBgElevated: '#1e293b',
+    colorBgElevated: '#ffffff',
     colorBorder: adminColors.border,
-    colorText: adminColors.text,
+    colorText: '#0f172a',
     colorTextSecondary: adminColors.textSecondary,
     colorTextPlaceholder: adminColors.textMuted,
     fontFamily: ADMIN_FONT_FAMILY,
@@ -23,14 +26,14 @@ export const adminAntdTheme: ThemeConfig = {
   components: {
     Input: {
       controlHeight: 40,
-      colorBgContainer: 'rgba(255, 255, 255, 0.05)',
+      colorBgContainer: '#ffffff',
       colorBorder: adminColors.border,
       activeBorderColor: adminColors.primary,
-      hoverBorderColor: 'rgba(217, 70, 239, 0.45)',
+      hoverBorderColor: 'rgba(37, 99, 235, 0.45)',
     },
     Select: {
       controlHeight: 40,
-      colorBgContainer: 'rgba(255, 255, 255, 0.05)',
+      colorBgContainer: '#ffffff',
       colorBorder: adminColors.border,
     },
     Pagination: {
@@ -40,15 +43,17 @@ export const adminAntdTheme: ThemeConfig = {
   },
 }
 
-/** Theme bảng — cùng dark + accent fuchsia với shell */
+/** Theme bảng admin — đồng bộ shell sáng */
 export const adminTableAntdTheme: ThemeConfig = {
-  algorithm: theme.darkAlgorithm,
+  algorithm: theme.defaultAlgorithm,
   token: {
     colorPrimary: adminColors.primary,
+    colorLink: '#1d4ed8',
+    colorLinkHover: '#1e40af',
     borderRadius: 8,
-    colorBgContainer: 'transparent',
-    colorText: adminColors.text,
-    colorTextSecondary: adminColors.textSecondary,
+    colorBgContainer: '#ffffff',
+    colorText: '#0f172a',
+    colorTextSecondary: '#475569',
     colorBorder: adminColors.tableBorder,
     fontFamily: ADMIN_FONT_FAMILY,
   },
@@ -67,7 +72,7 @@ export const adminTableAntdTheme: ThemeConfig = {
       itemActiveBg: adminColors.primary,
       itemActiveColor: '#ffffff',
       colorText: adminColors.textSecondary,
-      colorBgContainer: 'rgba(255, 255, 255, 0.05)',
+      colorBgContainer: '#ffffff',
     },
   },
 }

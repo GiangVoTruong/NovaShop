@@ -5,9 +5,8 @@ import { useTranslation } from 'react-i18next'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import type { ShopSettings } from '@/types/admin.types'
 import { useAdminSettings, useUpdateAdminSettings } from '../../hooks/useAdminSettings'
-import AdminPageHeader from '../../layout/components/AdminPageHeader'
+import AdminPage from '../../layout/components/AdminPage'
 import AdminSection from '../../layout/components/AdminSection'
-import AdminShell from '../../layout/components/AdminShell'
 import { toAdminAmount } from '../../lib/adminApi'
 
 export default function SettingsPage() {
@@ -53,23 +52,23 @@ export default function SettingsPage() {
   }
 
   return (
-    <AdminShell className="max-w-[960px]">
-      <AdminPageHeader
-        eyebrow={translate('admin.settings.eyebrow')}
-        title={translate('admin.settings.title')}
-        titleHighlight={translate('admin.settings.titleHighlight')}
-        description={translate('admin.settings.description')}
-        actions={
-          <Button
-            leftIcon={<Save className="size-4" />}
-            loading={updateMutation.isPending}
-            onClick={handleSave}
-          >
-            {translate('admin.settings.save')}
-          </Button>
-        }
-      />
-
+    <AdminPage
+      className="max-w-[960px]"
+      eyebrow={translate('admin.settings.eyebrow')}
+      title={translate('admin.settings.title')}
+      titleHighlight={translate('admin.settings.titleHighlight')}
+      description={translate('admin.settings.description')}
+      actions={
+        <Button
+          variant="dark"
+          leftIcon={<Save className="size-4" />}
+          loading={updateMutation.isPending}
+          onClick={handleSave}
+        >
+          {translate('admin.settings.save')}
+        </Button>
+      }
+    >
       <Form form={form} layout="vertical" className="space-y-6">
         <AdminSection title={translate('admin.settings.general.title')}>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -125,6 +124,6 @@ export default function SettingsPage() {
           </Form.Item>
         </AdminSection>
       </Form>
-    </AdminShell>
+    </AdminPage>
   )
 }

@@ -109,7 +109,7 @@ export default function ProductsPage() {
       titleHighlight={translate('admin.products.titleHighlight')}
       description={translate('admin.products.description')}
       actions={
-        <Button leftIcon={<Plus className="size-4" />} disabled>
+        <Button variant="dark" leftIcon={<Plus className="size-4" />} disabled>
           {translate('admin.products.add')}
         </Button>
       }

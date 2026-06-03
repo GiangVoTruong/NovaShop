@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import AdminDataPanel from './AdminDataPanel'
-import AdminPageHeader from './AdminPageHeader'
-import AdminShell from './AdminShell'
+import AdminPage from './AdminPage'
 
 interface AdminListPageProps {
   eyebrow: string
@@ -25,16 +24,15 @@ export default function AdminListPage({
   children,
 }: AdminListPageProps) {
   return (
-    <AdminShell>
-      <AdminPageHeader
-        eyebrow={eyebrow}
-        title={title}
-        titleHighlight={titleHighlight}
-        description={description}
-        actions={actions}
-      />
+    <AdminPage
+      eyebrow={eyebrow}
+      title={title}
+      titleHighlight={titleHighlight}
+      description={description}
+      actions={actions}
+    >
       {summary && <div className="mb-6">{summary}</div>}
       <AdminDataPanel toolbar={toolbar}>{children}</AdminDataPanel>
-    </AdminShell>
+    </AdminPage>
   )
 }

@@ -8,7 +8,7 @@ import { formatCurrency, formatDateTime, formatNumber } from '@/features/NovaSho
 import type { AdminOrderResponse } from '@/types/admin.types'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import { OrderStatusBadge } from '@/features/NovaShop/shared/ui/StatusBadge'
-import AdminPageHeader from '../../layout/components/AdminPageHeader'
+import AdminPage from '../../layout/components/AdminPage'
 import AdminSection from '../../layout/components/AdminSection'
 import AdminShell from '../../layout/components/AdminShell'
 import AdminTable from '../../layout/components/AdminTable'
@@ -105,8 +105,7 @@ export default function DashboardPage() {
   ]
 
   return (
-    <AdminShell>
-      <AdminPageHeader
+    <AdminPage
         eyebrow={translate('admin.dashboard.eyebrow')}
         title={translate('admin.dashboard.title')}
         titleHighlight={translate('admin.dashboard.titleHighlight')}
@@ -125,7 +124,7 @@ export default function DashboardPage() {
             </Link>
           </>
         }
-      />
+      >
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
@@ -165,7 +164,7 @@ export default function DashboardPage() {
             xField="month"
             yField="value"
             height={280}
-            style={{ fill: '#d946ef', radiusTopLeft: 8, radiusTopRight: 8 }}
+            style={{ fill: '#2563eb', radiusTopLeft: 8, radiusTopRight: 8 }}
             axis={{
               x: { labelFill: '#94a3b8', lineStroke: '#334155' },
               y: { labelFill: '#94a3b8', gridStroke: '#1e293b' },
@@ -178,12 +177,12 @@ export default function DashboardPage() {
             {overview.ordersByStatus.map((entry) => (
               <li
                 key={entry.status}
-                className="flex items-center justify-between rounded-xl border border-white/10 px-3 py-2"
+                className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
               >
-                <span className="text-sm text-slate-300">
+                <span className="text-sm text-slate-600">
                   {translate(`status.order.${entry.status.toLowerCase()}`)}
                 </span>
-                <span className="font-bold text-white">{entry.count}</span>
+                <span className="font-bold text-slate-900">{entry.count}</span>
               </li>
             ))}
           </ul>
@@ -227,6 +226,6 @@ export default function DashboardPage() {
           scroll={{ x: 720 }}
         />
       </AdminSection>
-    </AdminShell>
+    </AdminPage>
   )
 }
