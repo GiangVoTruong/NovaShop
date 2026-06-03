@@ -1,11 +1,12 @@
+import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
+import NotificationBell from '@/features/NovaShop/shared/notifications/components/NotificationBell'
 import { cx } from '@/features/NovaShop/shared/ui/cx'
 import LanguageSwitcher from '@/lib/i18n/LanguageSwitcher'
 import { PATHS } from '@/router/paths'
 import { Heart, Search, ShoppingCart, Sparkles, User } from 'lucide-react'
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 import { useCartItemCount } from '@/features/NovaShop/customer/cart/hooks/useCart'
 import { CUSTOMER_NAV_LINKS } from '../constants/layout.constants'
 
@@ -21,20 +22,27 @@ function CartBadge({ count }: { count: number }) {
   )
 }
 
+function HeaderCartLink() {
+  const { t: translate } = useTranslation()
+  const cartItemCount = useCartItemCount()
+
+  return (
+    <Link
+      to={PATHS.CART}
+      className="relative hidden size-10 place-items-center rounded-xl text-slate-600 transition hover:bg-purple-50 hover:text-purple-600 lg:grid"
+      aria-label={translate('nav.cart')}
+    >
+      <ShoppingCart className="size-5" />
+      <CartBadge count={cartItemCount} />
+    </Link>
+  )
+}
+
 export default function CustomerHeader() {
   const { t: translate } = useTranslation()
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
-  const cartItemCount = useCartItemCount()
-  const [scrolled, setScrolled] = useState(false)
   const [searchKeyword, setSearchKeyword] = useState('')
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 16)
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -49,12 +57,7 @@ export default function CustomerHeader() {
   }
 
   return (
-    <header
-      className={cx(
-        'customer-header sticky top-0 z-50 w-full transition-all duration-300',
-        scrolled && 'customer-header-scrolled',
-      )}
-    >
+    <header className="customer-header sticky top-0 z-50 w-full">
       <div className="customer-header-bar customer-surface w-full">
         <div className="mx-auto flex h-[72px] max-w-[1440px] flex-nowrap items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-10 xl:px-14">
           <Link to={PATHS.HOME} className="flex shrink-0 items-center gap-2.5">
@@ -123,14 +126,13 @@ export default function CustomerHeader() {
               >
                 <Heart className="size-5" />
               </Link>
-              <Link
-                to={PATHS.CART}
-                className="relative hidden size-10 place-items-center rounded-xl text-slate-600 transition hover:bg-purple-50 hover:text-purple-600 lg:grid"
-                aria-label={translate('nav.cart')}
-              >
-                <ShoppingCart className="size-5" />
-                <CartBadge count={cartItemCount} />
-              </Link>
+              <HeaderCartLink />
+              {isAuthenticated ? (
+                <NotificationBell
+                  className="relative hidden size-10 place-items-center rounded-xl text-slate-600 transition hover:bg-fuchsia-50 hover:text-fuchsia-600 lg:grid"
+                  badgeClassName="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-linear-to-r from-fuchsia-500 to-purple-500 px-1 text-[10px] font-bold text-white"
+                />
+              ) : null}
               {!isAuthenticated ? (
                 <>
                   <Link

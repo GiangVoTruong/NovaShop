@@ -5,6 +5,7 @@ import { cart } from './partials/en/cart'
 import { checkout } from './partials/en/checkout'
 import { footer } from './partials/en/footer'
 import { home } from './partials/en/home'
+import { notifications } from './partials/en/notifications'
 import { orders } from './partials/en/orders'
 import { product } from './partials/en/product'
 import { profile } from './partials/en/profile'
@@ -106,5 +107,6 @@ export const en = {
   profile,
   bottomNav,
   status,
+  notifications,
   admin,
 } as const

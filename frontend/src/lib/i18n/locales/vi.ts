@@ -5,6 +5,7 @@ import { cart } from './partials/vi/cart'
 import { checkout } from './partials/vi/checkout'
 import { footer } from './partials/vi/footer'
 import { home } from './partials/vi/home'
+import { notifications } from './partials/vi/notifications'
 import { orders } from './partials/vi/orders'
 import { product } from './partials/vi/product'
 import { profile } from './partials/vi/profile'
@@ -106,5 +107,6 @@ export const vi = {
   profile,
   bottomNav,
   status,
+  notifications,
   admin,
 } as const
