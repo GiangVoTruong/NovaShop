@@ -7,6 +7,7 @@ import type { ShopSettings } from '@/types/admin.types'
 import { useAdminSettings, useUpdateAdminSettings } from '../../hooks/useAdminSettings'
 import AdminPage from '../../layout/components/AdminPage'
 import AdminSection from '../../layout/components/AdminSection'
+import AdminShell from '../../layout/components/AdminShell'
 import { toAdminAmount } from '../../lib/adminApi'
 
 export default function SettingsPage() {

@@ -7,6 +7,7 @@ import { useAdminAnalytics } from '../../hooks/useAdminAnalytics'
 import { toAdminAmount } from '../../lib/adminApi'
 import AdminPage from '../../layout/components/AdminPage'
 import AdminSection from '../../layout/components/AdminSection'
+import AdminShell from '../../layout/components/AdminShell'
 import StatCard from '../../layout/components/StatCard'
 
 export default function AnalyticsPage() {
