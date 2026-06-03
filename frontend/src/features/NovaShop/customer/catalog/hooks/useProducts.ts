@@ -6,6 +6,7 @@ export type UseProductsParams = {
   keyword?: string
   category?: string
   mode?: string
+  sellerId?: string
   page?: number
   size?: number
   sortKey?: string
@@ -19,6 +20,7 @@ export function useProducts(params: UseProductsParams = {}) {
     keyword,
     category,
     mode,
+    sellerId,
     page = 0,
     size = 20,
     sortKey,
@@ -28,12 +30,13 @@ export function useProducts(params: UseProductsParams = {}) {
   } = params
 
   return useQuery<ProductsPageResult>({
-    queryKey: ['products', keyword, category, mode, page, size, sortKey, sortBy, sortDir],
+    queryKey: ['products', keyword, category, mode, sellerId, page, size, sortKey, sortBy, sortDir],
     queryFn: () =>
       productService.listProducts({
         keyword,
         category,
         mode,
+        sellerId,
         page,
         size,
         sortKey,

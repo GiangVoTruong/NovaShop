@@ -1,12 +1,8 @@
-import { useMemo } from 'react'
 import { productDetailPath } from '@/router/paths'
 import { Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { useCategories } from '../../catalog/hooks/useCategories'
-import {
-  buildCategorySlugMap,
-} from '../../catalog/lib/categoryApi'
+import { useCategorySlugMap } from '../../catalog/hooks/useCategorySlugMap'
 import {
   getProductCategorySlug,
   getProductDiscountPercent,
@@ -21,19 +17,13 @@ import { formatCurrency } from '@/features/NovaShop/shared/format'
 import type { ApiProductResponse } from '@/types/product.types'
 import StarRating from '@/features/NovaShop/shared/ui/StarRating'
 import { CategoryTag } from '@/features/NovaShop/shared/ui/StatusBadge'
-import { cx } from '@/features/NovaShop/shared/ui/cx'
-
 interface ProductCardProps {
   product: ApiProductResponse
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { t: translate } = useTranslation()
-  const categoriesQuery = useCategories()
-  const categorySlugById = useMemo(
-    () => buildCategorySlugMap(categoriesQuery.data ?? []),
-    [categoriesQuery.data],
-  )
+  const categorySlugById = useCategorySlugMap()
 
   const discount = getProductDiscountPercent(product)
   const isHot = isProductHot(product)
@@ -44,12 +34,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const categorySlug = getProductCategorySlug(product, categorySlugById)
 
   return (
-    <article
-      className={cx(
-        'customer-card group/card relative flex flex-col overflow-hidden rounded-2xl transition-all duration-300 sm:rounded-3xl',
-        'hover:-translate-y-1.5',
-      )}
-    >
+    <article className="customer-card group/card relative flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl">
       <Link
         to={productDetailPath(product.id)}
         className="relative block aspect-square overflow-hidden bg-slate-100 sm:aspect-4/5"
@@ -58,7 +43,8 @@ export default function ProductCard({ product }: ProductCardProps) {
           src={images[0]}
           alt={product.name}
           loading="lazy"
-          className="size-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+          decoding="async"
+          className="size-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover/card:scale-105"
         />
         <div className="absolute inset-0 bg-linear-to-t from-slate-900/35 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover/card:opacity-100" />
 
@@ -74,7 +60,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
           {outOfStock && (
-            <span className="rounded-full bg-slate-900/85 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur">
+            <span className="rounded-full bg-slate-900/90 px-2.5 py-1 text-[11px] font-bold text-white">
               {translate('product.card.outOfStock')}
             </span>
           )}

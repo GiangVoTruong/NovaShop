@@ -4,6 +4,7 @@ export type ProductListQuery = {
   keyword?: string
   category?: string
   mode?: string
+  sellerId?: string
   page: number
   size: number
   sortBy?: string
@@ -34,6 +35,7 @@ export function buildProductListQuery(params: ProductListParams = {}): ProductLi
     keyword: params.keyword || undefined,
     category: params.category || undefined,
     mode: params.mode || undefined,
+    sellerId: params.sellerId || undefined,
     page: params.page ?? 0,
     size: params.size ?? 20,
     sortBy: params.sortBy ?? sort.sortBy,

@@ -47,6 +47,7 @@ export type ProductListParams = {
   keyword?: string
   category?: string
   mode?: string
+  sellerId?: string
   page?: number
   size?: number
   sortKey?: string
