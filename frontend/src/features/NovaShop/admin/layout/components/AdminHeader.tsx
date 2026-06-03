@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { PATHS } from '@/router/paths'
 import LanguageSwitcher from '@/lib/i18n/LanguageSwitcher'
 import NotificationBell from '@/features/NovaShop/shared/notifications/components/NotificationBell'
+import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 import Button from '../../../shared/ui/Button'
 
 interface AdminHeaderProps {
@@ -18,6 +19,7 @@ export default function AdminHeader({
   onToggleCollapse,
 }: AdminHeaderProps) {
   const { t } = useTranslation()
+  const { isAuthenticated } = useAuth()
   const CollapseIcon = sidebarCollapsed ? PanelLeft : PanelLeftClose
 
   return (
@@ -69,7 +71,7 @@ export default function AdminHeader({
 
         <LanguageSwitcher className="grid size-10 shrink-0 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900" />
 
-        <NotificationBell />
+        {isAuthenticated ? <NotificationBell /> : null}
 
         <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 py-1.5 pl-1.5 pr-3">
           <img

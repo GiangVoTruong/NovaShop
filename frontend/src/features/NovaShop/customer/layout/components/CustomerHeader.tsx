@@ -129,8 +129,8 @@ export default function CustomerHeader() {
               <HeaderCartLink />
               {isAuthenticated ? (
                 <NotificationBell
-                  className="relative hidden size-10 place-items-center rounded-xl text-slate-600 transition hover:bg-fuchsia-50 hover:text-fuchsia-600 lg:grid"
-                  badgeClassName="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-linear-to-r from-fuchsia-500 to-purple-500 px-1 text-[10px] font-bold text-white"
+                  className="relative grid size-10 shrink-0 place-items-center rounded-xl text-slate-600 transition hover:bg-fuchsia-50 hover:text-fuchsia-600"
+                  badgeClassName="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-linear-to-r from-fuchsia-500 to-purple-500 px-1 text-[10px] font-bold text-white ring-2 ring-white"
                 />
               ) : null}
               {!isAuthenticated ? (

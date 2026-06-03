@@ -14,13 +14,30 @@ import com.backend.entity.Notification;
 
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
 
-    Page<Notification> findByUser_IdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
+    @Query("""
+            SELECT notification FROM Notification notification
+            WHERE notification.user.id = :userId
+            ORDER BY notification.createdAt DESC
+            """)
+    Page<Notification> findByUserIdOrderByCreatedAtDesc(@Param("userId") UUID userId, Pageable pageable);
 
-    long countByUser_IdAndIsReadFalse(UUID userId);
+    @Query("""
+            SELECT COUNT(notification) FROM Notification notification
+            WHERE notification.user.id = :userId AND notification.isRead = false
+            """)
+    long countUnreadByUserId(@Param("userId") UUID userId);
 
-    Optional<Notification> findByIdAndUser_Id(UUID id, UUID userId);
+    @Query("""
+            SELECT notification FROM Notification notification
+            WHERE notification.id = :id AND notification.user.id = :userId
+            """)
+    Optional<Notification> findByIdAndUserId(@Param("id") UUID id, @Param("userId") UUID userId);
 
     @Modifying
-    @Query("UPDATE Notification notification SET notification.isRead = true WHERE notification.user.id = :userId AND notification.isRead = false")
+    @Query("""
+            UPDATE Notification notification
+            SET notification.isRead = true
+            WHERE notification.user.id = :userId AND notification.isRead = false
+            """)
     void markAllAsReadByUserId(@Param("userId") UUID userId);
 }

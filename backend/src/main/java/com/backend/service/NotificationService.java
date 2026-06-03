@@ -40,30 +40,36 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
-    public Page<GetNotificationResponseDto> getMyNotifications(Pageable pageable) {
-        UUID userId = SecurityUtils.getCurrentUserId();
-        return notificationRepository.findByUser_IdOrderByCreatedAtDesc(userId, pageable)
+    public Page<GetNotificationResponseDto> getNotificationsByUserId(UUID userId, Pageable pageable) {
+        assertCurrentUser(userId);
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
                 .map(notificationMapper::toDto);
     }
 
     @Transactional(readOnly = true)
-    public long getUnreadCount() {
-        UUID userId = SecurityUtils.getCurrentUserId();
-        return notificationRepository.countByUser_IdAndIsReadFalse(userId);
+    public long getUnreadCountByUserId(UUID userId) {
+        assertCurrentUser(userId);
+        return notificationRepository.countUnreadByUserId(userId);
     }
 
     @Transactional
-    public GetNotificationResponseDto markAsRead(UUID notificationId) {
-        UUID userId = SecurityUtils.getCurrentUserId();
-        Notification notification = notificationRepository.findByIdAndUser_Id(notificationId, userId)
+    public GetNotificationResponseDto markAsRead(UUID userId, UUID notificationId) {
+        assertCurrentUser(userId);
+        Notification notification = notificationRepository.findByIdAndUserId(notificationId, userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOTIFICATION_NOT_FOUND));
         notification.setIsRead(true);
         return notificationMapper.toDto(notificationRepository.save(notification));
     }
 
     @Transactional
-    public void markAllAsRead() {
-        UUID userId = SecurityUtils.getCurrentUserId();
+    public void markAllAsReadByUserId(UUID userId) {
+        assertCurrentUser(userId);
         notificationRepository.markAllAsReadByUserId(userId);
+    }
+
+    private void assertCurrentUser(UUID userId) {
+        if (!SecurityUtils.getCurrentUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
     }
 }

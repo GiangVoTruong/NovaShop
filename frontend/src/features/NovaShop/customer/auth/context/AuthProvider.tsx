@@ -51,10 +51,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginSession = useCallback(
     async ({ accessToken, refreshToken }: LoginSessionInput) => {
+      queryClient.removeQueries({ queryKey: ['notification-inbox'] })
       setTokens(accessToken, refreshToken)
       await refreshProfile()
     },
-    [refreshProfile],
+    [refreshProfile, queryClient],
   )
 
   const logout = useCallback(() => {
@@ -64,7 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryClient.removeQueries({ queryKey: ['orders'] })
     queryClient.removeQueries({ queryKey: ['wishlist'] })
     queryClient.removeQueries({ queryKey: ['addresses'] })
-    queryClient.removeQueries({ queryKey: ['notifications'] })
+    queryClient.removeQueries({ queryKey: ['notification-inbox'] })
+    queryClient.removeQueries({ queryKey: ['notifications', 'preferences'] })
   }, [queryClient])
 
   const value = useMemo<AuthContextValue>(

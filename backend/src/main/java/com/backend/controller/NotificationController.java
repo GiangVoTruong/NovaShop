@@ -23,7 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping("/api/users/{userId}/notifications")
 @RequiredArgsConstructor
 @Tag(name = "notifications")
 public class NotificationController {
@@ -31,31 +31,37 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping
-    @Operation(summary = "Danh sách thông báo", description = "Lấy thông báo của user đang đăng nhập (phân trang).")
-    public ResponseEntity<ApiResponse<List<GetNotificationResponseDto>>> getMyNotifications(
+    @Operation(summary = "Danh sách thông báo theo user", description = "Lấy thông báo của userId (phải trùng user đang đăng nhập).")
+    public ResponseEntity<ApiResponse<List<GetNotificationResponseDto>>> getNotificationsByUserId(
+            @PathVariable UUID userId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size) {
-        Page<GetNotificationResponseDto> notificationPage = notificationService.getMyNotifications(
-                PaginationUtils.toPageable(page, size, "createdAt", "desc"));
+        Page<GetNotificationResponseDto> notificationPage = notificationService.getNotificationsByUserId(
+                userId,
+                PaginationUtils.toPageableOneBased(page, size, "createdAt", "desc"));
         return ApiResponses.okPage(notificationPage, "Notifications loaded");
     }
 
     @GetMapping("/unread-count")
-    @Operation(summary = "Số thông báo chưa đọc")
-    public ResponseEntity<ApiResponse<Long>> getUnreadCount() {
-        return ApiResponses.ok(notificationService.getUnreadCount(), "Unread count loaded");
+    @Operation(summary = "Số thông báo chưa đọc theo user")
+    public ResponseEntity<ApiResponse<Long>> getUnreadCountByUserId(@PathVariable UUID userId) {
+        return ApiResponses.ok(notificationService.getUnreadCountByUserId(userId), "Unread count loaded");
     }
 
-    @PatchMapping("/{id}/read")
-    @Operation(summary = "Đánh dấu đã đọc")
-    public ResponseEntity<ApiResponse<GetNotificationResponseDto>> markAsRead(@PathVariable UUID id) {
-        return ApiResponses.ok(notificationService.markAsRead(id), "Notification marked as read");
+    @PatchMapping("/{notificationId}/read")
+    @Operation(summary = "Đánh dấu một thông báo đã đọc")
+    public ResponseEntity<ApiResponse<GetNotificationResponseDto>> markAsRead(
+            @PathVariable UUID userId,
+            @PathVariable UUID notificationId) {
+        return ApiResponses.ok(
+                notificationService.markAsRead(userId, notificationId),
+                "Notification marked as read");
     }
 
     @PatchMapping("/read-all")
-    @Operation(summary = "Đánh dấu tất cả đã đọc")
-    public ResponseEntity<ApiResponse<Void>> markAllAsRead() {
-        notificationService.markAllAsRead();
+    @Operation(summary = "Đánh dấu tất cả thông báo của user đã đọc")
+    public ResponseEntity<ApiResponse<Void>> markAllAsReadByUserId(@PathVariable UUID userId) {
+        notificationService.markAllAsReadByUserId(userId);
         return ApiResponses.okMessage("All notifications marked as read");
     }
 }

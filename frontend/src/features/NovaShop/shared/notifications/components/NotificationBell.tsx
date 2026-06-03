@@ -11,6 +11,7 @@ import {
   useNotifications,
   useUnreadNotificationCount,
 } from '../hooks/useNotifications'
+import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 
 dayjs.extend(relativeTime)
 
@@ -28,6 +29,7 @@ export default function NotificationBell({
   popoverPlacement = 'bottomRight',
 }: NotificationBellProps) {
   const { t: translate } = useTranslation()
+  const { isAuthenticated } = useAuth()
   const [open, setOpen] = useState(false)
   const unreadQuery = useUnreadNotificationCount()
   const notificationsQuery = useNotifications(1, 20)
@@ -48,6 +50,10 @@ export default function NotificationBell({
 
   const unreadCount = unreadQuery.data ?? 0
   const notifications = notificationsQuery.data ?? []
+
+  if (!isAuthenticated) {
+    return null
+  }
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen)

@@ -1,6 +1,4 @@
 import { PATHS } from '@/router/paths'
-import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
-import NotificationBell from '@/features/NovaShop/shared/notifications/components/NotificationBell'
 import { cx } from '@/features/NovaShop/shared/ui/cx'
 import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
@@ -21,7 +19,6 @@ function CartBadge({ count }: { count: number }) {
 
 export default function CustomerBottomNav() {
   const { t: translate } = useTranslation()
-  const { isAuthenticated } = useAuth()
   const cartItemCount = useCartItemCount()
 
   return (
@@ -55,11 +52,6 @@ export default function CustomerBottomNav() {
               </NavLink>
             </li>
           ))}
-          {isAuthenticated ? (
-            <li className="min-w-0 flex-1">
-              <NotificationBell layout="bottomNav" popoverPlacement="top" />
-            </li>
-          ) : null}
         </ul>
       </div>
     </nav>
