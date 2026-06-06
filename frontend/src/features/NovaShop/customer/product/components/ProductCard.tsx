@@ -1,4 +1,8 @@
+import { formatCurrency } from '@/features/NovaShop/shared/format'
+import StarRating from '@/features/NovaShop/shared/ui/StarRating'
+import { CategoryTag } from '@/features/NovaShop/shared/ui/StatusBadge'
 import { productDetailPath } from '@/router/paths'
+import type { ApiProductResponse } from '@/types/product.types'
 import { Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -13,10 +17,6 @@ import {
   isProductHot,
   isProductOutOfStock,
 } from '../../catalog/lib/productApi'
-import { formatCurrency } from '@/features/NovaShop/shared/format'
-import type { ApiProductResponse } from '@/types/product.types'
-import StarRating from '@/features/NovaShop/shared/ui/StarRating'
-import { CategoryTag } from '@/features/NovaShop/shared/ui/StatusBadge'
 interface ProductCardProps {
   product: ApiProductResponse
 }
@@ -65,7 +65,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
         </div>
-
       </Link>
 
       <div className="flex flex-1 flex-col gap-1.5 p-2.5 sm:gap-2 sm:p-4">
@@ -95,9 +94,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               {formatCurrency(salePrice)}
             </p>
             {discount > 0 && (
-              <p className="text-xs text-slate-400 line-through">
-                {formatCurrency(listPrice)}
-              </p>
+              <p className="text-xs text-slate-400 line-through">{formatCurrency(listPrice)}</p>
             )}
           </div>
         </div>

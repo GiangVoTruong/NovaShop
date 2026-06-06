@@ -4,7 +4,7 @@ import { cx } from '@/features/NovaShop/shared/ui/cx'
 import LanguageSwitcher from '@/lib/i18n/LanguageSwitcher'
 import { PATHS } from '@/router/paths'
 import { Heart, Search, ShoppingCart, Sparkles, User } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { useState, type SubmitEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useCartItemCount } from '@/features/NovaShop/customer/cart/hooks/useCart'
@@ -44,7 +44,7 @@ export default function CustomerHeader() {
   const { user, isAuthenticated } = useAuth()
   const [searchKeyword, setSearchKeyword] = useState('')
 
-  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSearchSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
     const keyword = searchKeyword.trim()
     if (!keyword) {
