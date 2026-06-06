@@ -1,53 +1,28 @@
+import type { PageResult } from '@/types/api.types'
+import type { ApiProductResponse, ProductListParams } from '@/types/product.types'
 import { useQuery } from '@tanstack/react-query'
-import type { ProductsPageResult } from '@/types/product.types'
 import productService from '../services/productService'
 
-export type UseProductsParams = {
-  keyword?: string
-  category?: string
-  mode?: string
-  sellerId?: string
-  page?: number
-  size?: number
-  sortKey?: string
-  sortBy?: string
-  sortDir?: string
+export type UseProductsParams = ProductListParams & {
   enabled?: boolean
 }
 
-export function useProducts(params: UseProductsParams = {}) {
-  const {
-    keyword,
-    category,
-    mode,
-    sellerId,
-    page = 0,
-    size = 20,
-    sortKey,
-    sortBy,
-    sortDir,
-    enabled = true,
-  } = params
+export function useProducts({
+  enabled = true,
+  page = 0,
+  size = 20,
+  ...listParams
+}: UseProductsParams = {}) {
+  const params: ProductListParams = { ...listParams, page, size }
 
-  return useQuery<ProductsPageResult>({
-    queryKey: ['products', keyword, category, mode, sellerId, page, size, sortKey, sortBy, sortDir],
-    queryFn: () =>
-      productService.listProducts({
-        keyword,
-        category,
-        mode,
-        sellerId,
-        page,
-        size,
-        sortKey,
-        sortBy,
-        sortDir,
-      }),
+  return useQuery<PageResult<ApiProductResponse>>({
+    queryKey: ['products', params],
+    queryFn: () => productService.listProducts(params),
     enabled,
   })
 }
 
-export function useProduct(productId: string | undefined) {
+export function useProductById(productId: string | undefined) {
   return useQuery({
     queryKey: ['product', productId],
     queryFn: () => productService.getById(productId!),

@@ -1,6 +1,4 @@
 import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
-import { useAddToCart } from '../../cart/hooks/useCart'
-import { useToggleWishlist } from '../../wishlist/hooks/useWishlist'
 import { formatCurrency, formatDate } from '@/features/NovaShop/shared/format'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import StarRating from '@/features/NovaShop/shared/ui/StarRating'
@@ -23,8 +21,9 @@ import {
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useAddToCart } from '../../cart/hooks/useCart'
 import { useCategories } from '../../catalog/hooks/useCategories'
-import { useProduct, useProducts } from '../../catalog/hooks/useProducts'
+import { useProductById, useProducts } from '../../catalog/hooks/useProducts'
 import { buildCategorySlugMap } from '../../catalog/lib/categoryApi'
 import {
   getProductCategorySlug,
@@ -34,8 +33,9 @@ import {
   getProductRating,
   getProductSalePrice,
 } from '../../catalog/lib/productApi'
-import ProductCard from './ProductCard'
+import { useToggleWishlist } from '../../wishlist/hooks/useWishlist'
 import { useCreateReview, useProductReviews } from '../hooks/useReviews'
+import ProductCard from './ProductCard'
 
 const DETAIL_PERKS = [
   {
@@ -68,7 +68,7 @@ export default function ProductDetailPage() {
   const { inWishlist, isPending: wishlistPending, toggle: toggleWishlist } = useToggleWishlist(id)
   const reviewsQuery = useProductReviews(id)
   const createReviewMutation = useCreateReview(id)
-  const productQuery = useProduct(id)
+  const productQuery = useProductById(id)
   const product = productQuery.data
   const categoriesQuery = useCategories()
   const categorySlugById = useMemo(
@@ -411,9 +411,7 @@ export default function ProductDetailPage() {
                   <p className="font-bold text-slate-900">{review.userFullName}</p>
                   <StarRating value={review.rating} size={14} />
                 </div>
-                {review.comment && (
-                  <p className="mt-2 text-sm text-slate-600">{review.comment}</p>
-                )}
+                {review.comment && <p className="mt-2 text-sm text-slate-600">{review.comment}</p>}
                 <p className="mt-2 text-xs text-slate-400">{formatDate(review.createdAt)}</p>
               </li>
             ))}
