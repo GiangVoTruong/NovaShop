@@ -1,27 +1,15 @@
+import { toPageResult } from '@/lib/api/toPageResult'
 import { axiosInstance } from '@/lib/axios/instances'
-import type {
-  ApiProductResponse,
-  ApiResponse,
-  ProductListParams,
-  ProductsPageResult,
-} from '@/types/product.types'
+import type { ApiResponse, PageResult } from '@/types/api.types'
+import type { ApiProductResponse, ProductListParams } from '@/types/product.types'
 import { buildProductListQuery } from '../lib/buildProductListQuery'
 
-function toProductsPageResult(response: ApiResponse<ApiProductResponse[]>): ProductsPageResult {
-  return {
-    data: response.data ?? [],
-    total: response.meta?.total ?? 0,
-    page: response.meta?.page ?? 1,
-    limit: response.meta?.limit ?? 20,
-  }
-}
-
 const productService = {
-  listProducts: async (params: ProductListParams = {}): Promise<ProductsPageResult> => {
+  listProducts: async (params: ProductListParams = {}): Promise<PageResult<ApiProductResponse>> => {
     const { data } = await axiosInstance.get<ApiResponse<ApiProductResponse[]>>('/products', {
       params: buildProductListQuery(params),
     })
-    return toProductsPageResult(data)
+    return toPageResult(data)
   },
 
   getById: async (productId: string): Promise<ApiProductResponse> => {
