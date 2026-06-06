@@ -191,12 +191,23 @@ public class ProductService {
     private GetProductResponseDto toDetailedDto(Product product) {
         GetProductResponseDto response = productMapper.toDto(product);
         List<ProductImage> images = productImageRepository.findByProductId(product.getId());
-        response.setImageUrls(images.stream().map(ProductImage::getUrl).toList());
-        response.setPrimaryImageUrl(images.stream()
-                .filter(image -> Boolean.TRUE.equals(image.getIsPrimary()))
-                .map(ProductImage::getUrl)
-                .findFirst()
-                .orElse(images.isEmpty() ? null : images.getFirst().getUrl()));
+        List<String> imageUrls = new ArrayList<>(images.size());
+        String primaryImageUrl = null;
+        for (ProductImage image : images) {
+            if (image == null) {
+                continue;
+            }
+            String url = image.getUrl();
+            imageUrls.add(url);
+            if (Boolean.TRUE.equals(image.getIsPrimary())) {
+                primaryImageUrl = url;
+            }
+        }
+        if (primaryImageUrl == null && !imageUrls.isEmpty()) {
+            primaryImageUrl = imageUrls.getFirst();
+        }
+        response.setImageUrls(imageUrls);
+        response.setPrimaryImageUrl(primaryImageUrl);
         return response;
     }
 
