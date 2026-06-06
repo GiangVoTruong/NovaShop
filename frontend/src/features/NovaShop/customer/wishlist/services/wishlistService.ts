@@ -1,7 +1,7 @@
 import { requireApiData } from '@/lib/api/requireApiData'
 import { axiosInstance } from '@/lib/axios/instances'
 import type { ApiWishlistItemResponse, ApiWishlistResponse, WishlistCheckResponse } from '@/types/wishlist.types'
-import type { ApiResponse } from '@/types/product.types'
+import type { ApiResponse } from '@/types/api.types'
 
 const wishlistService = {
   getWishlist: async (): Promise<ApiWishlistResponse> => {

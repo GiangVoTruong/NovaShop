@@ -5,7 +5,7 @@ import type {
   CreateAdminCouponRequest,
   UpdateAdminCouponRequest,
 } from '@/types/admin.types'
-import type { ApiResponse } from '@/types/product.types'
+import type { ApiResponse } from '@/types/api.types'
 
 const adminCouponService = {
   getAll: async (): Promise<AdminCoupon[]> => {

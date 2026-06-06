@@ -1,7 +1,7 @@
 import { requireApiData } from '@/lib/api/requireApiData'
 import { axiosInstance } from '@/lib/axios/instances'
 import type { ApiOrderResponse, CheckoutRequest } from '@/types/order.types'
-import type { ApiResponse } from '@/types/product.types'
+import type { ApiResponse } from '@/types/api.types'
 
 const orderService = {
   checkout: async (request: CheckoutRequest): Promise<ApiOrderResponse> => {

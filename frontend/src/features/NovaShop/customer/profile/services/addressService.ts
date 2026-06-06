@@ -5,7 +5,7 @@ import type {
   CreateAddressRequest,
   UpdateAddressRequest,
 } from '@/types/address.types'
-import type { ApiResponse } from '@/types/product.types'
+import type { ApiResponse } from '@/types/api.types'
 
 const addressService = {
   getMyAddresses: async (): Promise<ApiAddressResponse[]> => {

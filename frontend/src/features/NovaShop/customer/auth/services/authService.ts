@@ -12,7 +12,7 @@ import type {
   UpdateUserProfileRequest,
   UserProfile,
 } from '@/types/auth.types'
-import type { ApiResponse } from '@/types/product.types'
+import type { ApiResponse } from '@/types/api.types'
 
 const authService = {
   login: async (request: AuthLoginRequest): Promise<AuthLoginResponse> => {

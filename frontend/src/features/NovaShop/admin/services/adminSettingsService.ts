@@ -1,7 +1,7 @@
 import { requireApiData } from '@/lib/api/requireApiData'
 import { axiosInstance } from '@/lib/axios/instances'
 import type { ShopSettings } from '@/types/admin.types'
-import type { ApiResponse } from '@/types/product.types'
+import type { ApiResponse } from '@/types/api.types'
 
 const adminSettingsService = {
   getSettings: async (): Promise<ShopSettings> => {

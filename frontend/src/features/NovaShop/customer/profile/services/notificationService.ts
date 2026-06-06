@@ -1,7 +1,7 @@
 import { requireApiData } from '@/lib/api/requireApiData'
 import { axiosInstance } from '@/lib/axios/instances'
 import type { NotificationPreferences } from '@/types/notification.types'
-import type { ApiResponse } from '@/types/product.types'
+import type { ApiResponse } from '@/types/api.types'
 
 const notificationService = {
   getPreferences: async (): Promise<NotificationPreferences> => {

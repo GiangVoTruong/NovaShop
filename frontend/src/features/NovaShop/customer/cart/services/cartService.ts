@@ -1,7 +1,7 @@
 import { requireApiData } from '@/lib/api/requireApiData'
 import { axiosInstance } from '@/lib/axios/instances'
 import type { AddCartItemRequest, ApiCartResponse, UpdateCartItemRequest } from '@/types/cart.types'
-import type { ApiResponse } from '@/types/product.types'
+import type { ApiResponse } from '@/types/api.types'
 
 const cartService = {
   getCart: async (): Promise<ApiCartResponse> => {
