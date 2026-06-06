@@ -23,8 +23,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private static final String NOTIFICATION_NOT_FOUND = "Notification not found";
-
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
 
@@ -56,7 +54,7 @@ public class NotificationService {
     public GetNotificationResponseDto markAsRead(UUID userId, UUID notificationId) {
         assertCurrentUser(userId);
         Notification notification = notificationRepository.findByIdAndUserId(notificationId, userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, NOTIFICATION_NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification not found"));
         notification.setIsRead(true);
         return notificationMapper.toDto(notificationRepository.save(notification));
     }
