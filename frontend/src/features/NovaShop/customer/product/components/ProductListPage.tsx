@@ -9,9 +9,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCategories } from '../../catalog/hooks/useCategories'
 import { useProducts } from '../../catalog/hooks/useProducts'
 import { parseListingMode, SORT_OPTIONS } from '../constants/product.constants'
-import { useProductBrandOptions } from '../hooks/useProductBrandOptions'
 import {
   buildProductListingKey,
+  extractBrandOptions,
   filterProductsByClientCriteria,
   hasClientOnlyFilters,
   parseProductListFilters,
@@ -44,7 +44,6 @@ export default function ProductListPage() {
   }
 
   const page = pagination.page
-  const brandOptions = useProductBrandOptions()
 
   const productsQuery = useProducts({
     keyword: keywordParam || undefined,
@@ -60,6 +59,7 @@ export default function ProductListPage() {
   const categories = categoriesQuery.data ?? []
 
   const fetchedItems = productsQuery.data?.data ?? []
+  const brandOptions = extractBrandOptions(fetchedItems)
   const filteredItems = usesClientFilter
     ? filterProductsByClientCriteria(fetchedItems, filters)
     : fetchedItems
