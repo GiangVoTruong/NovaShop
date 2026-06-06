@@ -1,3 +1,4 @@
+import type { ListQueryParams } from '@/types/api.types'
 import type {
   ApiOrderItemResponse,
   ApiOrderShippingAddress,
@@ -25,22 +26,12 @@ export type AdminOrderResponse = {
   updatedAt: string
 }
 
-export type AdminOrdersListParams = {
-  page?: number
-  size?: number
-  sortBy?: string
+export type AdminOrdersListParams = ListQueryParams & {
   sortDir?: 'asc' | 'desc'
   status?: ApiOrderStatus
   keyword?: string
   fromDate?: string
   toDate?: string
-}
-
-export type AdminOrdersPageResult = {
-  data: AdminOrderResponse[]
-  total: number
-  page: number
-  limit: number
 }
 
 export type AdminAnalyticsOverview = {

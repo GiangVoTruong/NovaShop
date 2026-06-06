@@ -4,7 +4,7 @@ import i18n from 'i18next'
 import { isApiTimeoutError } from '@/lib/axios/apiError'
 import type { ApiErrorBody } from '@/types/api.types'
 import type { AuthLoginResponse } from '@/types/auth.types'
-import type { ApiResponse } from '@/types/product.types'
+import type { ApiResponse } from '@/types/api.types'
 
 const defaultApiBaseUrl = import.meta.env.PROD
   ? 'https://novashop-e4ir.onrender.com/api'

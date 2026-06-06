@@ -1,3 +1,5 @@
+import type { ListQueryParams } from '@/types/api.types'
+
 export type ApiProductStatus = 'ACTIVE' | 'INACTIVE' | 'DELETED'
 
 export type ApiProductResponse = {
@@ -30,35 +32,10 @@ export type ApiCategoryResponse = {
   imageUrl: string | null
 }
 
-export type ApiPageMeta = {
-  page: number
-  limit: number
-  total: number
-}
-
-export type ApiResponse<T> = {
-  success: boolean
-  statusCode: number
-  message: string
-  data: T
-  meta?: ApiPageMeta
-}
-
-export type ProductListParams = {
+export type ProductListParams = ListQueryParams & {
   keyword?: string
   category?: string
   mode?: string
   sellerId?: string
-  page?: number
-  size?: number
   sortKey?: string
-  sortBy?: string
-  sortDir?: string
-}
-
-export type ProductsPageResult = {
-  data: ApiProductResponse[]
-  total: number
-  page: number
-  limit: number
 }

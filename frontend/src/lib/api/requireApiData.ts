@@ -1,4 +1,4 @@
-import type { ApiResponse } from '@/types/product.types'
+import type { ApiResponse } from '@/types/api.types'
 
 export function requireApiData<T>(body: ApiResponse<T>, fallbackMessage: string): T {
   if (!body.success || body.data == null) {
