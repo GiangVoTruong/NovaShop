@@ -5,13 +5,13 @@ import { Bell } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 import {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
   useNotifications,
   useUnreadNotificationCount,
 } from '../hooks/useNotifications'
-import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 
 dayjs.extend(relativeTime)
 
@@ -91,7 +91,9 @@ export default function NotificationBell({
           <Spin size="small" />
         </div>
       ) : notifications.length === 0 ? (
-        <p className="py-6 text-center text-sm text-slate-500">{translate('notifications.empty')}</p>
+        <p className="py-6 text-center text-sm text-slate-500">
+          {translate('notifications.empty')}
+        </p>
       ) : (
         <ul className="max-h-80 space-y-2 overflow-y-auto pr-1">
           {notifications.map((notification) => (
@@ -111,7 +113,9 @@ export default function NotificationBell({
                     <span className="mt-1 size-2 shrink-0 rounded-full bg-blue-500" />
                   ) : null}
                 </div>
-                <p className="mt-1 text-xs leading-relaxed text-slate-600">{notification.message}</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                  {notification.message}
+                </p>
                 <p className="mt-1.5 text-[11px] text-slate-400">
                   {dayjs(notification.createdAt).fromNow()}
                 </p>
@@ -132,7 +136,11 @@ export default function NotificationBell({
       placement={popoverPlacement}
       arrow={false}
     >
-      <button type="button" className={triggerClassName} aria-label={translate('notifications.title')}>
+      <button
+        type="button"
+        className={triggerClassName}
+        aria-label={translate('notifications.title')}
+      >
         <span className={isBottomNav ? 'relative' : undefined}>
           <Bell className="size-5" />
           {unreadCount > 0 ? (
