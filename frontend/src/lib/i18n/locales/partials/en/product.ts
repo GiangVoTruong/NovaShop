@@ -74,6 +74,7 @@ export const product = {
       products: 'Products',
     },
     reviews: '{{count}} reviews',
+    soldCount: '{{count}} sold',
     sold: '5.2K sold',
     priceNote: 'VAT included · You save',
     color: 'Color',
@@ -102,6 +103,12 @@ export const product = {
     related: {
       eyebrow: 'You may also like',
       title: 'Related products',
+      empty: 'No related products yet.',
+    },
+    tabs: {
+      description: 'Description',
+      reviews: 'Reviews',
+      seller: 'Seller',
     },
     reviewsSection: {
       title: 'Customer reviews',

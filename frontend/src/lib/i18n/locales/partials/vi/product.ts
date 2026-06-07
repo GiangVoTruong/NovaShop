@@ -74,6 +74,7 @@ export const product = {
       products: 'Sản phẩm',
     },
     reviews: '{{count}} đánh giá',
+    soldCount: 'Đã bán {{count}}',
     sold: 'Đã bán 5.2K',
     priceNote: 'Đã bao gồm VAT · Tiết kiệm',
     color: 'Màu sắc',
@@ -102,6 +103,12 @@ export const product = {
     related: {
       eyebrow: 'Có thể bạn thích',
       title: 'Sản phẩm liên quan',
+      empty: 'Chưa có sản phẩm liên quan.',
+    },
+    tabs: {
+      description: 'Mô tả',
+      reviews: 'Đánh giá',
+      seller: 'Người bán',
     },
     reviewsSection: {
       title: 'Đánh giá từ khách hàng',
