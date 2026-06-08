@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,6 +26,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
     public GetNotificationResponseDto create(User user, NotificationType type, String title, String message) {
@@ -34,7 +36,15 @@ public class NotificationService {
                 .title(title)
                 .message(message)
                 .build());
-        return notificationMapper.toDto(saved);
+        GetNotificationResponseDto response = notificationMapper.toDto(saved);
+
+        // Push realtime tới đúng user — FE subscribe /user/websocket/notifications
+        messagingTemplate.convertAndSendToUser(
+                user.getId().toString(),
+                "/websocket/notifications",
+                response);
+
+        return response;
     }
 
     @Transactional(readOnly = true)
