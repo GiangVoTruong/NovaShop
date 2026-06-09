@@ -12,6 +12,7 @@ import {
   useNotifications,
   useUnreadNotificationCount,
 } from '../hooks/useNotifications'
+import { resolveNotificationText } from '../lib/resolveNotificationText'
 
 dayjs.extend(relativeTime)
 
@@ -96,32 +97,34 @@ export default function NotificationBell({
         </p>
       ) : (
         <ul className="max-h-80 space-y-2 overflow-y-auto pr-1">
-          {notifications.map((notification) => (
-            <li key={notification.id}>
-              <button
-                type="button"
-                onClick={() => handleNotificationClick(notification.id, notification.isRead)}
-                className={`w-full rounded-xl border px-3 py-2.5 text-left transition hover:bg-slate-50 ${
-                  notification.isRead
-                    ? 'border-slate-100 bg-white'
-                    : 'border-blue-100 bg-blue-50/40'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm font-semibold text-slate-900">{notification.title}</p>
-                  {!notification.isRead ? (
-                    <span className="mt-1 size-2 shrink-0 rounded-full bg-blue-500" />
-                  ) : null}
-                </div>
-                <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                  {notification.message}
-                </p>
-                <p className="mt-1.5 text-[11px] text-slate-400">
-                  {dayjs(notification.createdAt).fromNow()}
-                </p>
-              </button>
-            </li>
-          ))}
+          {notifications.map((notification) => {
+            const { title, message } = resolveNotificationText(notification, translate)
+
+            return (
+              <li key={notification.id}>
+                <button
+                  type="button"
+                  onClick={() => handleNotificationClick(notification.id, notification.isRead)}
+                  className={`w-full rounded-xl border px-3 py-2.5 text-left transition hover:bg-slate-50 ${
+                    notification.isRead
+                      ? 'border-slate-100 bg-white'
+                      : 'border-blue-100 bg-blue-50/40'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-semibold text-slate-900">{title}</p>
+                    {!notification.isRead ? (
+                      <span className="mt-1 size-2 shrink-0 rounded-full bg-blue-500" />
+                    ) : null}
+                  </div>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-600">{message}</p>
+                  <p className="mt-1.5 text-[11px] text-slate-400">
+                    {dayjs(notification.createdAt).fromNow()}
+                  </p>
+                </button>
+              </li>
+            )
+          })}
         </ul>
       )}
     </div>
