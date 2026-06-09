@@ -10,6 +10,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tailwindcss()],
+    define: {
+      global: 'globalThis',
+    },
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, 'src'),

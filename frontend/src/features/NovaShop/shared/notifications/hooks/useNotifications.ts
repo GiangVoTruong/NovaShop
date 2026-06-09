@@ -1,17 +1,13 @@
 import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  notificationListKey,
+  unreadCountKey,
+} from '../lib/notificationQueryKeys'
 import notificationApiService from '../services/notificationApiService'
 
 /** Prefix riêng — tránh trùng cache với notification preferences. */
 export const NOTIFICATION_INBOX_QUERY_ROOT = ['notification-inbox'] as const
-
-function notificationListKey(userId: string, page: number, size: number) {
-  return [...NOTIFICATION_INBOX_QUERY_ROOT, userId, 'list', page, size] as const
-}
-
-function unreadCountKey(userId: string) {
-  return [...NOTIFICATION_INBOX_QUERY_ROOT, userId, 'unread-count'] as const
-}
 
 function useNotificationUserId() {
   const { user, isAuthenticated } = useAuth()

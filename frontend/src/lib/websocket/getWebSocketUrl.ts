@@ -1,14 +1,17 @@
 const DEFAULT_PROD_WS_URL = 'https://novashop-e4ir.onrender.com/ws'
 
-export function getWebSocketUrl(): string {
+export function getWebSocketUrl(accessToken?: string | null): string {
   const configured = import.meta.env.VITE_WS_URL?.replace(/\/$/, '')
-  if (configured) {
-    return configured
+  const baseUrl = configured
+    ? configured
+    : import.meta.env.PROD
+      ? DEFAULT_PROD_WS_URL
+      : `${window.location.origin}/ws`
+
+  if (!accessToken) {
+    return baseUrl
   }
 
-  if (import.meta.env.PROD) {
-    return DEFAULT_PROD_WS_URL
-  }
-
-  return `${window.location.origin}/ws`
+  const separator = baseUrl.includes('?') ? '&' : '?'
+  return `${baseUrl}${separator}access_token=${encodeURIComponent(accessToken)}`
 }
