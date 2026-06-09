@@ -1,6 +1,7 @@
 package com.backend.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -114,11 +115,17 @@ public class CartService {
 
     private GetCartResponseDto buildCartResponse(Cart cart) {
         List<CartItem> cartItems = cartItemRepository.findDetailedByCartId(cart.getId());
-        List<GetCartItemResponseDto> items = cartItems.stream().map(this::toCartItemDto).toList();
-        BigDecimal totalAmount = items.stream()
-                .map(GetCartItemResponseDto::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        int itemCount = items.stream().mapToInt(GetCartItemResponseDto::getQuantity).sum();
+        List<GetCartItemResponseDto> items = new ArrayList<>(cartItems.size());
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        int itemCount = 0;
+        for (CartItem cartItem : cartItems) {
+            GetCartItemResponseDto item = toCartItemDto(cartItem);
+            items.add(item);
+            if (item.getSubtotal() != null) {
+                totalAmount = totalAmount.add(item.getSubtotal());
+            }
+            itemCount += item.getQuantity();
+        }
 
         return GetCartResponseDto.builder()
                 .id(cart.getId())

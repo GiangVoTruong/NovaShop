@@ -1,6 +1,7 @@
 package com.backend.service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -64,7 +65,7 @@ public class SellerApplicationService {
     public GetSellerApplicationResponseDto getMyApplication() {
         User user = findCurrentUser();
         return sellerApplicationRepository.findByUserIdAndStatus(user.getId(), SellerApplicationStatus.PENDING)
-                .map(this::toDto)
+                .map(application -> toDto(application))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, APPLICATION_NOT_FOUND));
     }
 
@@ -73,13 +74,9 @@ public class SellerApplicationService {
         SecurityUtils.requireRole(UserRole.ADMIN);
         if (status != null && !status.isBlank()) {
             SellerApplicationStatus applicationStatus = SellerApplicationStatus.valueOf(status.trim().toUpperCase());
-            return sellerApplicationRepository.findByStatusOrderByCreatedAtDesc(applicationStatus).stream()
-                    .map(this::toDto)
-                    .toList();
+            return toDtoList(sellerApplicationRepository.findByStatusOrderByCreatedAtDesc(applicationStatus));
         }
-        return sellerApplicationRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(this::toDto)
-                .toList();
+        return toDtoList(sellerApplicationRepository.findAllByOrderByCreatedAtDesc());
     }
 
     @Transactional
@@ -115,6 +112,14 @@ public class SellerApplicationService {
     private User findCurrentUser() {
         return userRepository.findById(SecurityUtils.getCurrentUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+    }
+
+    private List<GetSellerApplicationResponseDto> toDtoList(List<SellerApplication> applications) {
+        List<GetSellerApplicationResponseDto> response = new ArrayList<>(applications.size());
+        for (SellerApplication application : applications) {
+            response.add(toDto(application));
+        }
+        return response;
     }
 
     private GetSellerApplicationResponseDto toDto(SellerApplication application) {

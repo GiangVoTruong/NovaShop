@@ -59,7 +59,8 @@ public class ProductService {
             UUID sellerId,
             Pageable pageable) {
         Specification<Product> specification = buildSpecification(keyword, categorySlug, mode, sellerId);
-        return productRepository.findAll(specification, pageable).map(this::toDetailedDto);
+        return productRepository.findAll(specification, pageable)
+                .map(product -> toDetailedDto(product));
     }
 
     @Transactional(readOnly = true)
@@ -145,8 +146,9 @@ public class ProductService {
         product.setUpdatedAt(OffsetDateTime.now());
 
         if (request.getImageUrls() != null) {
-            productImageRepository.findByProductId(product.getId())
-                    .forEach(productImageRepository::delete);
+            for (ProductImage image : productImageRepository.findByProductId(product.getId())) {
+                productImageRepository.delete(image);
+            }
             saveImages(product, request.getImageUrls());
         }
 

@@ -1,6 +1,7 @@
 package com.backend.service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,9 +33,12 @@ public class AddressService {
     @Transactional(readOnly = true)
     public List<GetAddressResponseDto> getMyAddresses() {
         UUID userId = SecurityUtils.getCurrentUserId();
-        return addressRepository.findByUser_IdOrderByIsDefaultDescCreatedAtDesc(userId).stream()
-                .map(this::toDto)
-                .toList();
+        List<Address> addresses = addressRepository.findByUser_IdOrderByIsDefaultDescCreatedAtDesc(userId);
+        List<GetAddressResponseDto> response = new ArrayList<>(addresses.size());
+        for (Address address : addresses) {
+            response.add(toDto(address));
+        }
+        return response;
     }
 
     @Transactional

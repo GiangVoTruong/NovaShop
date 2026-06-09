@@ -1,6 +1,7 @@
 package com.backend.service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,10 +39,14 @@ public class WishlistService {
     @Transactional(readOnly = true)
     public GetWishlistResponseDto getMyWishlist() {
         UUID userId = SecurityUtils.getCurrentUserId();
-        List<GetWishlistItemResponseDto> items = wishlistItemRepository.findByUser_IdOrderByAddedAtDesc(userId).stream()
-                .map(this::toDto)
-                .filter(item -> item != null)
-                .toList();
+        List<WishlistItem> wishlistItems = wishlistItemRepository.findByUser_IdOrderByAddedAtDesc(userId);
+        List<GetWishlistItemResponseDto> items = new ArrayList<>(wishlistItems.size());
+        for (WishlistItem wishlistItem : wishlistItems) {
+            GetWishlistItemResponseDto item = toDto(wishlistItem);
+            if (item != null) {
+                items.add(item);
+            }
+        }
         return GetWishlistResponseDto.builder().items(items).build();
     }
 
@@ -51,7 +56,7 @@ public class WishlistService {
         User user = findUser(userId);
 
         return wishlistItemRepository.findByUser_IdAndProduct_Id(userId, productId)
-                .map(this::toDto)
+                .map(wishlistItem -> toDto(wishlistItem))
                 .orElseGet(() -> {
                     Product product = productRepository.getReferenceById(productId);
                     OffsetDateTime now = OffsetDateTime.now();

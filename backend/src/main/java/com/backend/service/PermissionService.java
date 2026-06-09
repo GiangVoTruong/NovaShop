@@ -1,7 +1,9 @@
 package com.backend.service;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -36,9 +38,12 @@ public class PermissionService {
 
     @Transactional(readOnly = true)
     public List<GetPermissionResponseDto> getAllPermissions() {
-        return permissionRepository.findAllByOrderByModuleAscCodeAsc().stream()
-                .map(permissionMapper::toDto)
-                .toList();
+        List<Permission> permissions = permissionRepository.findAllByOrderByModuleAscCodeAsc();
+        List<GetPermissionResponseDto> response = new ArrayList<>(permissions.size());
+        for (Permission permission : permissions) {
+            response.add(permissionMapper.toDto(permission));
+        }
+        return response;
     }
 
     @Transactional(readOnly = true)
@@ -63,11 +68,17 @@ public class PermissionService {
         User user = findUser(userId);
         assertAdminPortalUser(user);
 
-        List<String> normalizedCodes = permissionCodes.stream()
-                .map(String::trim)
-                .filter(code -> !code.isBlank())
-                .distinct()
-                .toList();
+        Set<String> uniqueCodes = new LinkedHashSet<>();
+        for (String code : permissionCodes) {
+            if (code == null) {
+                continue;
+            }
+            String trimmedCode = code.trim();
+            if (!trimmedCode.isBlank()) {
+                uniqueCodes.add(trimmedCode);
+            }
+        }
+        List<String> normalizedCodes = List.copyOf(uniqueCodes);
 
         List<Permission> permissions = permissionRepository.findByCodeIn(normalizedCodes);
         if (permissions.size() != normalizedCodes.size()) {

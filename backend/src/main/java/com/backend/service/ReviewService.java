@@ -40,7 +40,7 @@ public class ReviewService {
     public Page<GetReviewResponseDto> getProductReviews(UUID productId, Pageable pageable) {
         assertProductExists(productId);
         return reviewRepository.findByProductIdOrderByCreatedAtDesc(productId, pageable)
-                .map(this::toDto);
+                .map(review -> toDto(review));
     }
 
     @Transactional
@@ -60,7 +60,7 @@ public class ReviewService {
         Review review = Review.builder()
                 .user(user)
                 .product(productRepository.getReferenceById(productId))
-                .rating(request.getRating().shortValue())
+                .rating(request.getRating())
                 .createdAt(OffsetDateTime.now())
                 .build();
         return toDto(reviewRepository.save(review));
