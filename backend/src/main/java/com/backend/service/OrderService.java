@@ -6,6 +6,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.backend.constants.NotificationI18nKeys;
 import com.backend.dto.orders.AdminOrderResponseDto;
 import com.backend.dto.orders.CreateOrderRequestDto;
 import com.backend.dto.orders.GetOrderItemResponseDto;
@@ -155,11 +157,12 @@ public class OrderService {
         orderItemRepository.saveAll(orderItems);
         cartService.clearCart(cart.getId());
 
-        notificationService.create(
+        notificationService.createI18n(
                 user,
                 NotificationType.ORDER_STATUS,
-                "Order placed successfully",
-                "Your order #" + savedOrder.getId() + " has been placed.");
+                NotificationI18nKeys.ORDER_PLACED,
+                Map.of("orderId", savedOrder.getId().toString()));
+        notificationService.notifyStaffNewOrder(savedOrder);
 
         return toOrderResponse(savedOrder, orderItems);
     }
@@ -216,11 +219,11 @@ public class OrderService {
         order.setUpdatedAt(OffsetDateTime.now());
         orderRepository.save(order);
 
-        notificationService.create(
+        notificationService.createI18n(
                 order.getUser(),
                 NotificationType.ORDER_STATUS,
-                "Order cancelled",
-                "Your order #" + order.getId() + " has been cancelled.");
+                NotificationI18nKeys.ORDER_CANCELLED,
+                Map.of("orderId", order.getId().toString()));
 
         return toOrderResponse(order, orderItemRepository.findByOrderId(order.getId()));
     }
@@ -256,11 +259,13 @@ public class OrderService {
         order.setUpdatedAt(OffsetDateTime.now());
         orderRepository.save(order);
 
-        notificationService.create(
+        notificationService.createI18n(
                 order.getUser(),
                 NotificationType.ORDER_STATUS,
-                "Order status updated",
-                "Your order #" + order.getId() + " is now " + newStatus.name() + ".");
+                NotificationI18nKeys.ORDER_STATUS_UPDATED,
+                Map.of(
+                        "orderId", order.getId().toString(),
+                        "status", newStatus.name()));
 
         return toOrderResponse(order, orderItemRepository.findByOrderId(order.getId()));
     }
@@ -334,9 +339,16 @@ public class OrderService {
     private AdminOrderResponseDto toAdminOrderDto(ShopOrder order, boolean includeItems) {
         User customer = order.getUser();
         long itemCount = orderItemRepository.countByOrder_Id(order.getId());
-        List<GetOrderItemResponseDto> items = includeItems
-                ? orderItemRepository.findByOrderId(order.getId()).stream().map(this::toOrderItemDto).toList()
-                : List.of();
+        List<GetOrderItemResponseDto> items;
+        if (includeItems) {
+            List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getId());
+            items = new ArrayList<>(orderItems.size());
+            for (OrderItem orderItem : orderItems) {
+                items.add(toOrderItemDto(orderItem));
+            }
+        } else {
+            items = List.of();
+        }
 
         return AdminOrderResponseDto.builder()
                 .id(order.getId())
@@ -390,10 +402,18 @@ public class OrderService {
                 .paymentStatus(order.getPaymentStatus())
                 .shippingAddress(toShippingAddressDto(order))
                 .note(order.getNote())
-                .items(orderItems.stream().map(this::toOrderItemDto).toList())
+                .items(toOrderItemDtos(orderItems))
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
                 .build();
+    }
+
+    private List<GetOrderItemResponseDto> toOrderItemDtos(List<OrderItem> orderItems) {
+        List<GetOrderItemResponseDto> items = new ArrayList<>(orderItems.size());
+        for (OrderItem orderItem : orderItems) {
+            items.add(toOrderItemDto(orderItem));
+        }
+        return items;
     }
 
     private GetOrderItemResponseDto toOrderItemDto(OrderItem orderItem) {
