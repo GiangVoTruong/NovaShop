@@ -3,6 +3,7 @@ package com.backend.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -24,7 +25,6 @@ import com.backend.repository.CouponRepository;
 import com.backend.security.SecurityUtils;
 import com.github.f4b6a3.uuid.UuidCreator;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -36,17 +36,6 @@ public class CouponService {
     private static final String INVALID_COUPON = "Invalid or expired coupon code";
 
     private final CouponRepository couponRepository;
-
-    @PostConstruct
-    void seedCoupons() {
-        OffsetDateTime now = OffsetDateTime.now();
-        saveSeedIfAbsent("NOVA20", CouponType.PERCENT, new BigDecimal("20"), new BigDecimal("500000"), null,
-                now.minusDays(1), now.plusMonths(6), 1000, true);
-        saveSeedIfAbsent("FREESHIP", CouponType.FIXED, new BigDecimal("30000"), BigDecimal.ZERO, null,
-                now.minusDays(1), now.plusYears(1), 5000, true);
-        saveSeedIfAbsent("TECHFEST", CouponType.PERCENT, new BigDecimal("12"), new BigDecimal("2000000"), null,
-                now.minusDays(1), now.plusMonths(3), 500, true);
-    }
 
     @Transactional(readOnly = true)
     public ValidateCouponResponseDto validate(String code, BigDecimal cartTotal) {
@@ -93,7 +82,12 @@ public class CouponService {
     @Transactional(readOnly = true)
     public List<GetCouponResponseDto> getAllCouponsAdmin() {
         SecurityUtils.requireRole(UserRole.ADMIN);
-        return couponRepository.findAll().stream().map(this::toDto).toList();
+        List<Coupon> coupons = couponRepository.findAll();
+        List<GetCouponResponseDto> response = new ArrayList<>(coupons.size());
+        for (Coupon coupon : coupons) {
+            response.add(toDto(coupon));
+        }
+        return response;
     }
 
     @Transactional
@@ -206,38 +200,6 @@ public class CouponService {
             coupon.setUpdatedAt(OffsetDateTime.now());
             couponRepository.save(coupon);
         }
-    }
-
-    private void saveSeedIfAbsent(
-            String code,
-            CouponType type,
-            BigDecimal value,
-            BigDecimal minOrder,
-            BigDecimal maxDiscount,
-            OffsetDateTime startAt,
-            OffsetDateTime endAt,
-            int usageLimit,
-            boolean active) {
-        String normalizedCode = normalizeCode(code);
-        if (couponRepository.existsByCodeIgnoreCase(normalizedCode)) {
-            return;
-        }
-        OffsetDateTime now = OffsetDateTime.now();
-        couponRepository.save(Coupon.builder()
-                .id(UuidCreator.getTimeOrderedEpoch())
-                .code(normalizedCode)
-                .type(type)
-                .value(value)
-                .minOrderAmount(minOrder)
-                .maxDiscount(maxDiscount)
-                .startAt(startAt)
-                .endAt(endAt)
-                .usageLimit(usageLimit)
-                .usedCount(0)
-                .isActive(active)
-                .createdAt(now)
-                .updatedAt(now)
-                .build());
     }
 
     private String normalizeCode(String code) {
