@@ -33,6 +33,7 @@ import {
   canShipperSubmitDeliveryProof,
   canShopConfirmOrder,
   canShopStartShipping,
+  getWorkflowHighlightStatus,
   getWorkflowOrderStatus,
   ORDER_STATUS_FLOW,
 } from '../lib/orderWorkflow'
@@ -71,10 +72,11 @@ export default function AdminOrderDetailPage() {
   }
 
   const orderStatus = getWorkflowOrderStatus(order.status)
+  const workflowHighlightStatus = getWorkflowHighlightStatus(orderStatus)
   const hasDeliveryProof =
     deliveryProofPlaceholder.trim().length > 0 ||
-    orderStatus === 'DELIVERED_PENDING_RECEIVER_CONFIRM' ||
-    orderStatus === 'DELIVERED'
+    orderStatus === 'DELIVERED' ||
+    orderStatus === 'DELIVERED_PENDING_RECEIVER_CONFIRM'
 
   const handleStatusChange = (nextStatus: ApiOrderStatus) => {
     if (orderStatus === nextStatus) {
@@ -85,7 +87,7 @@ export default function AdminOrderDetailPage() {
       { orderId: order.id, request: { status: nextStatus } },
       {
         onSuccess: () => {
-          if (nextStatus === 'DELIVERED' && order.paymentMethod === 'COD') {
+          if (nextStatus === 'DELIVERED_PENDING_RECEIVER_CONFIRM' && order.paymentMethod === 'COD') {
             message.success(translate('admin.orders.messages.deliveredCodPaid'))
             return
           }
@@ -159,10 +161,12 @@ export default function AdminOrderDetailPage() {
                 {ORDER_STATUS_FLOW.map((flowStatus) => (
                   <li
                     key={flowStatus}
-                    className={orderStatus === flowStatus ? 'font-semibold text-blue-700' : undefined}
+                    className={
+                      workflowHighlightStatus === flowStatus ? 'font-semibold text-blue-700' : undefined
+                    }
                   >
                     {translate(`status.order.${flowStatus.toLowerCase()}`)}
-                    {flowStatus === orderStatus
+                    {flowStatus === workflowHighlightStatus
                       ? ` ${translate('admin.orders.detailPage.workflowCurrent')}`
                       : ''}
                   </li>
@@ -189,7 +193,7 @@ export default function AdminOrderDetailPage() {
                     !canShipperSubmitDeliveryProof(orderStatus, hasDeliveryProof) ||
                     updateStatusMutation.isPending
                   }
-                  onClick={() => handleStatusChange('DELIVERED_PENDING_RECEIVER_CONFIRM')}
+                  onClick={() => handleStatusChange('DELIVERED')}
                 >
                   {translate('admin.orders.detailPage.shipperDeliveredWithPhoto')}
                 </Button>
@@ -198,7 +202,7 @@ export default function AdminOrderDetailPage() {
                   disabled={
                     !canCustomerConfirmReceived(orderStatus) || updateStatusMutation.isPending
                   }
-                  onClick={() => handleStatusChange('DELIVERED')}
+                  onClick={() => handleStatusChange('DELIVERED_PENDING_RECEIVER_CONFIRM')}
                 >
                   {translate('admin.orders.detailPage.customerConfirmReceived')}
                 </Button>

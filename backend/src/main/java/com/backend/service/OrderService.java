@@ -235,10 +235,10 @@ public class OrderService {
         if (!order.getUser().getId().equals(currentUserId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, FORBIDDEN_ORDER);
         }
-        if (order.getStatus() != OrderStatus.DELIVERED_PENDING_RECEIVER_CONFIRM) {
+        if (order.getStatus() != OrderStatus.DELIVERED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is not awaiting receiver confirmation");
         }
-        return applyStatusChange(order, OrderStatus.DELIVERED);
+        return applyStatusChange(order, OrderStatus.DELIVERED_PENDING_RECEIVER_CONFIRM);
     }
 
     @Transactional
@@ -253,7 +253,7 @@ public class OrderService {
     private GetOrderResponseDto applyStatusChange(ShopOrder order, OrderStatus newStatus) {
         assertValidTransition(order.getStatus(), newStatus);
         order.setStatus(newStatus);
-        if (newStatus == OrderStatus.DELIVERED) {
+        if (newStatus == OrderStatus.DELIVERED_PENDING_RECEIVER_CONFIRM) {
             order.setPaymentStatus(PaymentStatusType.PAID);
         }
         order.setUpdatedAt(OffsetDateTime.now());
@@ -380,10 +380,10 @@ public class OrderService {
             case CONFIRMED ->
                 newStatus == OrderStatus.SHIPPING || newStatus == OrderStatus.CANCELLED;
             case SHIPPING ->
-                newStatus == OrderStatus.DELIVERED_PENDING_RECEIVER_CONFIRM;
-            case DELIVERED_PENDING_RECEIVER_CONFIRM ->
                 newStatus == OrderStatus.DELIVERED;
-            case DELIVERED, CANCELLED ->
+            case DELIVERED ->
+                newStatus == OrderStatus.DELIVERED_PENDING_RECEIVER_CONFIRM;
+            case DELIVERED_PENDING_RECEIVER_CONFIRM, CANCELLED ->
                 false;
         };
         if (!valid) {

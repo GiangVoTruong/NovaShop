@@ -2,7 +2,7 @@ import { formatCurrency, formatDateTime } from '@/features/NovaShop/shared/forma
 import Button from '@/features/NovaShop/shared/ui/Button'
 import { OrderStatusBadge } from '@/features/NovaShop/shared/ui/StatusBadge'
 import { PATHS, productDetailPath } from '@/router/paths'
-import { message, Spin } from 'antd'
+import { Spin } from 'antd'
 import { ArrowLeft, Clock, CreditCard, MapPin, MessageSquare, Package } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -53,9 +53,7 @@ export default function OrderDetailPage() {
   const orderCode = getOrderCode(order)
 
   const handleCancelOrder = () => {
-    cancelOrderMutation.mutate(order.id, {
-      onSuccess: () => message.success(translate('orders.messages.cancelled')),
-    })
+    cancelOrderMutation.mutate(order.id)
   }
 
   return (

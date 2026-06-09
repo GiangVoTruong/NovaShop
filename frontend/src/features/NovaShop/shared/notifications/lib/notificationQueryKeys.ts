@@ -37,6 +37,7 @@ export function applyIncomingNotification(
   )
 }
 
+/** Toast realtime — không dùng thêm message.success ở mutation khi BE đã gửi notification. */
 export function applyRealtimeSideEffects(
   queryClient: QueryClient,
   incoming: AppNotification,

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Spin, message } from 'antd'
+import { Spin } from 'antd'
 import {
   ArrowRight,
   Clock,
@@ -120,9 +120,7 @@ export default function OrdersPage() {
   }, [ordersQuery.data])
 
   const handleCancelOrder = (orderId: string) => {
-    cancelOrderMutation.mutate(orderId, {
-      onSuccess: () => message.success(translate('orders.messages.cancelled')),
-    })
+    cancelOrderMutation.mutate(orderId)
   }
 
   if (ordersQuery.isLoading) {

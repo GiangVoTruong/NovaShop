@@ -157,7 +157,7 @@ export const admin = {
       noItems: 'No items',
       workflowTitle: 'Order workflow (temporary)',
       workflowHint:
-        'CONFIRMED → Shop dispatches → SHIPPING → Shipper photo → awaiting customer → DELIVERED',
+        'CONFIRMED → Shop dispatches → SHIPPING → Shipper photo → Delivered → Awaiting customer',
       workflowCurrent: '← current',
       shopConfirm: 'SHOP: Confirm order',
       shopStartShipping: 'SHOP: Out for delivery',
@@ -165,7 +165,8 @@ export const admin = {
       customerConfirmReceived: 'CUSTOMER: Confirm received',
       deliveryProofLabel: 'Delivery photo (temporary placeholder)',
       deliveryProofPlaceholder: 'Enter a temporary photo URL to enable shipper delivery step',
-      codDeliveredNote: 'When the customer confirms, order becomes DELIVERED and COD becomes PAID (BE).',
+      codDeliveredNote:
+        'When the customer confirms, the order moves to awaiting receiver confirmation and COD becomes PAID (BE).',
     },
   },
   customers: {

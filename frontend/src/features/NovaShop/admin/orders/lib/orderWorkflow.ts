@@ -16,7 +16,7 @@ export function canShopStartShipping(status: ApiOrderStatus): boolean {
   return status === 'CONFIRMED'
 }
 
-/** Shipper: SHIPPING → DELIVERED_PENDING_RECEIVER_CONFIRM. */
+/** Shipper: SHIPPING → DELIVERED (đã giao hàng). */
 export function canShipperSubmitDeliveryProof(
   status: ApiOrderStatus,
   hasDeliveryProof: boolean,
@@ -24,14 +24,22 @@ export function canShipperSubmitDeliveryProof(
   return status === 'SHIPPING' && hasDeliveryProof
 }
 
-/** Khách: DELIVERED_PENDING_RECEIVER_CONFIRM → DELIVERED (BE set PAID nếu COD). */
+/** Khách: DELIVERED → DELIVERED_PENDING_RECEIVER_CONFIRM (BE set PAID nếu COD). */
 export function canCustomerConfirmReceived(status: ApiOrderStatus): boolean {
-  return status === 'DELIVERED_PENDING_RECEIVER_CONFIRM'
+  return status === 'DELIVERED'
 }
 
 export const ORDER_STATUS_FLOW: ApiOrderStatus[] = [
   'CONFIRMED',
   'SHIPPING',
-  'DELIVERED_PENDING_RECEIVER_CONFIRM',
   'DELIVERED',
+  'DELIVERED_PENDING_RECEIVER_CONFIRM',
 ]
+
+/** Bước đang chờ xử lý trên UI (DELIVERED = đã giao, đang chờ khách xác nhận). */
+export function getWorkflowHighlightStatus(status: ApiOrderStatus): ApiOrderStatus {
+  if (status === 'DELIVERED') {
+    return 'DELIVERED_PENDING_RECEIVER_CONFIRM'
+  }
+  return status
+}

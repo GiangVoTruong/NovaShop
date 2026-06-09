@@ -125,7 +125,6 @@ export default function CheckoutPage() {
       },
       {
         onSuccess: (order) => {
-          message.success(translate('checkout.messages.success'))
           navigate(orderDetailPath(order.id), {
             replace: true,
             state: { orderCode: getOrderCode(order) },

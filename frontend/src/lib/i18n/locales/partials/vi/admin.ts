@@ -157,7 +157,7 @@ export const admin = {
       noItems: 'Không có sản phẩm',
       workflowTitle: 'Luồng xử lý đơn (tạm)',
       workflowHint:
-        'CONFIRMED → Shop giao shipper → SHIPPING → Shipper chụp ảnh → chờ khách → DELIVERED',
+        'CONFIRMED → Shop giao shipper → SHIPPING → Shipper chụp ảnh → Đã giao → Chờ khách xác nhận',
       workflowCurrent: '← hiện tại',
       shopConfirm: 'SHOP: Đã xác nhận',
       shopStartShipping: 'SHOP: Đang giao',
@@ -166,7 +166,8 @@ export const admin = {
       deliveryProofLabel: 'Ảnh giao hàng (placeholder tạm)',
       deliveryProofPlaceholder:
         'Nhập link ảnh tạm để bật bước Shipper chụp ảnh + đã giao',
-      codDeliveredNote: 'Khi khách xác nhận, đơn DELIVERED và COD chuyển PAID (BE).',
+      codDeliveredNote:
+        'Khi khách xác nhận, đơn chuyển chờ người nhận xác nhận và COD chuyển PAID (BE).',
     },
   },
   customers: {
