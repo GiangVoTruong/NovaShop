@@ -27,8 +27,8 @@ import lombok.RequiredArgsConstructor;
  *
  * Luồng checkout → notification realtime: OrderService.checkout() →
  * NotificationService.create() → messagingTemplate.convertAndSendToUser(userId,
- * "/websocket/notifications", dto) → FE đang subscribe
- * /user/websocket/notifications sẽ nhận ngay
+ * "/queue/notifications", dto) → FE đang subscribe /user/queue/notifications sẽ
+ * nhận ngay
  */
 @Configuration
 // Bật chế độ message broker (server có thể push message tới FE, không chỉ FE gọi API)
@@ -37,27 +37,27 @@ import lombok.RequiredArgsConstructor;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final JwtService jwtService;
+    private final JwtHandshakeHandler jwtHandshakeHandler;
 
     /**
      * Cấu hình "bưu điện nội bộ" — quy định server gửi tin qua đường dẫn
      * (destination) nào.
      *
      * Ví dụ backend gửi: convertAndSendToUser("abc-123",
-     * "/websocket/notifications", data) FE subscribe:
-     * /user/websocket/notifications Spring tự map thành hộp thư riêng của user
-     * abc-123.
+     * "/queue/notifications", data) FE subscribe: /user/queue/notifications
+     * Spring tự map thành hộp thư riêng của user abc-123.
      */
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         // enableSimpleBroker: bật broker in-memory trong JVM (đủ cho dev / 1 server).
         // Tham số "/websocket" = chỉ destination bắt đầu bằng /websocket mới được broker chuyển tiếp.
-        //   - /websocket/notifications  → OK
+        //   - /queue/notifications  → OK
         //   - /topic/broadcast      → KHÔNG bật (chưa khai báo /topic)
-        registry.enableSimpleBroker("/websocket");
+        registry.enableSimpleBroker("/queue");
 
         // setUserDestinationPrefix: thêm tiền tố /user cho message gửi riêng từng người.
-        // Kết hợp convertAndSendToUser(userId, "/websocket/notifications", ...) tạo đường dẫn:
-        //   /user/{userId}/websocket/notifications
+        // Kết hợp convertAndSendToUser(userId, "/queue/notifications", ...) tạo đường dẫn:
+        //   /user/{userId}/queue/notifications
         // → User A không đọc được thông báo của User B.
         registry.setUserDestinationPrefix("/user");
     }
@@ -67,12 +67,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      * cho WS.
      *
      * FE connect: ws://localhost:8080/ws (kèm JWT ở bước CONNECT) Sau khi
-     * connect xong mới subscribe /user/websocket/notifications.
+     * connect xong mới subscribe /user/queue/notifications.
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // addEndpoint: URL handshake — bước đầu tiên FE mở kết nối realtime.
         registry.addEndpoint("/ws")
+                .setHandshakeHandler(jwtHandshakeHandler)
                 // setAllowedOriginPatterns: domain FE được phép kết nối (giống CORS của REST).
                 // localhost:* = dev; onrender.com = production trên Render.
                 .setAllowedOriginPatterns(
