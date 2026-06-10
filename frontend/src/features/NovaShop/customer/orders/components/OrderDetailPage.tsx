@@ -2,21 +2,30 @@ import { formatCurrency, formatDateTime } from '@/features/NovaShop/shared/forma
 import Button from '@/features/NovaShop/shared/ui/Button'
 import { OrderStatusBadge } from '@/features/NovaShop/shared/ui/StatusBadge'
 import { PATHS, productDetailPath } from '@/router/paths'
-import { Spin } from 'antd'
+import { Spin, message } from 'antd'
 import { ArrowLeft, Clock, CreditCard, MapPin, MessageSquare, Package } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useCancelOrder, useOrder } from '../hooks/useOrders'
+import { redirectToVnpay, useCreateVnpayPayment } from '../../checkout/hooks/useVnpayPayment'
+import { redirectToStripe, useCreateStripePayment } from '../../checkout/hooks/useStripePayment'
+import { getVnpayPaymentErrorMessage } from '../../checkout/lib/vnpayPaymentError'
+import { getStripePaymentErrorMessage } from '../../checkout/lib/stripePaymentError'
+import { useCancelOrder, useConfirmOrderReceived, useOrder } from '../hooks/useOrders'
 import {
+  canCustomerConfirmReceived,
   getOrderCode,
+  getOrderItemImageUrl,
   getOrderShippingLine,
   getOrderTotal,
   getPaymentMethodLabel,
   isOrderCancellable,
-  ORDER_ITEM_PLACEHOLDER_IMAGE,
-  toCustomerOrderStatus,
+  isStripeAwaitingPayment,
+  isVnpayAwaitingPayment,
+  toCustomerOrderDisplayStatus,
   toOrderNumber,
 } from '../lib/orderApi'
+import { ordersPathWithPaymentFeedback } from '../lib/paymentReturn'
 
 export default function OrderDetailPage() {
   const { t: translate } = useTranslation()
@@ -24,12 +33,23 @@ export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>()
   const orderQuery = useOrder(id)
   const cancelOrderMutation = useCancelOrder()
+  const confirmReceivedMutation = useConfirmOrderReceived()
+  const vnpayPaymentMutation = useCreateVnpayPayment()
+  const stripePaymentMutation = useCreateStripePayment()
+  const [isPaymentRedirecting, setIsPaymentRedirecting] = useState(false)
   const order = orderQuery.data
 
-  if (orderQuery.isLoading) {
+  if (orderQuery.isLoading || isPaymentRedirecting || vnpayPaymentMutation.isPending || stripePaymentMutation.isPending) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 px-4">
         <Spin size="large" />
+        {isPaymentRedirecting || vnpayPaymentMutation.isPending || stripePaymentMutation.isPending ? (
+          <p className="text-sm font-medium text-slate-600">
+            {order?.paymentMethod === 'STRIPE'
+              ? translate('checkout.stripe.redirecting')
+              : translate('checkout.vnpay.redirecting')}
+          </p>
+        ) : null}
       </div>
     )
   }
@@ -49,11 +69,44 @@ export default function OrderDetailPage() {
     )
   }
 
-  const customerStatus = toCustomerOrderStatus(order.status)
+  const customerStatus = toCustomerOrderDisplayStatus(order)
   const orderCode = getOrderCode(order)
+  const showVnpayPayButton = isVnpayAwaitingPayment(order)
+  const showStripePayButton = isStripeAwaitingPayment(order)
+  const showConfirmReceivedButton = canCustomerConfirmReceived(order)
 
   const handleCancelOrder = () => {
     cancelOrderMutation.mutate(order.id)
+  }
+
+  const handleConfirmReceived = () => {
+    confirmReceivedMutation.mutate(order.id, {
+      onSuccess: () => message.success(translate('orders.detail.confirmReceivedSuccess')),
+    })
+  }
+
+  const handlePayWithVnpay = () => {
+    setIsPaymentRedirecting(true)
+    vnpayPaymentMutation.mutate(order.id, {
+      onSuccess: ({ paymentUrl }) => redirectToVnpay(paymentUrl),
+      onError: (error) => {
+        setIsPaymentRedirecting(false)
+        message.error(getVnpayPaymentErrorMessage(error, translate))
+        navigate(ordersPathWithPaymentFeedback('vnpay', 'failed', order.id), { replace: true })
+      },
+    })
+  }
+
+  const handlePayWithStripe = () => {
+    setIsPaymentRedirecting(true)
+    stripePaymentMutation.mutate(order.id, {
+      onSuccess: ({ checkoutUrl }) => redirectToStripe(checkoutUrl),
+      onError: (error) => {
+        setIsPaymentRedirecting(false)
+        message.error(getStripePaymentErrorMessage(error, translate))
+        navigate(ordersPathWithPaymentFeedback('stripe', 'failed', order.id), { replace: true })
+      },
+    })
   }
 
   return (
@@ -100,7 +153,7 @@ export default function OrderDetailPage() {
                 className="size-16 shrink-0 overflow-hidden rounded-xl bg-slate-100"
               >
                 <img
-                  src={ORDER_ITEM_PLACEHOLDER_IMAGE}
+                  src={getOrderItemImageUrl(item)}
                   alt={item.productName}
                   className="size-full object-cover"
                 />
@@ -150,7 +203,7 @@ export default function OrderDetailPage() {
               </p>
             </div>
           </div>
-          {order.note && (
+          {order.note ? (
             <div className="flex items-start gap-3 rounded-2xl bg-white/70 px-4 py-3 ring-1 ring-slate-200/60 sm:col-span-2">
               <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600">
                 <MessageSquare className="size-4" />
@@ -162,7 +215,43 @@ export default function OrderDetailPage() {
                 <p className="text-sm font-semibold text-slate-800">{order.note}</p>
               </div>
             </div>
-          )}
+          ) : null}
+          {order.trackingCode ? (
+            <div className="flex items-start gap-3 rounded-2xl bg-white/70 px-4 py-3 ring-1 ring-slate-200/60 sm:col-span-2">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {translate('orders.detail.trackingCode')}
+                </p>
+                <p className="font-mono text-sm font-semibold text-slate-800">{order.trackingCode}</p>
+              </div>
+            </div>
+          ) : null}
+          {order.deliveredAt ? (
+            <div className="flex items-start gap-3 rounded-2xl bg-white/70 px-4 py-3 ring-1 ring-slate-200/60 sm:col-span-2">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {translate('orders.detail.deliveredAt')}
+                </p>
+                <p className="text-sm font-semibold text-slate-800">
+                  {formatDateTime(order.deliveredAt)}
+                </p>
+              </div>
+            </div>
+          ) : null}
+          {order.deliveryProofUrl ? (
+            <div className="flex flex-col gap-2 rounded-2xl bg-white/70 px-4 py-3 ring-1 ring-slate-200/60 sm:col-span-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                {translate('orders.detail.deliveryProof')}
+              </p>
+              <a href={order.deliveryProofUrl} target="_blank" rel="noreferrer">
+                <img
+                  src={order.deliveryProofUrl}
+                  alt={translate('orders.detail.deliveryProof')}
+                  className="max-h-48 rounded-xl object-cover ring-1 ring-slate-200/80"
+                />
+              </a>
+            </div>
+          ) : null}
           <div className="flex items-center justify-between rounded-2xl bg-white/70 px-4 py-3 ring-1 ring-slate-200/60 sm:col-span-2">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -175,15 +264,35 @@ export default function OrderDetailPage() {
           </div>
         </div>
 
-        {isOrderCancellable(order) && (
-          <footer className="border-t border-slate-200/80 p-5 sm:p-6">
-            <Button
-              variant="outline"
-              loading={cancelOrderMutation.isPending}
-              onClick={handleCancelOrder}
-            >
-              {translate('orders.cancel')}
-            </Button>
+        {(showVnpayPayButton ||
+          showStripePayButton ||
+          showConfirmReceivedButton ||
+          isOrderCancellable(order)) && (
+          <footer className="flex flex-wrap gap-3 border-t border-slate-200/80 p-5 sm:p-6">
+            {showConfirmReceivedButton ? (
+              <Button glow loading={confirmReceivedMutation.isPending} onClick={handleConfirmReceived}>
+                {translate('orders.detail.confirmReceived')}
+              </Button>
+            ) : null}
+            {showVnpayPayButton ? (
+              <Button glow loading={vnpayPaymentMutation.isPending} onClick={handlePayWithVnpay}>
+                {translate('orders.vnpay.payNow')}
+              </Button>
+            ) : null}
+            {showStripePayButton ? (
+              <Button glow loading={stripePaymentMutation.isPending} onClick={handlePayWithStripe}>
+                {translate('orders.stripe.payNow')}
+              </Button>
+            ) : null}
+            {isOrderCancellable(order) ? (
+              <Button
+                variant="outline"
+                loading={cancelOrderMutation.isPending}
+                onClick={handleCancelOrder}
+              >
+                {translate('orders.cancel')}
+              </Button>
+            ) : null}
           </footer>
         )}
       </article>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Spin } from 'antd'
+import { Alert, Spin } from 'antd'
 import {
   ArrowRight,
   Clock,
@@ -20,13 +20,17 @@ import {
   ORDER_STATUS_GLOW,
 } from '../constants/orders.constants'
 import { useCancelOrder, useOrders } from '../hooks/useOrders'
+import { usePaymentReturnFeedback } from '../hooks/usePaymentReturnFeedback'
 import {
   getOrderCode,
+  getOrderItemImageUrl,
   getOrderShippingLine,
   getOrderTotal,
   getPaymentMethodLabel,
+  isActiveCustomerOrder,
   isOrderCancellable,
-  ORDER_ITEM_PLACEHOLDER_IMAGE,
+  matchesCustomerOrderTab,
+  toCustomerOrderDisplayStatus,
   toCustomerOrderStatus,
   toOrderNumber,
 } from '../lib/orderApi'
@@ -52,10 +56,7 @@ const STAT_CARDS = [
     icon: Truck,
     iconClass: 'from-cyan-400 to-blue-500',
     value: (orders: ApiOrderResponse[]) =>
-      orders.filter((order) => {
-        const status = toCustomerOrderStatus(order.status)
-        return status === 'pending' || status === 'shipping'
-      }).length,
+      orders.filter((order) => isActiveCustomerOrder(order)).length,
   },
   {
     key: 'delivered',
@@ -79,14 +80,16 @@ export default function OrdersPage() {
   const { t: translate } = useTranslation()
   const ordersQuery = useOrders()
   const cancelOrderMutation = useCancelOrder()
+  const paymentFeedback = usePaymentReturnFeedback(() => {
+    void ordersQuery.refetch()
+  })
   const [tab, setTab] = useState<'all' | OrderStatus>('all')
   const [search, setSearch] = useState<string>('')
 
   const orders = ordersQuery.data ?? []
 
   const filtered = orders.filter((order) => {
-    const customerStatus = toCustomerOrderStatus(order.status)
-    if (tab !== 'all' && customerStatus !== tab) return false
+    if (!matchesCustomerOrderTab(order, tab)) return false
     const orderCode = getOrderCode(order)
     if (
       search &&
@@ -102,10 +105,7 @@ export default function OrdersPage() {
   const stats = useMemo(() => {
     const orderList = ordersQuery.data ?? []
     const totalOrders = orderList.length
-    const activeOrders = orderList.filter((order) => {
-      const status = toCustomerOrderStatus(order.status)
-      return status === 'pending' || status === 'shipping'
-    }).length
+    const activeOrders = orderList.filter((order) => isActiveCustomerOrder(order)).length
     const deliveredOrders = orderList.filter(
       (order) => toCustomerOrderStatus(order.status) === 'delivered',
     ).length
@@ -143,6 +143,25 @@ export default function OrdersPage() {
         </h1>
         <p className="mt-2 text-sm text-slate-500">{translate('orders.subtitle')}</p>
       </header>
+
+      {paymentFeedback?.feedback === 'success' ? (
+        <Alert
+          type="success"
+          showIcon
+          className="mb-6"
+          message={translate(`orders.${paymentFeedback.provider}.successTitle`)}
+          description={translate(`orders.${paymentFeedback.provider}.successDesc`)}
+        />
+      ) : null}
+      {paymentFeedback?.feedback === 'failed' ? (
+        <Alert
+          type="error"
+          showIcon
+          className="mb-6"
+          message={translate(`orders.${paymentFeedback.provider}.failedTitle`)}
+          description={translate(`orders.${paymentFeedback.provider}.failedDesc`)}
+        />
+      ) : null}
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
@@ -221,7 +240,7 @@ export default function OrdersPage() {
         <div className="space-y-5">
           {filtered.map((order) => {
             const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0)
-            const customerStatus = toCustomerOrderStatus(order.status)
+            const customerStatus = toCustomerOrderDisplayStatus(order)
             const orderCode = getOrderCode(order)
 
             return (
@@ -276,7 +295,7 @@ export default function OrdersPage() {
                           className="size-16 shrink-0 overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200/80"
                         >
                           <img
-                            src={ORDER_ITEM_PLACEHOLDER_IMAGE}
+                            src={getOrderItemImageUrl(item)}
                             alt={item.productName}
                             className="size-full object-cover"
                           />

@@ -1,5 +1,6 @@
 export const status = {
   order: {
+    awaiting_payment: 'Chờ thanh toán',
     pending: 'Chờ xác nhận',
     confirmed: 'Đã xác nhận',
     packing: 'Đang đóng gói',

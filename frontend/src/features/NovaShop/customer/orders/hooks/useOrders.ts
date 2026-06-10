@@ -46,3 +46,16 @@ export function useCancelOrder() {
     },
   })
 }
+
+export function useConfirmOrderReceived() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['confirm-order-received'],
+    mutationFn: (orderId: string) => orderService.confirmReceived(orderId),
+    onSuccess: async (_order, orderId) => {
+      await queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY })
+      await queryClient.invalidateQueries({ queryKey: ['orders', orderId] })
+    },
+  })
+}

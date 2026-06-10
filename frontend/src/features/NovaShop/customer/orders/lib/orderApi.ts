@@ -3,6 +3,7 @@ import type {
   ApiOrderResponse,
   ApiOrderShippingAddress,
   ApiOrderStatus,
+  ApiOrderItemResponse,
   ApiPaymentMethod,
 } from '@/types/order.types'
 
@@ -48,12 +49,64 @@ export function toCustomerOrderStatus(status: ApiOrderStatus | string): OrderSta
   return CUSTOMER_ORDER_STATUS[normalizeApiOrderStatus(status)]
 }
 
+/** Trạng thái hiển thị — thanh toán online chưa trả → chờ thanh toán. */
+export function toCustomerOrderDisplayStatus(order: ApiOrderResponse): OrderStatus {
+  if (isVnpayAwaitingPayment(order) || isStripeAwaitingPayment(order)) {
+    return 'awaiting_payment'
+  }
+  return toCustomerOrderStatus(order.status)
+}
+
+export function matchesCustomerOrderTab(
+  order: ApiOrderResponse,
+  tab: 'all' | OrderStatus,
+): boolean {
+  if (tab === 'all') {
+    return true
+  }
+
+  const displayStatus = toCustomerOrderDisplayStatus(order)
+  if (tab === 'pending') {
+    return displayStatus === 'pending' || displayStatus === 'awaiting_payment'
+  }
+
+  return displayStatus === tab
+}
+
+export function isActiveCustomerOrder(order: ApiOrderResponse): boolean {
+  const displayStatus = toCustomerOrderDisplayStatus(order)
+  return (
+    displayStatus === 'awaiting_payment' ||
+    displayStatus === 'pending' ||
+    displayStatus === 'shipping'
+  )
+}
+
 export function getPaymentMethodLabel(method: ApiPaymentMethod): string {
   return PAYMENT_METHOD_LABELS[method] ?? method
 }
 
 export function isOrderCancellable(order: ApiOrderResponse): boolean {
   return order.status === 'PENDING' || order.status === 'CONFIRMED'
+}
+
+export function isVnpayAwaitingPayment(order: ApiOrderResponse): boolean {
+  return isOnlinePaymentAwaiting(order, 'VNPAY')
+}
+
+export function isStripeAwaitingPayment(order: ApiOrderResponse): boolean {
+  return isOnlinePaymentAwaiting(order, 'STRIPE')
+}
+
+export function isOnlinePaymentAwaiting(
+  order: ApiOrderResponse,
+  method: Extract<ApiPaymentMethod, 'VNPAY' | 'STRIPE'>,
+): boolean {
+  return (
+    order.paymentMethod === method &&
+    order.paymentStatus === 'UNPAID' &&
+    order.status === 'PENDING'
+  )
 }
 
 export function formatShippingAddress(
@@ -81,4 +134,14 @@ export function formatShippingAddress(
 
 export function getOrderShippingLine(order: ApiOrderResponse, fallback = '—'): string {
   return formatShippingAddress(order.shippingAddress, fallback)
+}
+
+export function getOrderItemImageUrl(
+  item: Pick<ApiOrderItemResponse, 'productImageUrl'>,
+): string {
+  return item.productImageUrl?.trim() || ORDER_ITEM_PLACEHOLDER_IMAGE
+}
+
+export function canCustomerConfirmReceived(order: ApiOrderResponse): boolean {
+  return order.status === 'DELIVERED'
 }

@@ -28,6 +28,13 @@ const orderService = {
     )
     return requireApiData(data, 'Failed to cancel order')
   },
+
+  confirmReceived: async (orderId: string): Promise<ApiOrderResponse> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiOrderResponse>>(
+      `/orders/${orderId}/confirm-received`,
+    )
+    return requireApiData(data, 'Failed to confirm order received')
+  },
 }
 
 export default orderService

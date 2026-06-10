@@ -1,6 +1,7 @@
 import type { OrderStatus } from '../types'
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
+  awaiting_payment: 'Chờ thanh toán',
   pending: 'Chờ xác nhận',
   confirmed: 'Đã xác nhận',
   packing: 'Đang đóng gói',
@@ -14,6 +15,7 @@ export const ORDER_STATUS_TONE: Record<
   OrderStatus,
   'amber' | 'indigo' | 'cyan' | 'blue' | 'emerald' | 'rose' | 'purple'
 > = {
+  awaiting_payment: 'rose',
   pending: 'amber',
   confirmed: 'indigo',
   packing: 'purple',

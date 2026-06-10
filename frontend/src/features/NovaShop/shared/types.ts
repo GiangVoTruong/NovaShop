@@ -37,6 +37,7 @@ export interface Product {
 }
 
 export type OrderStatus =
+  | 'awaiting_payment'
   | 'pending'
   | 'confirmed'
   | 'packing'

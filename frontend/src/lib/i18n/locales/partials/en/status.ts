@@ -1,5 +1,6 @@
 export const status = {
   order: {
+    awaiting_payment: 'Awaiting payment',
     pending: 'Pending',
     confirmed: 'Confirmed',
     packing: 'Packing',

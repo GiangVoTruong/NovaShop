@@ -8,12 +8,13 @@ export type ApiOrderStatus =
 
 export type ApiPaymentMethod = 'COD' | 'VNPAY' | 'STRIPE'
 
-export type ApiPaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED'
+export type ApiPaymentStatus = 'UNPAID' | 'PAID' | 'REFUNDED'
 
 export type ApiOrderItemResponse = {
   id: string
   productId: string
   productName: string
+  productImageUrl?: string | null
   price: number
   quantity: number
   subtotal: number
@@ -39,6 +40,9 @@ export type ApiOrderResponse = {
   paymentStatus: ApiPaymentStatus
   shippingAddress?: ApiOrderShippingAddress | null
   note?: string | null
+  deliveryProofUrl?: string | null
+  deliveredAt?: string | null
+  trackingCode?: string | null
   items: ApiOrderItemResponse[]
   createdAt: string
   updatedAt: string

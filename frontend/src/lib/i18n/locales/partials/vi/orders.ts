@@ -37,8 +37,29 @@ export const orders = {
   detail: {
     notFound: 'Không tìm thấy đơn hàng',
     backToList: 'Quay lại danh sách đơn',
+    confirmReceived: 'Đã nhận hàng',
+    confirmReceivedSuccess: 'Đã xác nhận nhận hàng thành công',
+    trackingCode: 'Mã vận đơn',
+    deliveredAt: 'Giao lúc',
+    deliveryProof: 'Ảnh giao hàng',
   },
   messages: {
     cancelled: 'Đã huỷ đơn hàng',
+  },
+  vnpay: {
+    payNow: 'Thanh toán VNPay',
+    createFailed: 'Không thể tạo liên kết VNPay. Vui lòng thử lại.',
+    successTitle: 'Thanh toán VNPay thành công',
+    successDesc: 'Đơn hàng của bạn đã được thanh toán.',
+    failedTitle: 'Thanh toán VNPay thất bại',
+    failedDesc: 'Giao dịch chưa hoàn tất. Bạn có thể thử thanh toán lại bên dưới.',
+  },
+  stripe: {
+    payNow: 'Thanh toán Stripe',
+    createFailed: 'Không thể tạo phiên Stripe. Vui lòng thử lại.',
+    successTitle: 'Thanh toán Stripe thành công',
+    successDesc: 'Đơn hàng của bạn đã được thanh toán.',
+    failedTitle: 'Thanh toán Stripe thất bại',
+    failedDesc: 'Giao dịch chưa hoàn tất. Bạn có thể thử thanh toán lại bên dưới.',
   },
 } as const

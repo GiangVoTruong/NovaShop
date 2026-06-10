@@ -37,8 +37,29 @@ export const orders = {
   detail: {
     notFound: 'Order not found',
     backToList: 'Back to orders',
+    confirmReceived: 'Confirm received',
+    confirmReceivedSuccess: 'Order receipt confirmed',
+    trackingCode: 'Tracking code',
+    deliveredAt: 'Delivered at',
+    deliveryProof: 'Delivery photo',
   },
   messages: {
     cancelled: 'Order cancelled',
+  },
+  vnpay: {
+    payNow: 'Pay with VNPay',
+    createFailed: 'Could not create VNPay payment link. Please try again.',
+    successTitle: 'VNPay payment successful',
+    successDesc: 'Your order has been paid.',
+    failedTitle: 'VNPay payment failed',
+    failedDesc: 'The transaction was not completed. You can retry payment below.',
+  },
+  stripe: {
+    payNow: 'Pay with Stripe',
+    createFailed: 'Could not create Stripe checkout session. Please try again.',
+    successTitle: 'Stripe payment successful',
+    successDesc: 'Your order has been paid.',
+    failedTitle: 'Stripe payment failed',
+    failedDesc: 'The transaction was not completed. You can retry payment below.',
   },
 } as const
