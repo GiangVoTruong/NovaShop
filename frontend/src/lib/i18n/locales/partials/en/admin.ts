@@ -11,6 +11,7 @@ export const admin = {
     expandSidebar: 'Expand sidebar',
     collapseSidebar: 'Collapse sidebar',
     searchPlaceholder: 'Search orders, products, customers…',
+    searchEmpty: 'No results found',
     viewStore: 'View store',
     notifications: 'Notifications',
     userName: 'Admin Nova',
@@ -134,7 +135,11 @@ export const admin = {
     messages: {
       statusUpdated: 'Order status updated',
       statusFailed: 'Could not update order status',
+      delivered: 'Delivery confirmed successfully',
       deliveredCodPaid: 'Order completed. COD payment will be marked PAID on the server.',
+      deliveryProofUploaded: 'Delivery photo uploaded',
+      deliveryProofUploadFailed: 'Could not upload delivery photo',
+      deliveryProofRequired: 'Please upload a delivery proof photo',
     },
     detailPage: {
       eyebrow: 'Order detail',
@@ -163,7 +168,10 @@ export const admin = {
       shopStartShipping: 'SHOP: Out for delivery',
       shipperDeliveredWithPhoto: 'SHIPPER: Photo + delivered',
       customerConfirmReceived: 'CUSTOMER: Confirm received',
-      deliveryProofLabel: 'Delivery photo (temporary placeholder)',
+      deliveryProofLabel: 'Delivery photo',
+      uploadDeliveryProof: 'Upload photo',
+      viewDeliveryProof: 'View photo',
+      trackingCodePlaceholder: 'Tracking code (optional)',
       deliveryProofPlaceholder: 'Enter a temporary photo URL to enable shipper delivery step',
       codDeliveredNote:
         'When the customer confirms, the order moves to awaiting receiver confirmation and COD becomes PAID (BE).',

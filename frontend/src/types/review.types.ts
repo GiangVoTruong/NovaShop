@@ -5,6 +5,7 @@ export type ApiReviewResponse = {
   productId: string
   rating: number
   comment: string | null
+  status?: 'VISIBLE' | 'HIDDEN'
   createdAt: string
 }
 

@@ -1,4 +1,4 @@
-import { Menu, PanelLeft, PanelLeftClose, Search, Store } from 'lucide-react'
+import { Menu, PanelLeft, PanelLeftClose, Store } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { PATHS } from '@/router/paths'
@@ -6,6 +6,7 @@ import LanguageSwitcher from '@/lib/i18n/LanguageSwitcher'
 import NotificationBell from '@/features/NovaShop/shared/notifications/components/NotificationBell'
 import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 import Button from '../../../shared/ui/Button'
+import AdminGlobalSearch from './AdminGlobalSearch'
 
 interface AdminHeaderProps {
   onMenuClick: () => void
@@ -46,21 +47,7 @@ export default function AdminHeader({
         <CollapseIcon className="size-5" />
       </button>
 
-      <div className="hidden min-w-0 flex-1 sm:block">
-        <label htmlFor="admin-global-search" className="sr-only">
-          {t('admin.header.searchPlaceholder')}
-        </label>
-        <div className="flex max-w-md items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3">
-          <Search className="size-4 shrink-0 text-slate-400" />
-          <input
-            id="admin-global-search"
-            name="adminSearch"
-            type="search"
-            placeholder={t('admin.header.searchPlaceholder')}
-            className="h-10 min-w-0 flex-1 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
-          />
-        </div>
-      </div>
+      <AdminGlobalSearch />
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
         <Link to={PATHS.HOME} className="hidden sm:block">

@@ -1,12 +1,11 @@
-import { PRODUCTS } from '@/features/NovaShop/shared/data/products'
 import { formatNumber } from '@/features/NovaShop/shared/format'
-import type { Product } from '@/features/NovaShop/shared/types'
+import type { AdminInventoryItem } from '@/types/admin.types'
 import Button from '@/features/NovaShop/shared/ui/Button'
-import { ProductStatusBadge } from '@/features/NovaShop/shared/ui/StatusBadge'
-import { Input } from 'antd'
+import { Input, Spin } from 'antd'
 import { AlertTriangle, PackagePlus, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useAdminInventory, useAdminInventorySummary } from '../../hooks/useAdminInventory'
 import AdminListPage from '../../layout/components/AdminListPage'
 import AdminTable from '../../layout/components/AdminTable'
 import StatCard from '../../layout/components/StatCard'
@@ -17,28 +16,28 @@ const LOW_STOCK_THRESHOLD = 20
 export default function InventoryPage() {
   const { t: translate } = useTranslation()
   const [search, setSearch] = useState('')
+  const inventoryQuery = useAdminInventory({
+    keyword: search || undefined,
+    size: 100,
+    sortBy: 'stock',
+    sortDir: 'asc',
+  })
+  const summaryQuery = useAdminInventorySummary()
 
-  const inventoryProducts = PRODUCTS.filter((product) => {
-    if (!search) return true
-    const keyword = search.toLowerCase()
-    return (
-      product.name.toLowerCase().includes(keyword) || product.sku.toLowerCase().includes(keyword)
-    )
-  }).sort((left, right) => left.stock - right.stock)
-
-  const lowStockCount = PRODUCTS.filter((product) => product.stock <= LOW_STOCK_THRESHOLD).length
-  const outOfStockCount = PRODUCTS.filter(
-    (product) => product.status === 'out_of_stock' || product.stock === 0,
-  ).length
-  const totalStock = PRODUCTS.reduce((sum, product) => sum + product.stock, 0)
+  const inventoryProducts = inventoryQuery.data?.data ?? []
+  const summary = summaryQuery.data
 
   const columns = [
     {
       title: translate('admin.inventory.columns.product'),
       key: 'product',
-      render: (_: unknown, product: Product) => (
+      render: (_: unknown, product: AdminInventoryItem) => (
         <div className="flex items-center gap-3">
-          <img src={product.images[0]} alt={product.name} className={adminTableAvatarLg} />
+          <img
+            src={product.primaryImageUrl ?? 'https://via.placeholder.com/80'}
+            alt={product.name}
+            className={adminTableAvatarLg}
+          />
           <div>
             <p className={adminTableText.primary}>{product.name}</p>
             <p className={adminTableText.secondary}>{product.sku}</p>
@@ -62,12 +61,14 @@ export default function InventoryPage() {
       title: translate('admin.inventory.columns.status'),
       dataIndex: 'status',
       key: 'status',
-      render: (status: Product['status']) => <ProductStatusBadge status={status} />,
+      render: (status: AdminInventoryItem['status']) => (
+        <span className={adminTableText.body}>{status}</span>
+      ),
     },
     {
       title: translate('admin.inventory.columns.alert'),
       key: 'alert',
-      render: (_: unknown, product: Product) =>
+      render: (_: unknown, product: AdminInventoryItem) =>
         product.stock <= LOW_STOCK_THRESHOLD ? (
           <span className={adminTableText.warning}>
             <AlertTriangle className="size-3.5" /> {translate('admin.inventory.columns.lowStock')}
@@ -78,16 +79,22 @@ export default function InventoryPage() {
           </span>
         ),
     },
-    {
-      title: '',
-      key: 'actions',
-      render: () => (
-        <Button variant="ghost" size="sm" leftIcon={<PackagePlus className="size-4" />}>
-          {translate('admin.inventory.restock')}
-        </Button>
-      ),
-    },
   ]
+
+  if (inventoryQuery.isLoading || summaryQuery.isLoading) {
+    return (
+      <AdminListPage
+        eyebrow={translate('admin.inventory.eyebrow')}
+        title={translate('admin.inventory.title')}
+        titleHighlight={translate('admin.inventory.titleHighlight')}
+        description={translate('admin.inventory.description')}
+      >
+        <div className="flex min-h-40 items-center justify-center">
+          <Spin size="large" />
+        </div>
+      </AdminListPage>
+    )
+  }
 
   return (
     <AdminListPage
@@ -96,7 +103,7 @@ export default function InventoryPage() {
       titleHighlight={translate('admin.inventory.titleHighlight')}
       description={translate('admin.inventory.description')}
       actions={
-        <Button variant="dark" leftIcon={<PackagePlus className="size-4" />}>
+        <Button variant="dark" leftIcon={<PackagePlus className="size-4" />} disabled>
           {translate('admin.inventory.import')}
         </Button>
       }
@@ -104,19 +111,19 @@ export default function InventoryPage() {
         <div className="grid gap-4 sm:grid-cols-3">
           <StatCard
             label={translate('admin.inventory.stats.totalStock')}
-            value={formatNumber(totalStock)}
+            value={formatNumber(summary?.totalUnitsInStock ?? 0)}
             icon={<PackagePlus className="size-5" />}
             tone="cyan"
           />
           <StatCard
             label={translate('admin.inventory.stats.lowStock')}
-            value={formatNumber(lowStockCount)}
+            value={formatNumber(summary?.lowStockCount ?? 0)}
             icon={<AlertTriangle className="size-5" />}
             tone="amber"
           />
           <StatCard
             label={translate('admin.inventory.stats.outOfStock')}
-            value={formatNumber(outOfStockCount)}
+            value={formatNumber(summary?.outOfStockCount ?? 0)}
             icon={<AlertTriangle className="size-5" />}
             tone="rose"
           />
@@ -133,7 +140,7 @@ export default function InventoryPage() {
       }
     >
       <AdminTable
-        rowKey="id"
+        rowKey="productId"
         columns={columns}
         dataSource={inventoryProducts}
         scroll={{ x: 800 }}

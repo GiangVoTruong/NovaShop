@@ -20,6 +20,9 @@ export type AdminOrderResponse = {
   paymentStatus: ApiPaymentStatus
   shippingAddress?: ApiOrderShippingAddress | null
   note?: string | null
+  deliveryProofUrl?: string | null
+  deliveredAt?: string | null
+  trackingCode?: string | null
   itemCount: number
   items: ApiOrderItemResponse[]
   createdAt: string
@@ -100,4 +103,62 @@ export type AdminUser = {
 
 export type UpdateOrderStatusRequest = {
   status: ApiOrderStatus
+}
+
+export type DeliverOrderRequest = {
+  deliveryProofUrl: string
+  trackingCode?: string
+}
+
+export type AdminInventoryItem = {
+  productId: string
+  name: string
+  sku: string
+  stock: number
+  soldCount: number
+  status: 'ACTIVE' | 'INACTIVE' | 'DELETED'
+  primaryImageUrl: string | null
+  categoryName: string
+  sellerName: string
+}
+
+export type AdminInventorySummary = {
+  totalSkus: number
+  lowStockCount: number
+  outOfStockCount: number
+  totalUnitsInStock: number
+}
+
+export type AdminInventoryListParams = ListQueryParams & {
+  keyword?: string
+  lowStockOnly?: boolean
+  outOfStockOnly?: boolean
+  sortBy?: string
+  sortDir?: 'asc' | 'desc'
+}
+
+export type AdminAnalyticsSummary = {
+  pendingOrders: number
+  lowStockProducts: number
+  todayRevenue: number
+  todayOrders: number
+}
+
+export type AdminSearchResult = {
+  orders: Array<{
+    id: string
+    orderCode: string
+    customerName: string
+    status: ApiOrderStatus
+  }>
+  products: Array<{
+    id: string
+    name: string
+    slug: string
+  }>
+  customers: Array<{
+    id: string
+    fullName: string
+    email: string
+  }>
 }

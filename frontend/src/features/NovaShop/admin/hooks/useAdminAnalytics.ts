@@ -9,3 +9,11 @@ export function useAdminAnalytics(params?: { fromDate?: string; toDate?: string 
     queryFn: () => adminAnalyticsService.getOverview(params),
   })
 }
+
+export function useAdminAnalyticsSummary() {
+  return useQuery({
+    queryKey: [...ADMIN_ANALYTICS_QUERY_KEY, 'summary'],
+    queryFn: adminAnalyticsService.getSummary,
+    staleTime: 60_000,
+  })
+}

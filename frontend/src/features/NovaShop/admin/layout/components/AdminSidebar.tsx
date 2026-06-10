@@ -2,8 +2,10 @@ import { Boxes, ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink } from 'react-router-dom'
 import { PATHS } from '@/router/paths'
+import { formatCurrency, formatNumber } from '@/features/NovaShop/shared/format'
 import { cx } from '@/features/NovaShop/shared/ui/cx'
-import { ADMIN_NAV_SECTIONS, ADMIN_QUICK_STATS } from '../constants/layout.constants'
+import { useAdminAnalyticsSummary } from '../../hooks/useAdminAnalytics'
+import { ADMIN_NAV_SECTIONS } from '../constants/layout.constants'
 
 interface AdminSidebarProps {
   onNavigate?: () => void
@@ -21,6 +23,26 @@ export default function AdminSidebar({
   collapsed = false,
 }: AdminSidebarProps) {
   const { t: translate } = useTranslation()
+  const summaryQuery = useAdminAnalyticsSummary()
+  const summary = summaryQuery.data
+
+  const quickStats = [
+    {
+      labelKey: 'admin.quickStats.pendingOrders',
+      value: formatNumber(summary?.pendingOrders ?? 0),
+      tone: 'amber' as const,
+    },
+    {
+      labelKey: 'admin.quickStats.lowStock',
+      value: formatNumber(summary?.lowStockProducts ?? 0),
+      tone: 'rose' as const,
+    },
+    {
+      labelKey: 'admin.quickStats.todayRevenue',
+      value: formatCurrency(summary?.todayRevenue ?? 0),
+      tone: 'emerald' as const,
+    },
+  ]
 
   return (
     <aside
@@ -88,7 +110,7 @@ export default function AdminSidebar({
       {!collapsed && (
         <div className="space-y-3 border-t border-slate-200 px-4 py-4">
           <div className="grid grid-cols-3 gap-2">
-            {ADMIN_QUICK_STATS.map((stat) => (
+            {quickStats.map((stat) => (
               <div
                 key={stat.labelKey}
                 className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center"

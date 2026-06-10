@@ -11,6 +11,7 @@ export const admin = {
     expandSidebar: 'Mở rộng sidebar',
     collapseSidebar: 'Thu gọn sidebar',
     searchPlaceholder: 'Tìm đơn hàng, sản phẩm, khách hàng…',
+    searchEmpty: 'Không tìm thấy kết quả',
     viewStore: 'Xem cửa hàng',
     notifications: 'Thông báo',
     userName: 'Admin Nova',
@@ -134,7 +135,11 @@ export const admin = {
     messages: {
       statusUpdated: 'Cập nhật trạng thái thành công',
       statusFailed: 'Không thể cập nhật trạng thái',
+      delivered: 'Xác nhận giao hàng thành công',
       deliveredCodPaid: 'Đơn hoàn tất. Thanh toán COD sẽ được ghi nhận PAID trên hệ thống.',
+      deliveryProofUploaded: 'Đã tải ảnh giao hàng lên',
+      deliveryProofUploadFailed: 'Không thể tải ảnh giao hàng',
+      deliveryProofRequired: 'Vui lòng tải ảnh bằng chứng giao hàng',
     },
     detailPage: {
       eyebrow: 'Chi tiết đơn hàng',
@@ -163,7 +168,10 @@ export const admin = {
       shopStartShipping: 'SHOP: Đang giao',
       shipperDeliveredWithPhoto: 'SHIPPER: Chụp ảnh + đã giao',
       customerConfirmReceived: 'KHÁCH: Xác nhận đã nhận',
-      deliveryProofLabel: 'Ảnh giao hàng (placeholder tạm)',
+      deliveryProofLabel: 'Ảnh giao hàng',
+      uploadDeliveryProof: 'Tải ảnh lên',
+      viewDeliveryProof: 'Xem ảnh',
+      trackingCodePlaceholder: 'Mã vận đơn (tuỳ chọn)',
       deliveryProofPlaceholder:
         'Nhập link ảnh tạm để bật bước Shipper chụp ảnh + đã giao',
       codDeliveredNote:

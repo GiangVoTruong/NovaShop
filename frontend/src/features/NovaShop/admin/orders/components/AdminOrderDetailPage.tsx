@@ -1,15 +1,16 @@
-import type { ReactNode } from 'react'
+import type { ChangeEvent, ReactNode } from 'react'
 import { useState } from 'react'
 import { Select, Spin, message } from 'antd'
-import { ArrowLeft, CreditCard, Mail, MapPin, MessageSquare, Phone, User } from 'lucide-react'
+import { ArrowLeft, CreditCard, Mail, MapPin, MessageSquare, Phone, Upload, User } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import {
   formatShippingAddress,
+  getOrderItemImageUrl,
   getPaymentMethodLabel,
-  ORDER_ITEM_PLACEHOLDER_IMAGE,
   toOrderNumber,
 } from '@/features/NovaShop/customer/orders/lib/orderApi'
+import { useUploadFile } from '@/features/NovaShop/shared/hooks/useUploadFile'
 import { formatCurrency, formatDateTime } from '@/features/NovaShop/shared/format'
 import { OrderStatusBadge } from '@/features/NovaShop/shared/ui/StatusBadge'
 import { PATHS, productDetailPath } from '@/router/paths'
@@ -18,7 +19,7 @@ import AdminPageHeader from '../../layout/components/AdminPageHeader'
 import AdminSection from '../../layout/components/AdminSection'
 import AdminShell from '../../layout/components/AdminShell'
 import { adminTableText } from '../../layout/constants/adminTableStyles'
-import { useAdminOrder, useUpdateAdminOrderStatus } from '../../hooks/useAdminOrders'
+import { useAdminOrder, useDeliverAdminOrder, useUpdateAdminOrderStatus } from '../../hooks/useAdminOrders'
 import {
   ADMIN_ORDER_STATUSES,
   getAdminOrderCode,
@@ -29,7 +30,6 @@ import {
 import { normalizeApiOrderStatus } from '@/features/NovaShop/customer/orders/lib/orderApi'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import {
-  canCustomerConfirmReceived,
   canShipperSubmitDeliveryProof,
   canShopConfirmOrder,
   canShopStartShipping,
@@ -43,8 +43,11 @@ export default function AdminOrderDetailPage() {
   const { id } = useParams<{ id: string }>()
   const orderQuery = useAdminOrder(id)
   const updateStatusMutation = useUpdateAdminOrderStatus()
+  const deliverOrderMutation = useDeliverAdminOrder()
+  const uploadFileMutation = useUploadFile()
   const order = orderQuery.data
-  const [deliveryProofPlaceholder, setDeliveryProofPlaceholder] = useState('')
+  const [deliveryProofUrl, setDeliveryProofUrl] = useState('')
+  const [trackingCode, setTrackingCode] = useState('')
 
   const statusSelectOptions = ADMIN_ORDER_STATUSES.map((status) => ({
     value: status,
@@ -73,10 +76,8 @@ export default function AdminOrderDetailPage() {
 
   const orderStatus = getWorkflowOrderStatus(order.status)
   const workflowHighlightStatus = getWorkflowHighlightStatus(orderStatus)
-  const hasDeliveryProof =
-    deliveryProofPlaceholder.trim().length > 0 ||
-    orderStatus === 'DELIVERED' ||
-    orderStatus === 'DELIVERED_PENDING_RECEIVER_CONFIRM'
+  const resolvedDeliveryProofUrl = order.deliveryProofUrl ?? deliveryProofUrl
+  const hasDeliveryProof = resolvedDeliveryProofUrl.trim().length > 0
 
   const handleStatusChange = (nextStatus: ApiOrderStatus) => {
     if (orderStatus === nextStatus) {
@@ -93,6 +94,46 @@ export default function AdminOrderDetailPage() {
           }
           message.success(translate('admin.orders.messages.statusUpdated'))
         },
+        onError: () => message.error(translate('admin.orders.messages.statusFailed')),
+      },
+    )
+  }
+
+  const handleDeliveryProofUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) {
+      return
+    }
+
+    uploadFileMutation.mutate(
+      { file, purpose: 'DELIVERY_PROOF' },
+      {
+        onSuccess: (upload) => {
+          setDeliveryProofUrl(upload.url)
+          message.success(translate('admin.orders.messages.deliveryProofUploaded'))
+        },
+        onError: () => message.error(translate('admin.orders.messages.deliveryProofUploadFailed')),
+      },
+    )
+    event.target.value = ''
+  }
+
+  const handleDeliverOrder = () => {
+    if (!resolvedDeliveryProofUrl.trim()) {
+      message.warning(translate('admin.orders.messages.deliveryProofRequired'))
+      return
+    }
+
+    deliverOrderMutation.mutate(
+      {
+        orderId: order.id,
+        request: {
+          deliveryProofUrl: resolvedDeliveryProofUrl.trim(),
+          trackingCode: trackingCode.trim() || undefined,
+        },
+      },
+      {
+        onSuccess: () => message.success(translate('admin.orders.messages.delivered')),
         onError: () => message.error(translate('admin.orders.messages.statusFailed')),
       },
     )
@@ -191,31 +232,46 @@ export default function AdminOrderDetailPage() {
                   size="sm"
                   disabled={
                     !canShipperSubmitDeliveryProof(orderStatus, hasDeliveryProof) ||
-                    updateStatusMutation.isPending
+                    deliverOrderMutation.isPending ||
+                    uploadFileMutation.isPending
                   }
-                  onClick={() => handleStatusChange('DELIVERED')}
+                  loading={deliverOrderMutation.isPending}
+                  onClick={handleDeliverOrder}
                 >
                   {translate('admin.orders.detailPage.shipperDeliveredWithPhoto')}
                 </Button>
-                <Button
-                  size="sm"
-                  disabled={
-                    !canCustomerConfirmReceived(orderStatus) || updateStatusMutation.isPending
-                  }
-                  onClick={() => handleStatusChange('DELIVERED_PENDING_RECEIVER_CONFIRM')}
-                >
-                  {translate('admin.orders.detailPage.customerConfirmReceived')}
-                </Button>
               </div>
-              <div className="space-y-1">
-                <label htmlFor="delivery-proof-placeholder" className="text-xs text-slate-400">
+              <div className="space-y-2">
+                <label htmlFor="delivery-proof-upload" className="text-xs text-slate-400">
                   {translate('admin.orders.detailPage.deliveryProofLabel')}
                 </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-400">
+                    <Upload className="size-4" />
+                    {translate('admin.orders.detailPage.uploadDeliveryProof')}
+                    <input
+                      id="delivery-proof-upload"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="sr-only"
+                      onChange={handleDeliveryProofUpload}
+                    />
+                  </label>
+                  {resolvedDeliveryProofUrl ? (
+                    <a
+                      href={resolvedDeliveryProofUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs font-semibold text-blue-600 hover:underline"
+                    >
+                      {translate('admin.orders.detailPage.viewDeliveryProof')}
+                    </a>
+                  ) : null}
+                </div>
                 <input
-                  id="delivery-proof-placeholder"
-                  value={deliveryProofPlaceholder}
-                  onChange={(event) => setDeliveryProofPlaceholder(event.target.value)}
-                  placeholder={translate('admin.orders.detailPage.deliveryProofPlaceholder')}
+                  value={trackingCode}
+                  onChange={(event) => setTrackingCode(event.target.value)}
+                  placeholder={translate('admin.orders.detailPage.trackingCodePlaceholder')}
                   className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-400"
                 />
               </div>
@@ -284,7 +340,7 @@ export default function AdminOrderDetailPage() {
                 className="size-14 shrink-0 overflow-hidden rounded-xl bg-slate-100"
               >
                 <img
-                  src={ORDER_ITEM_PLACEHOLDER_IMAGE}
+                  src={getOrderItemImageUrl(item)}
                   alt={item.productName}
                   className="size-full object-cover"
                 />

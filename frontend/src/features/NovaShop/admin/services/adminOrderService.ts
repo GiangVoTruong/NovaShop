@@ -1,7 +1,7 @@
 import { requireApiData } from '@/lib/api/requireApiData'
 import { toPageResult } from '@/lib/api/toPageResult'
 import { axiosInstance } from '@/lib/axios/instances'
-import type { AdminOrderResponse, AdminOrdersListParams, UpdateOrderStatusRequest } from '@/types/admin.types'
+import type { AdminOrderResponse, AdminOrdersListParams, DeliverOrderRequest, UpdateOrderStatusRequest } from '@/types/admin.types'
 import type { ApiResponse, PageResult } from '@/types/api.types'
 import type { ApiOrderResponse } from '@/types/order.types'
 
@@ -31,6 +31,17 @@ const adminOrderService = {
       request,
     )
     return requireApiData(data, 'Failed to update order status')
+  },
+
+  deliverOrder: async (
+    orderId: string,
+    request: DeliverOrderRequest,
+  ): Promise<AdminOrderResponse> => {
+    const { data } = await axiosInstance.post<ApiResponse<AdminOrderResponse>>(
+      `/admin/orders/${orderId}/deliver`,
+      request,
+    )
+    return requireApiData(data, 'Failed to deliver order')
   },
 }
 

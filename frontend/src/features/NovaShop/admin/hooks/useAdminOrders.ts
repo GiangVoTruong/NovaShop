@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { AdminOrdersListParams, UpdateOrderStatusRequest } from '@/types/admin.types'
+import type { AdminOrdersListParams, DeliverOrderRequest, UpdateOrderStatusRequest } from '@/types/admin.types'
 import adminOrderService from '../services/adminOrderService'
 
 export const ADMIN_ORDERS_QUERY_KEY = ['admin', 'orders'] as const
@@ -31,6 +31,24 @@ export function useUpdateAdminOrderStatus() {
       orderId: string
       request: UpdateOrderStatusRequest
     }) => adminOrderService.updateStatus(orderId, request),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ADMIN_ORDERS_QUERY_KEY })
+    },
+  })
+}
+
+export function useDeliverAdminOrder() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['admin', 'orders', 'deliver'],
+    mutationFn: ({
+      orderId,
+      request,
+    }: {
+      orderId: string
+      request: DeliverOrderRequest
+    }) => adminOrderService.deliverOrder(orderId, request),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ADMIN_ORDERS_QUERY_KEY })
     },
