@@ -10,8 +10,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import com.backend.entity.ShopOrder;
+import com.backend.enums.OrderStatus;
 
 public interface OrderRepository extends JpaRepository<ShopOrder, UUID>, JpaSpecificationExecutor<ShopOrder> {
+
+    long countByStatus(OrderStatus status);
 
     List<ShopOrder> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
@@ -44,6 +47,23 @@ public interface OrderRepository extends JpaRepository<ShopOrder, UUID>, JpaSpec
             WHERE shopOrder.id = :orderId
             """)
     java.util.Optional<ShopOrder> findDetailedById(UUID orderId);
+
+    @Query("""
+            SELECT DISTINCT shopOrder FROM ShopOrder shopOrder
+            JOIN OrderItem orderItem ON orderItem.order = shopOrder
+            JOIN Product product ON product.id = orderItem.productId
+            WHERE product.seller.id = :sellerId
+            ORDER BY shopOrder.createdAt DESC
+            """)
+    List<ShopOrder> findBySellerIdOrderByCreatedAtDesc(UUID sellerId);
+
+    @Query("""
+            SELECT DISTINCT shopOrder FROM ShopOrder shopOrder
+            JOIN OrderItem orderItem ON orderItem.order = shopOrder
+            JOIN Product product ON product.id = orderItem.productId
+            WHERE product.seller.id = :sellerId AND shopOrder.id = :orderId
+            """)
+    java.util.Optional<ShopOrder> findBySellerIdAndOrderId(UUID sellerId, UUID orderId);
 
     @Query("""
             SELECT CASE WHEN COUNT(orderItem) > 0 THEN true ELSE false END

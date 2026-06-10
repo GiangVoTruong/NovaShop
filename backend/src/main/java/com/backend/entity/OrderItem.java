@@ -42,6 +42,9 @@ public class OrderItem {
     @Column(name = "product_name", length = 255)
     private String productName;
 
+    @Column(name = "product_image_url", length = 500)
+    private String productImageUrl;
+
     @Column(precision = 15, scale = 2)
     private BigDecimal price;
 

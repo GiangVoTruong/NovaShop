@@ -21,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.backend.constants.NotificationI18nKeys;
 import com.backend.dto.orders.AdminOrderResponseDto;
 import com.backend.dto.orders.CreateOrderRequestDto;
+import com.backend.dto.orders.DeliverOrderRequestDto;
 import com.backend.dto.orders.GetOrderItemResponseDto;
 import com.backend.dto.orders.GetOrderResponseDto;
 import com.backend.dto.orders.OrderShippingAddressDto;
@@ -30,6 +31,7 @@ import com.backend.entity.Cart;
 import com.backend.entity.CartItem;
 import com.backend.entity.OrderItem;
 import com.backend.entity.Product;
+import com.backend.entity.ProductImage;
 import com.backend.entity.ShopOrder;
 import com.backend.entity.User;
 import com.backend.enums.NotificationType;
@@ -40,6 +42,7 @@ import com.backend.enums.UserRole;
 import com.backend.repository.CartRepository;
 import com.backend.repository.OrderItemRepository;
 import com.backend.repository.OrderRepository;
+import com.backend.repository.ProductImageRepository;
 import com.backend.repository.ProductRepository;
 import com.backend.repository.UserRepository;
 import com.backend.security.SecurityUtils;
@@ -60,11 +63,15 @@ public class OrderService {
     private static final String ORDER_NOT_CANCELLABLE = "Order cannot be cancelled";
     private static final Set<String> ADMIN_ORDER_SORT_FIELDS = Set.of("createdAt", "finalAmount", "status");
 
+    private static final String DELIVERY_PROOF_REQUIRED = "Use deliver API with delivery proof to mark order as delivered";
+    private static final String INVALID_DELIVERY_STATE = "Order is not ready for delivery confirmation";
+
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartRepository cartRepository;
     private final CartService cartService;
     private final ProductRepository productRepository;
+    private final ProductImageRepository productImageRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final AddressService addressService;
@@ -110,6 +117,7 @@ public class OrderService {
             orderItems.add(OrderItem.builder()
                     .productId(product.getId())
                     .productName(product.getName())
+                    .productImageUrl(resolvePrimaryImageUrl(product.getId()))
                     .price(unitPrice)
                     .quantity(cartItem.getQuantity())
                     .subtotal(subtotal)
@@ -182,6 +190,24 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public List<GetOrderResponseDto> getSellerOrders() {
+        SecurityUtils.requireRole(UserRole.SELLER);
+        UUID sellerId = SecurityUtils.getCurrentUserId();
+        return orderRepository.findBySellerIdOrderByCreatedAtDesc(sellerId).stream()
+                .map(order -> toOrderResponse(order, orderItemRepository.findByOrderId(order.getId())))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public GetOrderResponseDto getSellerOrderById(UUID orderId) {
+        SecurityUtils.requireRole(UserRole.SELLER);
+        UUID sellerId = SecurityUtils.getCurrentUserId();
+        ShopOrder order = orderRepository.findBySellerIdAndOrderId(sellerId, orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ORDER_NOT_FOUND));
+        return toOrderResponse(order, orderItemRepository.findByOrderId(order.getId()));
+    }
+
+    @Transactional(readOnly = true)
     public Page<AdminOrderResponseDto> getAllOrdersAdmin(
             OrderStatus status,
             String keyword,
@@ -242,6 +268,33 @@ public class OrderService {
     }
 
     @Transactional
+    public AdminOrderResponseDto deliverOrder(UUID orderId, DeliverOrderRequestDto request) {
+        SecurityUtils.requireRole(UserRole.ADMIN, UserRole.SELLER);
+        ShopOrder order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ORDER_NOT_FOUND));
+
+        if (order.getStatus() != OrderStatus.SHIPPING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, INVALID_DELIVERY_STATE);
+        }
+
+        OffsetDateTime now = OffsetDateTime.now();
+        order.setStatus(OrderStatus.DELIVERED);
+        order.setDeliveryProofUrl(request.getDeliveryProofUrl().trim());
+        order.setDeliveredAt(now);
+        order.setTrackingCode(normalizeOptionalText(request.getTrackingCode()));
+        order.setUpdatedAt(now);
+        orderRepository.save(order);
+
+        notificationService.createI18n(
+                order.getUser(),
+                NotificationType.ORDER_STATUS,
+                NotificationI18nKeys.AWAITING_RECEIVER_CONFIRM,
+                Map.of("orderId", order.getId().toString()));
+
+        return toAdminOrderDto(order, true);
+    }
+
+    @Transactional
     public GetOrderResponseDto updateOrderStatus(UUID orderId, UpdateOrderStatusRequestDto request) {
         SecurityUtils.requireRole(UserRole.ADMIN, UserRole.SELLER);
         ShopOrder order = orderRepository.findById(orderId)
@@ -252,6 +305,9 @@ public class OrderService {
 
     private GetOrderResponseDto applyStatusChange(ShopOrder order, OrderStatus newStatus) {
         assertValidTransition(order.getStatus(), newStatus);
+        if (order.getStatus() == OrderStatus.SHIPPING && newStatus == OrderStatus.DELIVERED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, DELIVERY_PROOF_REQUIRED);
+        }
         order.setStatus(newStatus);
         if (newStatus == OrderStatus.DELIVERED_PENDING_RECEIVER_CONFIRM) {
             order.setPaymentStatus(PaymentStatusType.PAID);
@@ -363,6 +419,9 @@ public class OrderService {
                 .paymentStatus(order.getPaymentStatus())
                 .shippingAddress(toShippingAddressDto(order))
                 .note(order.getNote())
+                .deliveryProofUrl(order.getDeliveryProofUrl())
+                .deliveredAt(order.getDeliveredAt())
+                .trackingCode(order.getTrackingCode())
                 .itemCount((int) itemCount)
                 .items(items)
                 .createdAt(order.getCreatedAt())
@@ -402,6 +461,9 @@ public class OrderService {
                 .paymentStatus(order.getPaymentStatus())
                 .shippingAddress(toShippingAddressDto(order))
                 .note(order.getNote())
+                .deliveryProofUrl(order.getDeliveryProofUrl())
+                .deliveredAt(order.getDeliveredAt())
+                .trackingCode(order.getTrackingCode())
                 .items(toOrderItemDtos(orderItems))
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
@@ -421,10 +483,38 @@ public class OrderService {
                 .id(orderItem.getId())
                 .productId(orderItem.getProductId())
                 .productName(orderItem.getProductName())
+                .productImageUrl(resolveOrderItemImageUrl(orderItem))
                 .price(orderItem.getPrice())
                 .quantity(orderItem.getQuantity())
                 .subtotal(orderItem.getSubtotal())
                 .build();
+    }
+
+    private String resolveOrderItemImageUrl(OrderItem orderItem) {
+        if (orderItem.getProductImageUrl() != null && !orderItem.getProductImageUrl().isBlank()) {
+            return orderItem.getProductImageUrl();
+        }
+        return resolvePrimaryImageUrl(orderItem.getProductId());
+    }
+
+    private String resolvePrimaryImageUrl(UUID productId) {
+        if (productId == null) {
+            return null;
+        }
+        return productImageRepository.findByProductIdAndIsPrimaryTrue(productId)
+                .map(ProductImage::getUrl)
+                .orElseGet(() -> productImageRepository.findByProductId(productId).stream()
+                .findFirst()
+                .map(ProductImage::getUrl)
+                .orElse(null));
+    }
+
+    private String normalizeOptionalText(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private OrderShippingAddressDto toShippingAddressDto(ShopOrder order) {

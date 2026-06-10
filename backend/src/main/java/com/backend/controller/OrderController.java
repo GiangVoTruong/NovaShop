@@ -67,7 +67,8 @@ public class OrderController {
     @PostMapping("/{id}/confirm-received")
     @Operation(
             summary = "Khách xác nhận đã nhận hàng",
-            description = "Chuyển đơn từ DELIVERED_PENDING_RECEIVER_CONFIRM sang DELIVERED.")
+            description = "Khách xác nhận đã nhận hàng khi đơn ở trạng thái DELIVERED. "
+                    + "Chuyển sang DELIVERED_PENDING_RECEIVER_CONFIRM và set paymentStatus=PAID (COD).")
     public ResponseEntity<ApiResponse<GetOrderResponseDto>> confirmOrderReceived(@PathVariable UUID id) {
         return ApiResponses.ok(orderService.confirmOrderReceived(id), "Xác nhận đã nhận hàng thành công");
     }

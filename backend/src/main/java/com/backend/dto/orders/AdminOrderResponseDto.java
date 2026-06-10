@@ -34,6 +34,9 @@ public class AdminOrderResponseDto {
     private PaymentStatusType paymentStatus;
     private OrderShippingAddressDto shippingAddress;
     private String note;
+    private String deliveryProofUrl;
+    private OffsetDateTime deliveredAt;
+    private String trackingCode;
     private int itemCount;
     private List<GetOrderItemResponseDto> items;
     private OffsetDateTime createdAt;

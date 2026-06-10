@@ -88,6 +88,15 @@ public class ShopOrder {
     @Builder.Default
     private PaymentStatusType paymentStatus = PaymentStatusType.UNPAID;
 
+    @Column(name = "delivery_proof_url", length = 500)
+    private String deliveryProofUrl;
+
+    @Column(name = "delivered_at")
+    private OffsetDateTime deliveredAt;
+
+    @Column(name = "tracking_code", length = 100)
+    private String trackingCode;
+
     @Column(name = "created_at")
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
