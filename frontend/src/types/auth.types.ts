@@ -63,3 +63,17 @@ export type ChangePasswordRequest = {
   newPassword: string
   confirmPassword: string
 }
+
+export type AuthGoogleRequest = {
+  idToken: string
+}
+
+export type AuthForgotPasswordRequest = {
+  email: string
+}
+
+export type AuthResetPasswordRequest = {
+  email: string
+  otp: string
+  newPassword: string
+}

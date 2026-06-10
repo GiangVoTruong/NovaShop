@@ -7,11 +7,16 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import useRegister from '../hooks/useRegister'
+import useGoogleLogin from '../hooks/useGoogleLogin'
+import GoogleSignInButton from './GoogleSignInButton'
+import { getGoogleClientId } from '../lib/googleIdentity'
 
 export default function RegisterPage() {
   const { t: translate } = useTranslation()
   const navigate = useNavigate()
   const registerMutation = useRegister()
+  const { loginWithGoogle, isPending: isGooglePending } = useGoogleLogin()
+  const googleClientId = getGoogleClientId()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -229,9 +234,16 @@ export default function RegisterPage() {
                 <div className="h-px flex-1 bg-slate-200" />
               </div>
 
-              <Button variant="outline" size="lg" fullWidth type="button">
-                {translate('auth.continueWithGoogle')}
-              </Button>
+              {!googleClientId ? (
+                <Button variant="outline" size="lg" fullWidth type="button" disabled>
+                  {translate('auth.continueWithGoogle')}
+                </Button>
+              ) : (
+                <GoogleSignInButton
+                  onCredential={loginWithGoogle}
+                  disabled={isGooglePending || registerMutation.isPending}
+                />
+              )}
             </form>
 
             <p className="mt-8 text-center text-sm text-slate-600">

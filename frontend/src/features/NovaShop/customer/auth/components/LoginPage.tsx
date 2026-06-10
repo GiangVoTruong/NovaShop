@@ -6,11 +6,16 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import useLogin from '../hooks/useLogin'
+import useGoogleLogin from '../hooks/useGoogleLogin'
+import GoogleSignInButton from './GoogleSignInButton'
+import { getGoogleClientId } from '../lib/googleIdentity'
 
 export default function LoginPage() {
   const { t: translate } = useTranslation()
   const { login, isPending } = useLogin()
+  const { loginWithGoogle, isPending: isGooglePending } = useGoogleLogin()
   const [showPassword, setShowPassword] = useState(false)
+  const googleClientId = getGoogleClientId()
 
   const heroStats = [
     { value: '120K+', label: translate('auth.statCustomers') },
@@ -133,9 +138,12 @@ export default function LoginPage() {
                   />
                   {translate('auth.rememberMe')}
                 </label>
-                <a href="#" className="font-semibold text-fuchsia-600 hover:underline">
+                <Link
+                  to={PATHS.FORGOT_PASSWORD}
+                  className="font-semibold text-fuchsia-600 hover:underline"
+                >
                   {translate('auth.forgotPassword')}
-                </a>
+                </Link>
               </div>
 
               <Button type="submit" size="lg" fullWidth glow disabled={isPending}>
@@ -150,9 +158,13 @@ export default function LoginPage() {
                 <div className="h-px flex-1 bg-slate-200" />
               </div>
 
-              <Button variant="outline" size="lg" fullWidth type="button">
-                {translate('auth.continueWithGoogle')}
-              </Button>
+              {!googleClientId ? (
+                <Button variant="outline" size="lg" fullWidth type="button" disabled>
+                  {translate('auth.continueWithGoogle')}
+                </Button>
+              ) : (
+                <GoogleSignInButton onCredential={loginWithGoogle} disabled={isGooglePending || isPending} />
+              )}
             </form>
 
             <p className="mt-8 text-center text-sm text-slate-600">
