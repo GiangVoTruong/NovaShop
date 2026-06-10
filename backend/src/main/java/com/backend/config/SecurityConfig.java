@@ -46,6 +46,10 @@ public class SecurityConfig {
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/settings/public").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/payments/vnpay/ipn").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/payments/vnpay/return").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/payments/stripe/webhook").permitAll()
                 .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
