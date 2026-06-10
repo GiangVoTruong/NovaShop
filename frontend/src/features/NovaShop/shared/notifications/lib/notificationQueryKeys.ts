@@ -20,6 +20,8 @@ export function applyIncomingNotification(
   queryClient: QueryClient,
   userId: string,
   notification: AppNotification,
+  page = 1,
+  size = 20,
 ) {
   queryClient.setQueryData<number>(unreadCountKey(userId), (currentCount = 0) => {
     if (notification.isRead) {
@@ -29,11 +31,70 @@ export function applyIncomingNotification(
   })
 
   queryClient.setQueryData<AppNotification[]>(
-    notificationListKey(userId, 1, 20),
+    notificationListKey(userId, page, size),
     (currentList = []) => [
       notification,
       ...currentList.filter((entry) => entry.id !== notification.id),
     ],
+  )
+}
+
+export function markNotificationReadInCache(
+  queryClient: QueryClient,
+  userId: string,
+  notificationId: string,
+  page = 1,
+  size = 20,
+) {
+  let wasUnread = false
+
+  queryClient.setQueryData<AppNotification[]>(
+    notificationListKey(userId, page, size),
+    (currentList = []) =>
+      currentList.map((entry) => {
+        if (entry.id !== notificationId) {
+          return entry
+        }
+        if (!entry.isRead) {
+          wasUnread = true
+        }
+        return { ...entry, isRead: true }
+      }),
+  )
+
+  if (wasUnread) {
+    queryClient.setQueryData<number>(unreadCountKey(userId), (currentCount = 0) =>
+      Math.max(0, currentCount - 1),
+    )
+  }
+}
+
+export function markAllNotificationsReadInCache(
+  queryClient: QueryClient,
+  userId: string,
+  page = 1,
+  size = 20,
+) {
+  queryClient.setQueryData<AppNotification[]>(
+    notificationListKey(userId, page, size),
+    (currentList = []) => currentList.map((entry) => ({ ...entry, isRead: true })),
+  )
+  queryClient.setQueryData<number>(unreadCountKey(userId), 0)
+}
+
+export function syncNotificationReadInCache(
+  queryClient: QueryClient,
+  userId: string,
+  updatedNotification: AppNotification,
+  page = 1,
+  size = 20,
+) {
+  queryClient.setQueryData<AppNotification[]>(
+    notificationListKey(userId, page, size),
+    (currentList = []) =>
+      currentList.map((entry) =>
+        entry.id === updatedNotification.id ? { ...entry, ...updatedNotification, isRead: true } : entry,
+      ),
   )
 }
 

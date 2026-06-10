@@ -2,8 +2,10 @@ import { Popover, Spin } from 'antd'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Bell } from 'lucide-react'
+import type { MouseEvent } from 'react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 import {
@@ -12,6 +14,7 @@ import {
   useNotifications,
   useUnreadNotificationCount,
 } from '../hooks/useNotifications'
+import { getNotificationTargetPath } from '../lib/getNotificationTargetPath'
 import { resolveNotificationText } from '../lib/resolveNotificationText'
 
 dayjs.extend(relativeTime)
@@ -30,6 +33,7 @@ export default function NotificationBell({
   popoverPlacement = 'bottomRight',
 }: NotificationBellProps) {
   const { t: translate } = useTranslation()
+  const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const [open, setOpen] = useState(false)
   const unreadQuery = useUnreadNotificationCount()
@@ -58,17 +62,30 @@ export default function NotificationBell({
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen)
-    if (nextOpen) {
-      void notificationsQuery.refetch()
-      void unreadQuery.refetch()
+  }
+
+  const handleNotificationClick = (
+    event: MouseEvent<HTMLButtonElement>,
+    notificationId: string,
+    isRead: boolean,
+    targetPath: string | null,
+  ) => {
+    event.stopPropagation()
+    if (!isRead && !markAsReadMutation.isPending) {
+      markAsReadMutation.mutate(notificationId)
+    }
+    if (targetPath) {
+      setOpen(false)
+      navigate(targetPath)
     }
   }
 
-  const handleNotificationClick = (notificationId: string, isRead: boolean) => {
-    if (isRead || markAsReadMutation.isPending) {
+  const handleMarkAllRead = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+    if (markAllAsReadMutation.isPending || unreadCount === 0) {
       return
     }
-    markAsReadMutation.mutate(notificationId)
+    markAllAsReadMutation.mutate()
   }
 
   const content = (
@@ -79,7 +96,7 @@ export default function NotificationBell({
           <button
             type="button"
             className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-            onClick={() => markAllAsReadMutation.mutate()}
+            onClick={handleMarkAllRead}
             disabled={markAllAsReadMutation.isPending}
           >
             {translate('notifications.markAllRead')}
@@ -87,7 +104,7 @@ export default function NotificationBell({
         ) : null}
       </div>
 
-      {notificationsQuery.isLoading ? (
+      {notificationsQuery.isLoading && notifications.length === 0 ? (
         <div className="grid place-items-center py-8">
           <Spin size="small" />
         </div>
@@ -99,12 +116,20 @@ export default function NotificationBell({
         <ul className="max-h-80 space-y-2 overflow-y-auto pr-1">
           {notifications.map((notification) => {
             const { title, message } = resolveNotificationText(notification, translate)
+            const targetPath = getNotificationTargetPath(notification)
 
             return (
               <li key={notification.id}>
                 <button
                   type="button"
-                  onClick={() => handleNotificationClick(notification.id, notification.isRead)}
+                  onClick={(event) =>
+                    handleNotificationClick(
+                      event,
+                      notification.id,
+                      notification.isRead,
+                      targetPath,
+                    )
+                  }
                   className={`w-full rounded-xl border px-3 py-2.5 text-left transition hover:bg-slate-50 ${
                     notification.isRead
                       ? 'border-slate-100 bg-white'
