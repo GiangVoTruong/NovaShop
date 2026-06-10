@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.springframework.stereotype.Service;
 
+import com.backend.dto.settings.PublicShopSettingsDto;
 import com.backend.dto.settings.ShopSettingsDto;
 import com.backend.enums.UserRole;
 import com.backend.security.SecurityUtils;
@@ -24,6 +25,15 @@ public class ShopSettingsService {
     public ShopSettingsDto getSettings() {
         SecurityUtils.requireRole(UserRole.ADMIN);
         return settings;
+    }
+
+    public PublicShopSettingsDto getPublicSettings() {
+        return PublicShopSettingsDto.builder()
+                .shopName(settings.getShopName())
+                .maintenanceMode(settings.isMaintenanceMode())
+                .supportEmail(settings.getSupportEmail())
+                .supportPhone(settings.getSupportPhone())
+                .build();
     }
 
     public ShopSettingsDto updateSettings(ShopSettingsDto request) {
