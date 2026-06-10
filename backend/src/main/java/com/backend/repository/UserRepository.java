@@ -16,6 +16,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByEmailIgnoreCase(String email);
 
+    Optional<User> findByGoogleId(String googleId);
+
     long countByRole(UserRole role);
 
     List<User> findByRoleIn(Collection<UserRole> roles);

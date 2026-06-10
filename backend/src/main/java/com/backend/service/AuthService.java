@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.backend.dto.auth.AuthGoogleRequestDto;
 import com.backend.dto.auth.AuthLoginRequestDto;
 import com.backend.dto.auth.ChangePasswordRequestDto;
 import com.backend.dto.auth.AuthLoginResponseDto;
@@ -36,6 +37,7 @@ public class AuthService {
     private static final String EMAIL_ALREADY_REGISTERED = "Email already registered";
     private static final String EMAIL_NOT_VERIFIED
             = "Email not verified. A new verification code has been sent to your inbox.";
+    private static final String INVALID_GOOGLE_ACCOUNT = "Google account cannot be linked to this email";
     private static final String ACCOUNT_DISABLED = "Account is disabled";
     private static final String INVALID_REFRESH_TOKEN = "Invalid refresh token";
     private static final String CURRENT_PASSWORD_INCORRECT = "Current password is incorrect";
@@ -47,6 +49,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final EmailVerificationService emailVerificationService;
     private final PermissionService permissionService;
+    private final GoogleTokenVerifierService googleTokenVerifierService;
 
     // --- Register & verification ---
     @Transactional
@@ -94,7 +97,8 @@ public class AuthService {
         User user = userRepository.findByEmailIgnoreCase(normalizeEmail(request.getEmail()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        if (user.getPasswordHash() == null
+                || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS);
         }
 
@@ -102,6 +106,21 @@ public class AuthService {
             emailVerificationService.resendVerificationForUser(user);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, EMAIL_NOT_VERIFIED);
         }
+
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ACCOUNT_DISABLED);
+        }
+
+        return buildAuthResponse(user);
+    }
+
+    @Transactional
+    public AuthLoginResponseDto loginWithGoogle(AuthGoogleRequestDto request) {
+        GoogleTokenVerifierService.VerifiedGoogleProfile profile =
+                googleTokenVerifierService.verify(request.getIdToken());
+
+        User user = userRepository.findByGoogleId(profile.googleId())
+                .orElseGet(() -> resolveGoogleUser(profile));
 
         if (!Boolean.TRUE.equals(user.getIsActive())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ACCOUNT_DISABLED);
@@ -123,7 +142,8 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+        if (user.getPasswordHash() == null
+                || !passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CURRENT_PASSWORD_INCORRECT);
         }
 
@@ -170,6 +190,49 @@ public class AuthService {
                 .portalType(adminPortal ? "ADMIN" : "CUSTOMER")
                 .permissions(adminPortal ? permissionService.getPermissionCodesForUser(user) : List.of())
                 .build();
+    }
+
+    private User resolveGoogleUser(GoogleTokenVerifierService.VerifiedGoogleProfile profile) {
+        String email = normalizeEmail(profile.email());
+        OffsetDateTime now = OffsetDateTime.now();
+
+        return userRepository.findByEmailIgnoreCase(email)
+                .map(existingUser -> linkGoogleAccount(existingUser, profile, now))
+                .orElseGet(() -> userRepository.save(User.builder()
+                        .email(email)
+                        .googleId(profile.googleId())
+                        .fullName(profile.fullName())
+                        .avatarUrl(profile.avatarUrl())
+                        .role(UserRole.CUSTOMER)
+                        .isActive(true)
+                        .emailVerifiedAt(profile.emailVerified() ? now : null)
+                        .createdAt(now)
+                        .updatedAt(now)
+                        .build()));
+    }
+
+    private User linkGoogleAccount(
+            User existingUser,
+            GoogleTokenVerifierService.VerifiedGoogleProfile profile,
+            OffsetDateTime now) {
+        if (existingUser.getGoogleId() != null
+                && !existingUser.getGoogleId().equals(profile.googleId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, INVALID_GOOGLE_ACCOUNT);
+        }
+
+        existingUser.setGoogleId(profile.googleId());
+        if (existingUser.getFullName() == null || existingUser.getFullName().isBlank()) {
+            existingUser.setFullName(profile.fullName());
+        }
+        if (existingUser.getAvatarUrl() == null && profile.avatarUrl() != null) {
+            existingUser.setAvatarUrl(profile.avatarUrl());
+        }
+        if (existingUser.getEmailVerifiedAt() == null && profile.emailVerified()) {
+            existingUser.setEmailVerifiedAt(now);
+            existingUser.setIsActive(true);
+        }
+        existingUser.setUpdatedAt(now);
+        return userRepository.save(existingUser);
     }
 
     private String normalizeEmail(String email) {

@@ -1,5 +1,6 @@
 package com.backend.repository;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,4 +15,6 @@ public interface EmailVerificationRepository extends JpaRepository<EmailVerifica
     Optional<EmailVerification> findFirstByUserIdOrderByCreatedAtDesc(UUID userId);
 
     void deleteByUserIdAndVerifiedAtIsNull(UUID userId);
+
+    long countByUserIdAndCreatedAtAfter(UUID userId, OffsetDateTime createdAt);
 }
