@@ -38,4 +38,7 @@ src/main/resources/application-local.properties
 .env.*
 **/.env
 **/.env.*
-uploads/
+
+# Local uploaded files at backend root (not Java package dto/uploads)
+/uploads/
+!src/main/java/com/backend/dto/uploads/
