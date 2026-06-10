@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import CustomerBottomNav from './CustomerBottomNav'
 import CustomerFooter from './CustomerFooter'
 import CustomerHeader from './CustomerHeader'
+import MaintenanceGate from './MaintenanceGate'
 
 export default function CustomerLayout() {
   return (
@@ -25,7 +26,9 @@ export default function CustomerLayout() {
 
       <CustomerHeader />
       <main className="relative z-0 min-w-0 flex-1">
-        <Outlet />
+        <MaintenanceGate>
+          <Outlet />
+        </MaintenanceGate>
       </main>
       <CustomerFooter />
       <CustomerBottomNav />
