@@ -1,9 +1,9 @@
+import { adminOrderDetailPath, PATHS, productDetailPath } from '@/router/paths'
 import { useQuery } from '@tanstack/react-query'
 import { Spin } from 'antd'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { adminOrderDetailPath, PATHS, productDetailPath } from '@/router/paths'
 import adminSearchService from '../../services/adminSearchService'
 
 export default function AdminGlobalSearch() {
@@ -22,10 +22,9 @@ export default function AdminGlobalSearch() {
     enabled: debouncedKeyword.length >= 2,
   })
 
-  const results = searchQuery.data
+  const results = searchQuery.data ?? { orders: [], products: [], customers: [] }
   const hasResults =
-    Boolean(results) &&
-    (results.orders.length > 0 || results.products.length > 0 || results.customers.length > 0)
+    results.orders.length > 0 || results.products.length > 0 || results.customers.length > 0
 
   return (
     <div className="relative hidden min-w-0 flex-1 sm:block">

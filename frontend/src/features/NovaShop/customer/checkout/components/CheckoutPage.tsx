@@ -10,7 +10,7 @@ import type { ApiPaymentMethod } from '@/types/order.types'
 import type { ValidateCouponResponse } from '@/types/coupon.types'
 import { Input, Spin, message } from 'antd'
 import { ArrowLeft, ArrowRight, MapPin, ShoppingBag } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../../cart/hooks/useCart'
@@ -45,7 +45,7 @@ export default function CheckoutPage() {
   const stripePaymentMutation = useCreateStripePayment()
   const validateCouponMutation = useValidateCoupon()
   const [paymentMethod, setPaymentMethod] = useState<ApiPaymentMethod>('COD')
-  const [selectedAddressId, setSelectedAddressId] = useState<string | undefined>()
+  const [manualAddressId, setManualAddressId] = useState<string | undefined>()
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<ValidateCouponResponse | null>(null)
   const [note, setNote] = useState('')
@@ -55,17 +55,14 @@ export default function CheckoutPage() {
   const items = cart?.items ?? []
   const totalAmount = toAmount(cart?.totalAmount ?? 0)
   const addresses = addressesQuery.data ?? []
+  const defaultAddressId =
+    addresses.find((address) => address.isDefault)?.id ?? addresses[0]?.id
+  const selectedAddressId =
+    manualAddressId && addresses.some((address) => address.id === manualAddressId)
+      ? manualAddressId
+      : defaultAddressId
   const discountAmount = appliedCoupon?.valid ? toAmount(appliedCoupon.discountAmount) : 0
   const finalAmount = Math.max(0, totalAmount - discountAmount)
-
-  useEffect(() => {
-    if (selectedAddressId || addresses.length === 0) {
-      return
-    }
-
-    const defaultAddress = addresses.find((address) => address.isDefault)
-    setSelectedAddressId(defaultAddress?.id ?? addresses[0]?.id)
-  }, [addresses, selectedAddressId])
 
   if (isPaymentRedirecting || vnpayPaymentMutation.isPending || stripePaymentMutation.isPending) {
     return (
@@ -244,7 +241,7 @@ export default function CheckoutPage() {
                         name="addressId"
                         value={address.id}
                         checked={isSelected}
-                        onChange={() => setSelectedAddressId(address.id)}
+                        onChange={() => setManualAddressId(address.id)}
                         className="mt-1 size-4 accent-fuchsia-600"
                       />
                       <span className="min-w-0">

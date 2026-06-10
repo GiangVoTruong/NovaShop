@@ -11,41 +11,55 @@ export type PaymentReturnState = {
   feedback: Exclude<PaymentReturnFeedback, null>
 } | null
 
+const PAYMENT_PROVIDERS: PaymentProvider[] = ['vnpay', 'stripe']
+
+function parsePaymentReturnFromParams(
+  searchParams: URLSearchParams,
+): PaymentReturnState {
+  for (const provider of PAYMENT_PROVIDERS) {
+    const feedback = parsePaymentReturnFeedback(provider, searchParams.get(provider))
+    if (feedback) {
+      return { provider, feedback }
+    }
+  }
+  return null
+}
+
 export function usePaymentReturnFeedback(onHandled?: () => void): PaymentReturnState {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [result, setResult] = useState<PaymentReturnState>(null)
-  const processedRef = useRef(false)
+  const [persistedFeedback, setPersistedFeedback] = useState<PaymentReturnState>(null)
+  const handledKeyRef = useRef<string | null>(null)
+
+  const parsedFeedback = parsePaymentReturnFromParams(searchParams)
 
   useEffect(() => {
-    if (processedRef.current) {
+    if (!parsedFeedback) {
       return
     }
 
-    const providers: PaymentProvider[] = ['vnpay', 'stripe']
-    for (const provider of providers) {
-      const feedback = parsePaymentReturnFeedback(provider, searchParams.get(provider))
-      if (!feedback) {
-        continue
-      }
-
-      processedRef.current = true
-      setResult({ provider, feedback })
-      setSearchParams(
-        (currentParams) => {
-          const nextParams = new URLSearchParams(currentParams)
-          nextParams.delete(provider)
-          nextParams.delete('vnp_ResponseCode')
-          nextParams.delete('orderId')
-          return nextParams
-        },
-        { replace: true },
-      )
-      onHandled?.()
-      break
+    const handleKey = `${parsedFeedback.provider}:${parsedFeedback.feedback}:${searchParams.toString()}`
+    if (handledKeyRef.current === handleKey) {
+      return
     }
-  }, [onHandled, searchParams, setSearchParams])
 
-  return result
+    handledKeyRef.current = handleKey
+    queueMicrotask(() => {
+      setPersistedFeedback(parsedFeedback)
+    })
+    setSearchParams(
+      (currentParams) => {
+        const nextParams = new URLSearchParams(currentParams)
+        nextParams.delete(parsedFeedback.provider)
+        nextParams.delete('vnp_ResponseCode')
+        nextParams.delete('orderId')
+        return nextParams
+      },
+      { replace: true },
+    )
+    onHandled?.()
+  }, [onHandled, parsedFeedback, searchParams, setSearchParams])
+
+  return persistedFeedback ?? parsedFeedback
 }
 
 /** @deprecated Use usePaymentReturnFeedback */

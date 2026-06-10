@@ -4,7 +4,7 @@ import { Input, message } from 'antd'
 import { ArrowLeft, Mail, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import useForgotPassword from '../hooks/useForgotPassword'
+import { useForgotPassword } from '../hooks/useForgotPassword'
 
 export default function ForgotPasswordPage() {
   const { t: translate } = useTranslation()

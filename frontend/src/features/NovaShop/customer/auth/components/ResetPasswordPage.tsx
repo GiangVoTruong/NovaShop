@@ -5,7 +5,7 @@ import { ArrowLeft, Lock, Mail, ShieldCheck, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import useResetPassword from '../hooks/useResetPassword'
+import { useResetPassword } from '../hooks/useResetPassword'
 
 type ResetPasswordLocationState = {
   email?: string
