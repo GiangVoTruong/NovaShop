@@ -5,6 +5,7 @@ import Button from '@/features/NovaShop/shared/ui/Button'
 import EmptyState from '@/features/NovaShop/shared/ui/EmptyState'
 import { cx } from '@/features/NovaShop/shared/ui/cx'
 import { orderDetailPath, PATHS, productDetailPath } from '@/router/paths'
+import { ordersPathWithPaymentFeedback } from '../../orders/lib/paymentReturn'
 import type { ApiPaymentMethod } from '@/types/order.types'
 import type { ValidateCouponResponse } from '@/types/coupon.types'
 import { Input, Spin, message } from 'antd'
@@ -14,6 +15,10 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../../cart/hooks/useCart'
 import { useValidateCoupon } from '../hooks/useCoupon'
+import { redirectToVnpay, useCreateVnpayPayment } from '../hooks/useVnpayPayment'
+import { redirectToStripe, useCreateStripePayment } from '../hooks/useStripePayment'
+import { getVnpayPaymentErrorMessage } from '../lib/vnpayPaymentError'
+import { getStripePaymentErrorMessage } from '../lib/stripePaymentError'
 import { ORDER_ITEM_PLACEHOLDER_IMAGE } from '../../orders/lib/orderApi'
 import { useCheckout } from '../../orders/hooks/useOrders'
 import { getOrderCode } from '../../orders/lib/orderApi'
@@ -36,12 +41,15 @@ export default function CheckoutPage() {
   const cartQuery = useCart()
   const addressesQuery = useAddresses()
   const checkoutMutation = useCheckout()
+  const vnpayPaymentMutation = useCreateVnpayPayment()
+  const stripePaymentMutation = useCreateStripePayment()
   const validateCouponMutation = useValidateCoupon()
   const [paymentMethod, setPaymentMethod] = useState<ApiPaymentMethod>('COD')
   const [selectedAddressId, setSelectedAddressId] = useState<string | undefined>()
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<ValidateCouponResponse | null>(null)
   const [note, setNote] = useState('')
+  const [isPaymentRedirecting, setIsPaymentRedirecting] = useState(false)
 
   const cart = cartQuery.data
   const items = cart?.items ?? []
@@ -58,6 +66,19 @@ export default function CheckoutPage() {
     const defaultAddress = addresses.find((address) => address.isDefault)
     setSelectedAddressId(defaultAddress?.id ?? addresses[0]?.id)
   }, [addresses, selectedAddressId])
+
+  if (isPaymentRedirecting || vnpayPaymentMutation.isPending || stripePaymentMutation.isPending) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 px-4">
+        <Spin size="large" />
+        <p className="text-sm font-medium text-slate-600">
+          {paymentMethod === 'STRIPE'
+            ? translate('checkout.stripe.redirecting')
+            : translate('checkout.vnpay.redirecting')}
+        </p>
+      </div>
+    )
+  }
 
   if (cartQuery.isLoading || addressesQuery.isLoading) {
     return (
@@ -125,6 +146,32 @@ export default function CheckoutPage() {
       },
       {
         onSuccess: (order) => {
+          if (paymentMethod === 'VNPAY') {
+            setIsPaymentRedirecting(true)
+            vnpayPaymentMutation.mutate(order.id, {
+              onSuccess: ({ paymentUrl }) => redirectToVnpay(paymentUrl),
+              onError: (error) => {
+                setIsPaymentRedirecting(false)
+                message.error(getVnpayPaymentErrorMessage(error, translate))
+                navigate(ordersPathWithPaymentFeedback('vnpay', 'failed', order.id), { replace: true })
+              },
+            })
+            return
+          }
+
+          if (paymentMethod === 'STRIPE') {
+            setIsPaymentRedirecting(true)
+            stripePaymentMutation.mutate(order.id, {
+              onSuccess: ({ checkoutUrl }) => redirectToStripe(checkoutUrl),
+              onError: (error) => {
+                setIsPaymentRedirecting(false)
+                message.error(getStripePaymentErrorMessage(error, translate))
+                navigate(ordersPathWithPaymentFeedback('stripe', 'failed', order.id), { replace: true })
+              },
+            })
+            return
+          }
+
           navigate(orderDetailPath(order.id), {
             replace: true,
             state: { orderCode: getOrderCode(order) },
@@ -134,6 +181,15 @@ export default function CheckoutPage() {
       },
     )
   }
+
+  const isSubmitting =
+    checkoutMutation.isPending || vnpayPaymentMutation.isPending || stripePaymentMutation.isPending
+  const placeOrderLabel =
+    paymentMethod === 'VNPAY'
+      ? translate('checkout.order.placeOrderVnpay')
+      : paymentMethod === 'STRIPE'
+        ? translate('checkout.order.placeOrderStripe')
+        : translate('checkout.order.placeOrder')
 
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 xl:px-14">
@@ -352,10 +408,10 @@ export default function CheckoutPage() {
             fullWidth
             glow
             className="mt-6"
-            loading={checkoutMutation.isPending}
+            loading={isSubmitting}
             onClick={handlePlaceOrder}
           >
-            {translate('checkout.order.placeOrder')}
+            {placeOrderLabel}
           </Button>
         </aside>
       </div>

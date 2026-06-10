@@ -99,6 +99,8 @@ export const checkout = {
     total: 'Total',
     free: 'Free',
     placeOrder: 'Place order',
+    placeOrderVnpay: 'Pay with VNPay',
+    placeOrderStripe: 'Pay with Stripe',
     termsPrefix: 'By placing an order you agree to NovaShop',
     terms: 'Terms',
     termsSuffix: '',
@@ -107,5 +109,17 @@ export const checkout = {
     success: '🎉 Order placed successfully!',
     failed: 'Could not place order. Please try again.',
     noAddress: 'Please select a shipping address',
+  },
+  vnpay: {
+    createFailed: 'Could not create VNPay payment link. You can retry from the order page.',
+    notConfigured:
+      'VNPay is not configured on the server. Contact an admin or choose COD instead.',
+    redirecting: 'Redirecting to VNPay…',
+  },
+  stripe: {
+    createFailed: 'Could not create Stripe checkout session. You can retry from the order page.',
+    notConfigured:
+      'Stripe is not configured on the server. Contact an admin or choose COD instead.',
+    redirecting: 'Redirecting to Stripe…',
   },
 } as const

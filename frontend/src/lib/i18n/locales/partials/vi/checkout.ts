@@ -99,6 +99,8 @@ export const checkout = {
     total: 'Tổng cộng',
     free: 'Miễn phí',
     placeOrder: 'Đặt hàng ngay',
+    placeOrderVnpay: 'Thanh toán VNPay',
+    placeOrderStripe: 'Thanh toán Stripe',
     termsPrefix: 'Khi đặt hàng bạn đồng ý với',
     terms: 'Điều khoản',
     termsSuffix: 'của NovaShop',
@@ -107,5 +109,17 @@ export const checkout = {
     success: '🎉 Đặt hàng thành công!',
     failed: 'Không thể đặt hàng. Vui lòng thử lại.',
     noAddress: 'Vui lòng chọn địa chỉ giao hàng',
+  },
+  vnpay: {
+    createFailed: 'Không thể tạo liên kết VNPay. Bạn có thể thanh toán lại tại trang đơn hàng.',
+    notConfigured:
+      'VNPay chưa được cấu hình trên server. Liên hệ quản trị viên hoặc chọn thanh toán COD.',
+    redirecting: 'Đang chuyển sang cổng thanh toán VNPay…',
+  },
+  stripe: {
+    createFailed: 'Không thể tạo phiên Stripe. Bạn có thể thanh toán lại tại trang đơn hàng.',
+    notConfigured:
+      'Stripe chưa được cấu hình trên server. Liên hệ quản trị viên hoặc chọn thanh toán COD.',
+    redirecting: 'Đang chuyển sang Stripe…',
   },
 } as const
