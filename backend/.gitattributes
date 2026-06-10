@@ -1,2 +1,34 @@
-/mvnw text eol=lf
+# Line endings — toàn bộ backend dùng LF, trừ script Windows
+* text=auto eol=lf
+
+# Windows scripts giữ CRLF
 *.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Shell / build
+/mvnw text eol=lf
+*.sh text eol=lf
+
+# Source & config
+*.java text eol=lf
+*.xml text eol=lf
+*.properties text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.sql text eol=lf
+*.md text eol=lf
+*.mdc text eol=lf
+*.editorconfig text eol=lf
+*.gitattributes text eol=lf
+*.gitignore text eol=lf
+Dockerfile text eol=lf
+*.dockerignore text eol=lf
+.env text eol=lf
+
+# Binary — không convert
+*.jar binary
+*.class binary
+*.db binary
+*.db-shm binary
+*.db-wal binary
