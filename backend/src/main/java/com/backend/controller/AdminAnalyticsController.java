@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.dto.analytics.AdminAnalyticsSummaryResponseDto;
 import com.backend.dto.analytics.GetAnalyticsOverviewResponseDto;
 import com.backend.dto.common.ApiResponse;
 import com.backend.dto.common.ApiResponses;
@@ -34,5 +35,11 @@ public class AdminAnalyticsController {
         return ApiResponses.ok(
                 analyticsService.getOverview(fromDate, toDate),
                 "Lấy analytics overview thành công");
+    }
+
+    @GetMapping("/summary")
+    @Operation(summary = "Analytics summary", description = "Số liệu nhanh sidebar admin — role ADMIN.")
+    public ResponseEntity<ApiResponse<AdminAnalyticsSummaryResponseDto>> getSummary() {
+        return ApiResponses.ok(analyticsService.getSummary(), "Lấy analytics summary thành công");
     }
 }

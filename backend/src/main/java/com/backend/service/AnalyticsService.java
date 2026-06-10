@@ -11,8 +11,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.backend.dto.analytics.AdminAnalyticsSummaryResponseDto;
 import com.backend.dto.analytics.GetAnalyticsOverviewResponseDto;
 import com.backend.enums.OrderStatus;
+import com.backend.enums.ProductStatus;
 import com.backend.enums.UserRole;
 import com.backend.repository.OrderItemRepository;
 import com.backend.repository.OrderRepository;
@@ -30,6 +32,28 @@ public class AnalyticsService {
     private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+
+    @Transactional(readOnly = true)
+    public AdminAnalyticsSummaryResponseDto getSummary() {
+        SecurityUtils.requireRole(UserRole.ADMIN);
+
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        OffsetDateTime from = today.atStartOfDay().atOffset(ZoneOffset.UTC);
+        OffsetDateTime to = today.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
+
+        long pendingOrders = orderRepository.countByStatus(OrderStatus.PENDING);
+        long lowStockProducts = productRepository.findAll().stream()
+                .filter(product -> product.getStatus() != ProductStatus.DELETED)
+                .filter(product -> product.getStock() > 0 && product.getStock() <= 20)
+                .count();
+
+        return AdminAnalyticsSummaryResponseDto.builder()
+                .pendingOrders(pendingOrders)
+                .lowStockProducts(lowStockProducts)
+                .todayRevenue(orderRepository.sumFinalAmountBetween(from, to))
+                .todayOrders(orderRepository.countByCreatedAtBetween(from, to))
+                .build();
+    }
 
     @Transactional(readOnly = true)
     public GetAnalyticsOverviewResponseDto getOverview(LocalDate fromDate, LocalDate toDate) {
