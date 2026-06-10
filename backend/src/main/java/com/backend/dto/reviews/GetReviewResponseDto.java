@@ -3,6 +3,7 @@ package com.backend.dto.reviews;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import com.backend.enums.ReviewStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,5 +23,6 @@ public class GetReviewResponseDto {
     private UUID productId;
     private short rating;
     private String comment;
+    private ReviewStatus status;
     private OffsetDateTime createdAt;
 }

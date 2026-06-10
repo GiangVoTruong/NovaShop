@@ -14,6 +14,8 @@ import com.backend.dto.reviews.CreateReviewRequestDto;
 import com.backend.dto.reviews.GetReviewResponseDto;
 import com.backend.entity.Review;
 import com.backend.entity.User;
+import com.backend.enums.ReviewStatus;
+import com.backend.enums.UserRole;
 import com.backend.repository.OrderRepository;
 import com.backend.repository.ProductRepository;
 import com.backend.repository.ReviewRepository;
@@ -39,8 +41,9 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public Page<GetReviewResponseDto> getProductReviews(UUID productId, Pageable pageable) {
         assertProductExists(productId);
-        return reviewRepository.findByProductIdOrderByCreatedAtDesc(productId, pageable)
-                .map(review -> toDto(review));
+        return reviewRepository
+                .findByProductIdAndStatusOrderByCreatedAtDesc(productId, ReviewStatus.VISIBLE, pageable)
+                .map(this::toDto);
     }
 
     @Transactional
@@ -61,6 +64,7 @@ public class ReviewService {
                 .user(user)
                 .product(productRepository.getReferenceById(productId))
                 .rating(request.getRating())
+                .status(ReviewStatus.VISIBLE)
                 .createdAt(OffsetDateTime.now())
                 .build();
         return toDto(reviewRepository.save(review));
@@ -70,6 +74,32 @@ public class ReviewService {
     public void deleteReview(UUID reviewId) {
         UUID userId = SecurityUtils.getCurrentUserId();
         Review review = reviewRepository.findByIdAndUserId(reviewId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, REVIEW_NOT_FOUND));
+        reviewRepository.delete(review);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<GetReviewResponseDto> getAllReviewsAdmin(UUID productId, Pageable pageable) {
+        SecurityUtils.requireRole(UserRole.ADMIN);
+        Page<Review> reviews = productId != null
+                ? reviewRepository.findByProductIdOrderByCreatedAtDesc(productId, pageable)
+                : reviewRepository.findAllByOrderByCreatedAtDesc(pageable);
+        return reviews.map(this::toDto);
+    }
+
+    @Transactional
+    public GetReviewResponseDto hideReviewAdmin(UUID reviewId) {
+        SecurityUtils.requireRole(UserRole.ADMIN);
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, REVIEW_NOT_FOUND));
+        review.setStatus(ReviewStatus.HIDDEN);
+        return toDto(reviewRepository.save(review));
+    }
+
+    @Transactional
+    public void deleteReviewAdmin(UUID reviewId) {
+        SecurityUtils.requireRole(UserRole.ADMIN);
+        Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, REVIEW_NOT_FOUND));
         reviewRepository.delete(review);
     }
@@ -88,6 +118,7 @@ public class ReviewService {
                 .productId(review.getProduct().getId())
                 .rating(review.getRating())
                 .comment(null)
+                .status(review.getStatus())
                 .createdAt(review.getCreatedAt())
                 .build();
     }

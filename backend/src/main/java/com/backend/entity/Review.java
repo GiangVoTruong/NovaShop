@@ -3,6 +3,10 @@ package com.backend.entity;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import com.backend.enums.ReviewStatus;
 import com.github.f4b6a3.uuid.UuidCreator;
 
 import jakarta.persistence.Column;
@@ -41,6 +45,11 @@ public class Review {
     private Product product;
 
     private Short rating;
+
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "status", columnDefinition = "review_status")
+    @Builder.Default
+    private ReviewStatus status = ReviewStatus.VISIBLE;
 
     @Column(name = "created_at")
     @Builder.Default

@@ -8,10 +8,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.backend.entity.Review;
+import com.backend.enums.ReviewStatus;
 
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
+    Page<Review> findByProductIdAndStatusOrderByCreatedAtDesc(
+            UUID productId, ReviewStatus status, Pageable pageable);
+
     Page<Review> findByProductIdOrderByCreatedAtDesc(UUID productId, Pageable pageable);
+
+    Page<Review> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     Optional<Review> findByIdAndUserId(UUID id, UUID userId);
 
