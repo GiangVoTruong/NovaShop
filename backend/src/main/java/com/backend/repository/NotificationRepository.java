@@ -40,4 +40,9 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
             WHERE notification.user.id = :userId AND notification.isRead = false
             """)
     void markAllAsReadByUserId(@Param("userId") UUID userId);
+
+    boolean existsByUser_IdAndTitleAndMessage(UUID userId, String title, String message);
+
+    Optional<Notification> findTopByUser_IdAndTitleAndMessageOrderByCreatedAtDesc(
+            UUID userId, String title, String message);
 }

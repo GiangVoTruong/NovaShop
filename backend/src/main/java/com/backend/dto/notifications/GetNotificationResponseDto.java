@@ -1,6 +1,7 @@
 package com.backend.dto.notifications;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 import com.backend.enums.NotificationType;
@@ -22,6 +23,7 @@ public class GetNotificationResponseDto {
     private NotificationType type;
     private String title;
     private String message;
+    private Map<String, Object> metadata;
     private Boolean isRead;
     private OffsetDateTime createdAt;
 }

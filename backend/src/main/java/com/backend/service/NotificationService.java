@@ -21,7 +21,6 @@ import com.backend.entity.ShopOrder;
 import com.backend.entity.User;
 import com.backend.enums.NotificationType;
 import com.backend.enums.UserRole;
-import com.backend.mapper.NotificationMapper;
 import com.backend.repository.NotificationRepository;
 import com.backend.repository.UserRepository;
 import com.backend.security.SecurityUtils;
@@ -39,7 +38,7 @@ public class NotificationService {
     private static final List<UserRole> STAFF_ROLES = List.of(UserRole.ADMIN, UserRole.SELLER);
 
     private final NotificationRepository notificationRepository;
-    private final NotificationMapper notificationMapper;
+    private final NotificationResponseBuilder notificationResponseBuilder;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final JsonMapper jsonMapper;
@@ -52,7 +51,7 @@ public class NotificationService {
                 .title(title)
                 .message(message)
                 .build());
-        GetNotificationResponseDto response = notificationMapper.toDto(saved);
+        GetNotificationResponseDto response = notificationResponseBuilder.toResponse(saved);
         String userId = user.getId().toString();
 
         // Push sau khi commit — tránh FE refetch mà DB chưa có bản ghi mới
@@ -76,7 +75,14 @@ public class NotificationService {
             String eventKey,
             Map<String, Object> params) {
         try {
-            return create(user, type, eventKey, jsonMapper.writeValueAsString(params));
+            String messageJson = jsonMapper.writeValueAsString(params);
+            if (notificationRepository.existsByUser_IdAndTitleAndMessage(user.getId(), eventKey, messageJson)) {
+                return notificationRepository
+                        .findTopByUser_IdAndTitleAndMessageOrderByCreatedAtDesc(user.getId(), eventKey, messageJson)
+                        .map(notificationResponseBuilder::toResponse)
+                        .orElseGet(() -> create(user, type, eventKey, messageJson));
+            }
+            return create(user, type, eventKey, messageJson);
         } catch (JacksonException exception) {
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
@@ -103,7 +109,7 @@ public class NotificationService {
     public Page<GetNotificationResponseDto> getNotificationsByUserId(UUID userId, Pageable pageable) {
         assertCurrentUser(userId);
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
-                .map(notification -> notificationMapper.toDto(notification));
+                .map(notificationResponseBuilder::toResponse);
     }
 
     @Transactional(readOnly = true)
@@ -118,7 +124,7 @@ public class NotificationService {
         Notification notification = notificationRepository.findByIdAndUserId(notificationId, userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification not found"));
         notification.setIsRead(true);
-        return notificationMapper.toDto(notificationRepository.save(notification));
+        return notificationResponseBuilder.toResponse(notificationRepository.save(notification));
     }
 
     @Transactional
