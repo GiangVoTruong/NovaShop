@@ -3,6 +3,7 @@ package com.backend.service;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -10,11 +11,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.backend.constants.NotificationI18nKeys;
 import com.backend.dto.sellers.CreateSellerApplicationRequestDto;
 import com.backend.dto.sellers.GetSellerApplicationResponseDto;
 import com.backend.dto.sellers.ReviewSellerApplicationRequestDto;
 import com.backend.entity.SellerApplication;
 import com.backend.entity.User;
+import com.backend.enums.NotificationType;
 import com.backend.enums.SellerApplicationStatus;
 import com.backend.enums.UserRole;
 import com.backend.repository.SellerApplicationRepository;
@@ -36,6 +39,7 @@ public class SellerApplicationService {
 
     private final SellerApplicationRepository sellerApplicationRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public GetSellerApplicationResponseDto apply(CreateSellerApplicationRequestDto request) {
@@ -106,7 +110,22 @@ public class SellerApplicationService {
             userRepository.save(applicant);
         }
 
-        return toDto(sellerApplicationRepository.save(application));
+        SellerApplication saved = sellerApplicationRepository.save(application);
+        notifyApplicationReviewed(saved);
+        return toDto(saved);
+    }
+
+    private void notifyApplicationReviewed(SellerApplication application) {
+        Map<String, Object> params = new java.util.LinkedHashMap<>();
+        params.put("status", application.getStatus().name());
+        if (application.getAdminNote() != null && !application.getAdminNote().isBlank()) {
+            params.put("adminNote", application.getAdminNote());
+        }
+        notificationService.createI18n(
+                application.getUser(),
+                NotificationType.SYSTEM,
+                NotificationI18nKeys.SELLER_APPLICATION_REVIEWED,
+                params);
     }
 
     private User findCurrentUser() {

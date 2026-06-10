@@ -164,6 +164,12 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    @Transactional(readOnly = true)
+    public GetProductResponseDto getManagedProductById(UUID productId) {
+        SecurityUtils.requireRole(UserRole.SELLER, UserRole.ADMIN);
+        return toDetailedDto(findManagedProduct(productId));
+    }
+
     private Specification<Product> buildSpecification(
             String keyword,
             String categorySlug,
