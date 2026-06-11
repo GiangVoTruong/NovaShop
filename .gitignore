@@ -49,7 +49,6 @@ frontend/skills-lock.json
 **/.env
 **/.env.*
 !frontend/.env.production
-backend/src/main/resources/application-local.properties
 
 # Database scripts (chạy local / Supabase — không đưa lên GitHub)
 db/

@@ -31,7 +31,6 @@ import com.backend.entity.Cart;
 import com.backend.entity.CartItem;
 import com.backend.entity.OrderItem;
 import com.backend.entity.Product;
-import com.backend.entity.ProductImage;
 import com.backend.entity.ShopOrder;
 import com.backend.entity.User;
 import com.backend.enums.NotificationType;
@@ -502,10 +501,10 @@ public class OrderService {
             return null;
         }
         return productImageRepository.findByProductIdAndIsPrimaryTrue(productId)
-                .map(ProductImage::getUrl)
+                .map(productImage -> productImage.getUrl())
                 .orElseGet(() -> productImageRepository.findByProductId(productId).stream()
                 .findFirst()
-                .map(ProductImage::getUrl)
+                .map(productImage -> productImage.getUrl())
                 .orElse(null));
     }
 

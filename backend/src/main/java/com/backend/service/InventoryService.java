@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.backend.dto.inventory.AdminInventoryItemResponseDto;
 import com.backend.dto.inventory.AdminInventorySummaryResponseDto;
 import com.backend.entity.Product;
-import com.backend.entity.ProductImage;
 import com.backend.enums.ProductStatus;
 import com.backend.enums.UserRole;
 import com.backend.repository.ProductImageRepository;
@@ -72,7 +71,7 @@ public class InventoryService {
                 .filter(product -> product.getStock() <= 0)
                 .count();
         long totalUnitsInStock = products.stream()
-                .mapToLong(Product::getStock)
+                .mapToLong(product -> product.getStock())
                 .sum();
 
         return AdminInventorySummaryResponseDto.builder()
@@ -99,10 +98,10 @@ public class InventoryService {
 
     private String resolvePrimaryImageUrl(UUID productId) {
         return productImageRepository.findByProductIdAndIsPrimaryTrue(productId)
-                .map(ProductImage::getUrl)
+                .map(productImage -> productImage.getUrl())
                 .orElseGet(() -> productImageRepository.findByProductId(productId).stream()
                         .findFirst()
-                        .map(ProductImage::getUrl)
+                        .map(productImage -> productImage.getUrl())
                         .orElse(null));
     }
 
