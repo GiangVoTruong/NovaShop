@@ -1,27 +1,47 @@
 import { useAddresses } from '@/features/NovaShop/customer/profile/hooks/useAddresses'
-import { formatAddressLine, getAddressLabel } from '@/features/NovaShop/customer/profile/lib/addressApi'
+import {
+  formatAddressLine,
+  getAddressLabel,
+} from '@/features/NovaShop/customer/profile/lib/addressApi'
 import { formatCurrency } from '@/features/NovaShop/shared/format'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import EmptyState from '@/features/NovaShop/shared/ui/EmptyState'
 import { cx } from '@/features/NovaShop/shared/ui/cx'
-import { orderDetailPath, PATHS, productDetailPath } from '@/router/paths'
-import { ordersPathWithPaymentFeedback } from '../../orders/lib/paymentReturn'
+import { PATHS, orderDetailPath, productDetailPath } from '@/router/paths'
 import type { ApiPaymentMethod } from '@/types/order.types'
-import type { ValidateCouponResponse } from '@/types/coupon.types'
 import { Input, Spin, message } from 'antd'
 import { ArrowLeft, ArrowRight, MapPin, ShoppingBag } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { useCart } from '../../cart/hooks/useCart'
-import { useValidateCoupon } from '../hooks/useCoupon'
-import { redirectToVnpay, useCreateVnpayPayment } from '../hooks/useVnpayPayment'
-import { redirectToStripe, useCreateStripePayment } from '../hooks/useStripePayment'
-import { getVnpayPaymentErrorMessage } from '../lib/vnpayPaymentError'
-import { getStripePaymentErrorMessage } from '../lib/stripePaymentError'
-import { ORDER_ITEM_PLACEHOLDER_IMAGE } from '../../orders/lib/orderApi'
+import { useQueryClient } from '@tanstack/react-query'
+import { CART_QUERY_KEY, useCart } from '../../cart/hooks/useCart'
+import {
+  clearBuyNowSession,
+  finalizeBuyNowAfterCheckout,
+  readBuyNowSession,
+  rollbackBuyNowCartSync,
+  syncBuyNowCartForCheckout,
+} from '../../cart/lib/buyNowCart'
+import {
+  clearPartialCheckoutSession,
+  finalizePartialCheckoutAfterCheckout,
+  readPartialCheckoutSession,
+  rollbackPartialCheckoutSync,
+  syncPartialCheckoutForCheckout,
+} from '../../cart/lib/partialCheckoutSession'
+import { useProductById } from '../../catalog/hooks/useProducts'
+import { getProductImages, getProductSalePrice } from '../../catalog/lib/productApi'
 import { useCheckout } from '../../orders/hooks/useOrders'
-import { getOrderCode } from '../../orders/lib/orderApi'
+import { ORDER_ITEM_PLACEHOLDER_IMAGE, getOrderCode } from '../../orders/lib/orderApi'
+import { ordersPathWithPaymentFeedback } from '../../orders/lib/paymentReturn'
+import CouponInputSection from './CouponInputSection'
+import { useCheckoutCoupon } from '../hooks/useCheckoutCoupon'
+import { redirectToStripe, useCreateStripePayment } from '../hooks/useStripePayment'
+import { redirectToVnpay, useCreateVnpayPayment } from '../hooks/useVnpayPayment'
+import { clearStoredCouponCode } from '../lib/checkoutCouponStorage'
+import { getStripePaymentErrorMessage } from '../lib/stripePaymentError'
+import { getVnpayPaymentErrorMessage } from '../lib/vnpayPaymentError'
 
 const PAYMENT_OPTIONS: ApiPaymentMethod[] = ['COD', 'VNPAY', 'STRIPE']
 
@@ -35,34 +55,101 @@ function toAmount(value: number | string): number {
   return typeof value === 'number' ? value : Number(value)
 }
 
+type CheckoutLineItem = {
+  key: string
+  productId: string
+  productName: string
+  imageUrl: string | null
+  quantity: number
+  subtotal: number
+}
+
 export default function CheckoutPage() {
   const { t: translate } = useTranslation()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const checkoutSyncedRef = useRef(false)
   const cartQuery = useCart()
   const addressesQuery = useAddresses()
   const checkoutMutation = useCheckout()
   const vnpayPaymentMutation = useCreateVnpayPayment()
   const stripePaymentMutation = useCreateStripePayment()
-  const validateCouponMutation = useValidateCoupon()
   const [paymentMethod, setPaymentMethod] = useState<ApiPaymentMethod>('COD')
   const [manualAddressId, setManualAddressId] = useState<string | undefined>()
-  const [couponCode, setCouponCode] = useState('')
-  const [appliedCoupon, setAppliedCoupon] = useState<ValidateCouponResponse | null>(null)
   const [note, setNote] = useState('')
   const [isPaymentRedirecting, setIsPaymentRedirecting] = useState(false)
 
+  const buyNowSession = readBuyNowSession()
+  const isBuyNowCheckout = buyNowSession !== null
+  const partialSession = readPartialCheckoutSession()
+  const isPartialCheckout = partialSession !== null
+  const buyNowProductQuery = useProductById(isBuyNowCheckout ? buyNowSession.productId : undefined)
+
   const cart = cartQuery.data
-  const items = cart?.items ?? []
-  const totalAmount = toAmount(cart?.totalAmount ?? 0)
+  const cartItems = cart?.items ?? []
+
+  const checkoutItems = useMemo((): CheckoutLineItem[] => {
+    if (isBuyNowCheckout && buyNowProductQuery.data && buyNowSession) {
+      const product = buyNowProductQuery.data
+      const unitPrice = getProductSalePrice(product)
+
+      return [
+        {
+          key: `buy-now-${product.id}`,
+          productId: product.id,
+          productName: product.name,
+          imageUrl: getProductImages(product)[0] ?? null,
+          quantity: buyNowSession.quantity,
+          subtotal: unitPrice * buyNowSession.quantity,
+        },
+      ]
+    }
+
+    if (isPartialCheckout && partialSession) {
+      return partialSession.selectedItems.map((item) => ({
+        key: item.cartItemId,
+        productId: item.productId,
+        productName: item.productName,
+        imageUrl: item.imageUrl,
+        quantity: item.quantity,
+        subtotal: item.subtotal,
+      }))
+    }
+
+    return cartItems.map((item) => ({
+      key: item.id,
+      productId: item.productId,
+      productName: item.productName,
+      imageUrl: item.imageUrl,
+      quantity: item.quantity,
+      subtotal: toAmount(item.subtotal),
+    }))
+  }, [isBuyNowCheckout, buyNowProductQuery.data, buyNowSession, isPartialCheckout, partialSession, cartItems])
+
+  const totalAmount = checkoutItems.reduce((sum, item) => sum + item.subtotal, 0)
+  const {
+    couponCode,
+    setCouponCode,
+    appliedCoupon,
+    discountAmount,
+    finalAmount,
+    handleApplyCoupon,
+    isValidatingCoupon,
+  } = useCheckoutCoupon(totalAmount)
+
   const addresses = addressesQuery.data ?? []
-  const defaultAddressId =
-    addresses.find((address) => address.isDefault)?.id ?? addresses[0]?.id
+  const defaultAddressId = addresses.find((address) => address.isDefault)?.id ?? addresses[0]?.id
   const selectedAddressId =
     manualAddressId && addresses.some((address) => address.id === manualAddressId)
       ? manualAddressId
       : defaultAddressId
-  const discountAmount = appliedCoupon?.valid ? toAmount(appliedCoupon.discountAmount) : 0
-  const finalAmount = Math.max(0, totalAmount - discountAmount)
+  const isLoadingCheckout =
+    addressesQuery.isLoading ||
+    (isBuyNowCheckout
+      ? buyNowProductQuery.isLoading
+      : isPartialCheckout
+        ? false
+        : cartQuery.isLoading)
 
   if (isPaymentRedirecting || vnpayPaymentMutation.isPending || stripePaymentMutation.isPending) {
     return (
@@ -77,7 +164,7 @@ export default function CheckoutPage() {
     )
   }
 
-  if (cartQuery.isLoading || addressesQuery.isLoading) {
+  if (isLoadingCheckout) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Spin size="large" />
@@ -85,7 +172,7 @@ export default function CheckoutPage() {
     )
   }
 
-  if (items.length === 0) {
+  if (checkoutItems.length === 0) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16">
         <EmptyState
@@ -104,34 +191,42 @@ export default function CheckoutPage() {
     )
   }
 
-  const handleApplyCoupon = () => {
-    const trimmedCode = couponCode.trim()
-    if (!trimmedCode) {
-      return
+  const handleLeaveCheckout = () => {
+    if (isBuyNowCheckout) {
+      clearBuyNowSession()
     }
-
-    validateCouponMutation.mutate(
-      { code: trimmedCode, cartTotal: totalAmount },
-      {
-        onSuccess: (response) => {
-          if (!response.valid) {
-            setAppliedCoupon(null)
-            message.warning(response.message || translate('checkout.coupon.invalid'))
-            return
-          }
-
-          setAppliedCoupon(response)
-          message.success(translate('checkout.coupon.applied'))
-        },
-        onError: () => message.error(translate('checkout.coupon.failed')),
-      },
-    )
+    if (isPartialCheckout) {
+      clearPartialCheckoutSession()
+    }
   }
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!selectedAddressId) {
       message.warning(translate('checkout.messages.noAddress'))
       return
+    }
+
+    checkoutSyncedRef.current = false
+    const needsCartSync = isBuyNowCheckout || isPartialCheckout
+
+    if (isBuyNowCheckout) {
+      try {
+        await syncBuyNowCartForCheckout()
+        checkoutSyncedRef.current = true
+      } catch (error) {
+        console.error('[CheckoutPage] sync buy now cart failed:', error)
+        message.error(translate('checkout.messages.failed'))
+        return
+      }
+    } else if (isPartialCheckout) {
+      try {
+        await syncPartialCheckoutForCheckout()
+        checkoutSyncedRef.current = true
+      } catch (error) {
+        console.error('[CheckoutPage] sync partial checkout failed:', error)
+        message.error(translate('checkout.messages.failed'))
+        return
+      }
     }
 
     checkoutMutation.mutate(
@@ -142,7 +237,23 @@ export default function CheckoutPage() {
         note: note.trim() || undefined,
       },
       {
-        onSuccess: (order) => {
+        onSuccess: async (order) => {
+          clearStoredCouponCode()
+
+          if (isBuyNowCheckout) {
+            try {
+              await finalizeBuyNowAfterCheckout(queryClient, CART_QUERY_KEY)
+            } catch (error) {
+              console.error('[CheckoutPage] finalize buy now failed:', error)
+            }
+          } else if (isPartialCheckout) {
+            try {
+              await finalizePartialCheckoutAfterCheckout(queryClient, CART_QUERY_KEY)
+            } catch (error) {
+              console.error('[CheckoutPage] finalize partial checkout failed:', error)
+            }
+          }
+
           if (paymentMethod === 'VNPAY') {
             setIsPaymentRedirecting(true)
             vnpayPaymentMutation.mutate(order.id, {
@@ -150,7 +261,9 @@ export default function CheckoutPage() {
               onError: (error) => {
                 setIsPaymentRedirecting(false)
                 message.error(getVnpayPaymentErrorMessage(error, translate))
-                navigate(ordersPathWithPaymentFeedback('vnpay', 'failed', order.id), { replace: true })
+                navigate(ordersPathWithPaymentFeedback('vnpay', 'failed', order.id), {
+                  replace: true,
+                })
               },
             })
             return
@@ -163,7 +276,9 @@ export default function CheckoutPage() {
               onError: (error) => {
                 setIsPaymentRedirecting(false)
                 message.error(getStripePaymentErrorMessage(error, translate))
-                navigate(ordersPathWithPaymentFeedback('stripe', 'failed', order.id), { replace: true })
+                navigate(ordersPathWithPaymentFeedback('stripe', 'failed', order.id), {
+                  replace: true,
+                })
               },
             })
             return
@@ -174,7 +289,18 @@ export default function CheckoutPage() {
             state: { orderCode: getOrderCode(order) },
           })
         },
-        onError: () => message.error(translate('checkout.messages.failed')),
+        onError: () => {
+          if (needsCartSync && checkoutSyncedRef.current) {
+            const rollback = isBuyNowCheckout
+              ? rollbackBuyNowCartSync(queryClient, CART_QUERY_KEY)
+              : rollbackPartialCheckoutSync(queryClient, CART_QUERY_KEY)
+            void rollback.catch((error) => {
+              console.error('[CheckoutPage] rollback checkout cart failed:', error)
+            })
+          }
+          checkoutSyncedRef.current = false
+          message.error(translate('checkout.messages.failed'))
+        },
       },
     )
   }
@@ -185,17 +311,26 @@ export default function CheckoutPage() {
     paymentMethod === 'VNPAY'
       ? translate('checkout.order.placeOrderVnpay')
       : paymentMethod === 'STRIPE'
-        ? translate('checkout.order.placeOrderStripe')
-        : translate('checkout.order.placeOrder')
+      ? translate('checkout.order.placeOrderStripe')
+      : translate('checkout.order.placeOrder')
+
+  const backPath =
+    isBuyNowCheckout && buyNowSession
+      ? productDetailPath(buyNowSession.productId)
+      : PATHS.CART
+  const backLabel = isBuyNowCheckout
+    ? translate('checkout.backToProduct')
+    : translate('checkout.backToCart')
 
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 xl:px-14">
       <Link
-        to={PATHS.CART}
+        to={backPath}
+        onClick={handleLeaveCheckout}
         className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-fuchsia-600 hover:underline"
       >
         <ArrowLeft className="size-4" />
-        {translate('checkout.backToCart')}
+        {backLabel}
       </Link>
 
       <header className="mb-8">
@@ -330,8 +465,8 @@ export default function CheckoutPage() {
             {translate('checkout.order.title')}
           </h2>
           <ul className="mt-4 space-y-3">
-            {items.map((item) => (
-              <li key={item.id} className="flex items-center gap-3">
+            {checkoutItems.map((item) => (
+              <li key={item.key} className="flex items-center gap-3">
                 <Link
                   to={productDetailPath(item.productId)}
                   className="size-14 shrink-0 overflow-hidden rounded-xl bg-slate-100"
@@ -355,29 +490,19 @@ export default function CheckoutPage() {
             ))}
           </ul>
 
-          <div className="mt-5 space-y-2">
-            <p className="text-sm font-bold text-slate-900">{translate('checkout.coupon.title')}</p>
-            <div className="flex gap-2">
-              <Input
-                value={couponCode}
-                onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
-                placeholder={translate('checkout.coupon.placeholder')}
-              />
-              <Button
-                variant="ghost"
-                loading={validateCouponMutation.isPending}
-                onClick={handleApplyCoupon}
-              >
-                {translate('checkout.coupon.apply')}
-              </Button>
-            </div>
-            {appliedCoupon?.valid && (
-              <p className="text-xs font-medium text-emerald-600">
-                {translate('checkout.coupon.discount', {
-                  amount: formatCurrency(discountAmount),
-                })}
-              </p>
-            )}
+          <div className="mt-5">
+            <CouponInputSection
+            couponCode={couponCode}
+            onCouponCodeChange={setCouponCode}
+            appliedCoupon={appliedCoupon}
+            discountAmount={discountAmount}
+            onApply={handleApplyCoupon}
+            isApplying={isValidatingCoupon}
+            titleKey="checkout.coupon.title"
+            placeholderKey="checkout.coupon.placeholder"
+            applyKey="checkout.coupon.apply"
+            discountKey="checkout.coupon.discount"
+            />
           </div>
 
           <dl className="mt-5 space-y-2 border-t border-slate-200 pt-4 text-sm">
@@ -397,17 +522,13 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between gap-4 border-t border-slate-200 pt-3">
               <dt className="font-bold text-slate-900">{translate('checkout.order.total')}</dt>
-              <dd className="text-xl font-extrabold text-gradient">{formatCurrency(finalAmount)}</dd>
+              <dd className="text-xl font-extrabold text-gradient">
+                {formatCurrency(finalAmount)}
+              </dd>
             </div>
           </dl>
 
-          <Button
-            fullWidth
-            glow
-            className="mt-6"
-            loading={isSubmitting}
-            onClick={handlePlaceOrder}
-          >
+          <Button fullWidth glow className="mt-6" loading={isSubmitting} onClick={handlePlaceOrder}>
             {placeOrderLabel}
           </Button>
         </aside>
