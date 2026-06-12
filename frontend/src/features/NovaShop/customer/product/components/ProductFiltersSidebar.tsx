@@ -3,7 +3,7 @@ import StarRating from '@/features/NovaShop/shared/ui/StarRating'
 import { cx } from '@/features/NovaShop/shared/ui/cx'
 import { PATHS } from '@/router/paths'
 import type { ApiCategoryResponse } from '@/types/product.types'
-import { InputNumber, Slider, Switch } from 'antd'
+import { InputNumber, Slider } from 'antd'
 import { Flame, Layers, LayoutGrid, RotateCcw, SlidersHorizontal, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
@@ -227,16 +227,6 @@ export default function ProductFiltersSidebar({
     })
   }
 
-  const handleStockChange = (checked: boolean) => {
-    patchParams((params) => {
-      if (checked) {
-        params.set('stock', '1')
-      } else {
-        params.delete('stock')
-      }
-    })
-  }
-
   return (
     <aside className={cx('hidden w-[304px] shrink-0 lg:block', className)}>
       <div className="sticky top-24 rounded-3xl border border-slate-200/90 bg-white shadow-[0_16px_48px_-20px_rgba(15,23,42,0.14)]">
@@ -398,17 +388,6 @@ export default function ProductFiltersSidebar({
                 )
               })}
             </div>
-          </FilterSection>
-
-          <div className="border-t border-slate-100" />
-
-          <FilterSection title={translate('product.filters.stock')}>
-            <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-50/90 px-3 py-3">
-              <span className="text-sm font-semibold text-slate-700">
-                {translate('product.filters.inStockOnly')}
-              </span>
-              <Switch checked={filters.inStockOnly} onChange={handleStockChange} size="small" />
-            </label>
           </FilterSection>
         </div>
       </div>
