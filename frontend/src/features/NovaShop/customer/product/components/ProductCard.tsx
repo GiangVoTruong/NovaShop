@@ -1,11 +1,18 @@
+import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 import { formatCurrency } from '@/features/NovaShop/shared/format'
+import Button from '@/features/NovaShop/shared/ui/Button'
 import StarRating from '@/features/NovaShop/shared/ui/StarRating'
 import { CategoryTag } from '@/features/NovaShop/shared/ui/StatusBadge'
-import { productDetailPath } from '@/router/paths'
+import { PATHS, productDetailPath } from '@/router/paths'
 import type { ApiProductResponse } from '@/types/product.types'
+import { message } from 'antd'
 import { Sparkles } from 'lucide-react'
+import type { MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAddToCart, useCart } from '../../cart/hooks/useCart'
+import { startBuyNowSession } from '../../cart/lib/buyNowCart'
+import { clearPartialCheckoutSession } from '../../cart/lib/partialCheckoutSession'
 import { useCategorySlugMap } from '../../catalog/hooks/useCategorySlugMap'
 import {
   getProductCategorySlug,
@@ -17,12 +24,20 @@ import {
   isProductHot,
   isProductOutOfStock,
 } from '../../catalog/lib/productApi'
+
+const DEFAULT_QUANTITY = 1
+
 interface ProductCardProps {
   product: ApiProductResponse
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { t: translate } = useTranslation()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { isAuthenticated } = useAuth()
+  const cartQuery = useCart()
+  const addToCartMutation = useAddToCart()
   const categorySlugById = useCategorySlugMap()
 
   const discount = getProductDiscountPercent(product)
@@ -32,6 +47,49 @@ export default function ProductCard({ product }: ProductCardProps) {
   const salePrice = getProductSalePrice(product)
   const listPrice = getProductListPrice(product)
   const categorySlug = getProductCategorySlug(product, categorySlugById)
+
+  const requireLogin = () => {
+    navigate(PATHS.LOGIN, { state: { from: location.pathname } })
+  }
+
+  const handleAddToCart = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (!isAuthenticated) {
+      requireLogin()
+      return
+    }
+    if (outOfStock) {
+      return
+    }
+
+    addToCartMutation.mutate(
+      { productId: product.id, quantity: DEFAULT_QUANTITY },
+      {
+        onSuccess: () => {
+          message.success(translate('product.detail.messages.addedToCart'))
+        },
+      },
+    )
+  }
+
+  const handleBuyNow = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (!isAuthenticated) {
+      requireLogin()
+      return
+    }
+    if (outOfStock) {
+      return
+    }
+
+    clearPartialCheckoutSession()
+    startBuyNowSession(product.id, DEFAULT_QUANTITY, cartQuery.data)
+    navigate(PATHS.CHECKOUT)
+  }
 
   return (
     <article className="customer-card group/card relative flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl">
@@ -88,14 +146,40 @@ export default function ProductCard({ product }: ProductCardProps) {
           <span className="text-[11px] text-slate-500 sm:text-xs">({product.reviewCount})</span>
         </div>
 
-        <div className="mt-auto flex items-end justify-between gap-2 pt-0.5 sm:pt-1">
-          <div>
-            <p className="text-base font-extrabold tracking-tight text-gradient sm:text-xl">
-              {formatCurrency(salePrice)}
-            </p>
-            {discount > 0 && (
-              <p className="text-xs text-slate-400 line-through">{formatCurrency(listPrice)}</p>
-            )}
+        <div className="mt-auto pt-0.5 sm:pt-1">
+          <div className="flex items-end justify-between gap-2">
+            <div>
+              <p className="text-base font-extrabold tracking-tight text-gradient sm:text-xl">
+                {formatCurrency(salePrice)}
+              </p>
+              {discount > 0 && (
+                <p className="text-xs text-slate-400 line-through">{formatCurrency(listPrice)}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-2 grid min-w-0 grid-cols-2 gap-1.5 sm:gap-2">
+            <Button
+              size="sm"
+              glow
+              fullWidth
+              loading={addToCartMutation.isPending}
+              disabled={outOfStock}
+              onClick={handleAddToCart}
+              className="min-w-0 px-1.5 text-[10px] sm:px-2 sm:text-xs [&>span]:gap-1 [&>span]:whitespace-nowrap"
+            >
+              {translate('product.card.addToCart')}
+            </Button>
+            <Button
+              size="sm"
+              variant="dark"
+              fullWidth
+              disabled={outOfStock}
+              onClick={handleBuyNow}
+              className="min-w-0 px-1.5 text-[10px] sm:px-2 sm:text-xs [&>span]:whitespace-nowrap"
+            >
+              {translate('product.card.buyNow')}
+            </Button>
           </div>
         </div>
       </div>
