@@ -175,7 +175,25 @@ Danh sách đầy đủ: `frontend/src/router/paths.ts`
 | **Frontend** | [https://novashop-frontend.onrender.com](https://novashop-frontend.onrender.com) |
 | **Backend API** | `https://novashop-e4ir.onrender.com/api` |
 
----
+### SPA routing (React Router)
+
+Frontend là SPA — khi truy cập trực tiếp `/admin/products`, `/cart`, … Render phải **rewrite** về `index.html`, nếu không sẽ báo **Not Found**.
+
+**Cách 1 — Render Dashboard** (áp dụng ngay cho site đang chạy):
+
+1. Mở static site **novashop-frontend** trên [Render Dashboard](https://dashboard.render.com).
+2. Vào **Redirects / Rewrites** → thêm rule:
+
+   | Source | Destination | Action |
+   |--------|-------------|--------|
+   | `/*` | `/index.html` | **Rewrite** |
+
+3. Lưu và deploy lại (nếu cần).
+
+**Cách 2 — Blueprint:** file [`render.yaml`](render.yaml) đã khai báo rule trên cho service `novashop-frontend`. Sync Blueprint hoặc tạo lại static site từ repo.
+
+Tài liệu: [Render — Static Site Redirects and Rewrites](https://render.com/docs/redirects-rewrites)
+
 
 ## Clone
 
