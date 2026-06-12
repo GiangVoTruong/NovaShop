@@ -14,7 +14,7 @@ import {
   useNotifications,
   useUnreadNotificationCount,
 } from '../hooks/useNotifications'
-import { getNotificationTargetPath } from '../lib/getNotificationTargetPath'
+import { getNotificationTargetPath, type NotificationLinkMode } from '../lib/getNotificationTargetPath'
 import { resolveNotificationText } from '../lib/resolveNotificationText'
 
 dayjs.extend(relativeTime)
@@ -24,6 +24,7 @@ type NotificationBellProps = {
   badgeClassName?: string
   layout?: 'icon' | 'bottomNav'
   popoverPlacement?: 'bottomRight' | 'top'
+  orderLinkMode?: NotificationLinkMode
 }
 
 export default function NotificationBell({
@@ -31,6 +32,7 @@ export default function NotificationBell({
   badgeClassName,
   layout = 'icon',
   popoverPlacement = 'bottomRight',
+  orderLinkMode = 'customer',
 }: NotificationBellProps) {
   const { t: translate } = useTranslation()
   const navigate = useNavigate()
@@ -116,7 +118,8 @@ export default function NotificationBell({
         <ul className="max-h-80 space-y-2 overflow-y-auto pr-1">
           {notifications.map((notification) => {
             const { title, message } = resolveNotificationText(notification, translate)
-            const targetPath = getNotificationTargetPath(notification)
+            const targetPath = getNotificationTargetPath(notification, orderLinkMode)
+            const isClickable = Boolean(targetPath)
 
             return (
               <li key={notification.id}>
@@ -130,7 +133,9 @@ export default function NotificationBell({
                       targetPath,
                     )
                   }
-                  className={`w-full rounded-xl border px-3 py-2.5 text-left transition hover:bg-slate-50 ${
+                  className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
+                    isClickable ? 'cursor-pointer hover:bg-slate-50' : ''
+                  } ${
                     notification.isRead
                       ? 'border-slate-100 bg-white'
                       : 'border-blue-100 bg-blue-50/40'

@@ -1,4 +1,9 @@
 export const status = {
+  payment: {
+    paid: 'Đã thanh toán',
+    unpaid: 'Chưa thanh toán',
+    refunded: 'Đã hoàn tiền',
+  },
   order: {
     awaiting_payment: 'Chờ thanh toán',
     pending: 'Chờ xác nhận',

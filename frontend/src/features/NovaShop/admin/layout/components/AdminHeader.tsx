@@ -58,7 +58,7 @@ export default function AdminHeader({
 
         <LanguageSwitcher className="grid size-10 shrink-0 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900" />
 
-        {isAuthenticated ? <NotificationBell /> : null}
+        {isAuthenticated ? <NotificationBell orderLinkMode="admin" /> : null}
 
         <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 py-1.5 pl-1.5 pr-3">
           <img

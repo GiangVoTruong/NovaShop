@@ -2,6 +2,7 @@ import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
 import { getAccessToken } from '@/lib/axios/instances'
 import { getWebSocketUrl } from '@/lib/websocket/getWebSocketUrl'
 import type { AppNotification } from '@/types/notification.types'
+import { buildNotificationMetadata } from '../lib/notificationParams'
 import { Client } from '@stomp/stompjs'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
@@ -24,12 +25,19 @@ function normalizeNotificationPayload(body: string): AppNotification | null {
     }
 
     const id = typeof rawId === 'string' ? rawId : String(rawId)
+    const message = typeof payload.message === 'string' ? payload.message : ''
+    const metadataFromPayload = payload.metadata
+    const metadata =
+      metadataFromPayload && typeof metadataFromPayload === 'object'
+        ? (metadataFromPayload as Record<string, unknown>)
+        : buildNotificationMetadata({ title, message, metadata: null })
 
     return {
       id,
       type: (payload.type as AppNotification['type']) ?? 'SYSTEM',
       title,
-      message: typeof payload.message === 'string' ? payload.message : '',
+      message,
+      metadata,
       isRead: Boolean(payload.isRead ?? payload.read ?? false),
       createdAt:
         typeof payload.createdAt === 'string'

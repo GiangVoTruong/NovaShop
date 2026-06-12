@@ -1,10 +1,17 @@
-import { orderDetailPath } from '@/router/paths'
+import { adminOrderDetailPath, orderDetailPath } from '@/router/paths'
 import type { AppNotification } from '@/types/notification.types'
+import { getNotificationOrderId } from './notificationParams'
 
-export function getNotificationTargetPath(notification: AppNotification): string | null {
-  const orderId = notification.metadata?.orderId
-  if (typeof orderId === 'string' && orderId.length > 0) {
-    return orderDetailPath(orderId)
+export type NotificationLinkMode = 'customer' | 'admin'
+
+export function getNotificationTargetPath(
+  notification: AppNotification,
+  linkMode: NotificationLinkMode = 'customer',
+): string | null {
+  const orderId = getNotificationOrderId(notification)
+  if (!orderId) {
+    return null
   }
-  return null
+
+  return linkMode === 'admin' ? adminOrderDetailPath(orderId) : orderDetailPath(orderId)
 }

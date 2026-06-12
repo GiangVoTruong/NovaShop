@@ -1,4 +1,9 @@
 export const status = {
+  payment: {
+    paid: 'Paid',
+    unpaid: 'Unpaid',
+    refunded: 'Refunded',
+  },
   order: {
     awaiting_payment: 'Awaiting payment',
     pending: 'Pending',
