@@ -10,6 +10,7 @@ export const BUTTON_VARIANT_CLASS = {
   danger:
     'bg-linear-to-r from-rose-500 to-red-500 text-white hover:from-rose-600 hover:to-red-600',
   white: 'bg-white text-slate-900 hover:shadow-xl active:scale-[0.98]',
+  blue: 'bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.98]',
 } as const
 
 export const BUTTON_SIZE_CLASS = {

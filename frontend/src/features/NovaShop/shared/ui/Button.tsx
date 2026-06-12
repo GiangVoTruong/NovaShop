@@ -11,6 +11,7 @@ type Variant =
   | 'ghost'
   | 'danger'
   | 'white'
+  | 'blue'
 type Size = 'sm' | 'md' | 'lg' | 'xl'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
