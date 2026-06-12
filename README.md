@@ -177,24 +177,29 @@ Danh sách đầy đủ: `frontend/src/router/paths.ts`
 
 ### SPA routing (React Router)
 
-Frontend là SPA — khi truy cập trực tiếp `/admin/products`, `/cart`, … Render phải **rewrite** về `index.html`, nếu không sẽ báo **Not Found**.
+Đăng nhập xong điều hướng trong app **hoạt động** vì React Router chạy phía client. Copy/dán URL `/admin`, `/products/…` **lỗi Not Found** vì Render tìm file vật lý tại path đó — cần cấu hình hosting.
 
-**Cách 1 — Render Dashboard** (áp dụng ngay cho site đang chạy):
+**Cách 1 — Rewrite trên Static Site** (giữ Static Site, sửa nhanh nhất):
 
-1. Mở static site **novashop-frontend** trên [Render Dashboard](https://dashboard.render.com).
-2. Vào **Redirects / Rewrites** → thêm rule:
+1. [Render Dashboard](https://dashboard.render.com) → **novashop-frontend**
+2. **Redirects / Rewrites** → **Add Rule**
+3. Action phải là **Rewrite** (không phải Redirect):
 
    | Source | Destination | Action |
    |--------|-------------|--------|
    | `/*` | `/index.html` | **Rewrite** |
 
-3. Lưu và deploy lại (nếu cần).
+4. **Save** → thử lại URL `/admin`
 
-**Cách 2 — Blueprint:** file [`render.yaml`](render.yaml) đã khai báo rule trên cho service `novashop-frontend`. Sync Blueprint hoặc tạo lại static site từ repo.
+**Cách 2 — Web Service** (tự xử lý SPA, khuyến nghị với Blueprint):
 
-Tài liệu: [Render — Static Site Redirects and Rewrites](https://render.com/docs/redirects-rewrites)
+[`render.yaml`](render.yaml) khai báo `novashop-frontend` là Web Service Node, chạy `serve -s dist`. Sync Blueprint hoặc tạo Web Service: Root `frontend`, Build `pnpm install --frozen-lockfile && pnpm build`, Start `pnpm start`.
 
+**Lưu ý:** Chỉ push `render.yaml` **không** tự sửa Static Site đã tạo thủ công — vẫn cần Cách 1 hoặc 2 trên Dashboard.
 
+Tài liệu: [Render — Redirects and Rewrites](https://render.com/docs/redirects-rewrites)
+
+---
 ## Clone
 
 ```bash
