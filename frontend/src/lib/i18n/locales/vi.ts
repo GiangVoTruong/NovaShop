@@ -9,6 +9,7 @@ import { notifications } from './partials/vi/notifications'
 import { orders } from './partials/vi/orders'
 import { product } from './partials/vi/product'
 import { profile } from './partials/vi/profile'
+import { staticPages } from './partials/vi/staticPages'
 import { status } from './partials/vi/status'
 import { wishlist } from './partials/vi/wishlist'
 
@@ -126,4 +127,5 @@ export const vi = {
   status,
   notifications,
   admin,
+  staticPages,
 } as const

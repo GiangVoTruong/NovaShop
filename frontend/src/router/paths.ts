@@ -21,6 +21,18 @@ export const PATHS = {
   FORGOT_PASSWORD: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',
 
+  SUPPORT_HELP: '/support/help-center',
+  SUPPORT_SHIPPING: '/support/shipping',
+  SUPPORT_RETURNS: '/support/returns',
+  SUPPORT_WARRANTY: '/support/warranty',
+  ABOUT: '/about',
+  CAREERS: '/careers',
+  CONTACT: '/contact',
+  POLICIES: '/policies',
+  LEGAL_TERMS: '/legal/terms',
+  LEGAL_PRIVACY: '/legal/privacy',
+  LEGAL_COOKIES: '/legal/cookies',
+
   ADMIN: '/admin',
   ADMIN_PRODUCTS: '/admin/products',
   ADMIN_ORDERS: '/admin/orders',

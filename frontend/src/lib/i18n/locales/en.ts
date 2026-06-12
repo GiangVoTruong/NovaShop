@@ -9,6 +9,7 @@ import { notifications } from './partials/en/notifications'
 import { orders } from './partials/en/orders'
 import { product } from './partials/en/product'
 import { profile } from './partials/en/profile'
+import { staticPages } from './partials/en/staticPages'
 import { status } from './partials/en/status'
 import { wishlist } from './partials/en/wishlist'
 
@@ -126,4 +127,5 @@ export const en = {
   status,
   notifications,
   admin,
+  staticPages,
 } as const

@@ -1,3 +1,4 @@
+import { PATHS } from '@/router/paths'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import { ArrowUpRight, Mail, MapPin, Phone, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -127,15 +128,15 @@ export default function CustomerFooter() {
           <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center">
             <p>{translate('footer.copyright')}</p>
             <div className="flex items-center gap-4">
-              <a href="#" className="hover:text-white">
+              <Link to={PATHS.LEGAL_TERMS} className="hover:text-white">
                 {translate('footer.legal.terms')}
-              </a>
-              <a href="#" className="hover:text-white">
+              </Link>
+              <Link to={PATHS.LEGAL_PRIVACY} className="hover:text-white">
                 {translate('footer.legal.privacy')}
-              </a>
-              <a href="#" className="hover:text-white">
+              </Link>
+              <Link to={PATHS.LEGAL_COOKIES} className="hover:text-white">
                 {translate('footer.legal.cookies')}
-              </a>
+              </Link>
             </div>
           </div>
         </div>
