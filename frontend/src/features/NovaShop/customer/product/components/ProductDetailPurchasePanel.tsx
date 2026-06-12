@@ -49,6 +49,7 @@ interface ProductDetailPurchasePanelProps {
   inWishlist: boolean
   wishlistPending: boolean
   cartPending: boolean
+  buyNowPending?: boolean
   onDecreaseQuantity: () => void
   onIncreaseQuantity: () => void
   onAddToCart: () => void
@@ -67,6 +68,7 @@ export default function ProductDetailPurchasePanel({
   inWishlist,
   wishlistPending,
   cartPending,
+  buyNowPending = false,
   onDecreaseQuantity,
   onIncreaseQuantity,
   onAddToCart,
@@ -205,8 +207,8 @@ export default function ProductDetailPurchasePanel({
             size="lg"
             variant="dark"
             fullWidth
-            loading={cartPending}
-            disabled={outOfStock}
+            loading={buyNowPending}
+            disabled={outOfStock || cartPending}
             onClick={onBuyNow}
           >
             {translate('product.detail.buyNow')}

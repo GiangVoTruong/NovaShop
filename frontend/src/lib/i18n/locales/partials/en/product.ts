@@ -62,6 +62,7 @@ export const product = {
     addToWishlist: 'Add to wishlist',
     removeFromWishlist: 'Remove from wishlist',
     addToCart: 'Add to cart',
+    buyNow: 'Buy now',
   },
   categoryCard: {
     productCount: '{{count}} products',
@@ -122,6 +123,7 @@ export const product = {
     },
     messages: {
       addedToCart: 'Added to cart',
+      buyNowFailed: 'Could not proceed to checkout. Please try again.',
     },
     decrease: 'Decrease',
     increase: 'Increase',

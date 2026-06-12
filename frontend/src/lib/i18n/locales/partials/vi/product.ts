@@ -62,6 +62,7 @@ export const product = {
     addToWishlist: 'Thêm yêu thích',
     removeFromWishlist: 'Bỏ yêu thích',
     addToCart: 'Thêm vào giỏ',
+    buyNow: 'Mua ngay',
   },
   categoryCard: {
     productCount: '{{count}} sản phẩm',
@@ -122,6 +123,7 @@ export const product = {
     },
     messages: {
       addedToCart: 'Đã thêm vào giỏ hàng',
+      buyNowFailed: 'Không thể mua ngay. Vui lòng thử lại.',
     },
     decrease: 'Giảm',
     increase: 'Tăng',

@@ -10,6 +10,7 @@ interface ProductDetailMobileBarProps {
   inWishlist: boolean
   wishlistPending: boolean
   cartPending: boolean
+  buyNowPending?: boolean
   onAddToCart: () => void
   onBuyNow: () => void
   onToggleWishlist: () => void
@@ -21,6 +22,7 @@ export default function ProductDetailMobileBar({
   inWishlist,
   wishlistPending,
   cartPending,
+  buyNowPending = false,
   onAddToCart,
   onBuyNow,
   onToggleWishlist,
@@ -68,8 +70,8 @@ export default function ProductDetailMobileBar({
           size="md"
           variant="dark"
           className="shrink-0 px-4"
-          loading={cartPending}
-          disabled={outOfStock}
+          loading={buyNowPending}
+          disabled={outOfStock || cartPending}
           onClick={onBuyNow}
         >
           {translate('product.detail.buyNow')}

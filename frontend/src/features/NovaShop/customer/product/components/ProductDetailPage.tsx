@@ -5,7 +5,8 @@ import { ArrowLeft, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useAddToCart } from '../../cart/hooks/useCart'
+import { useAddToCart, useCart } from '../../cart/hooks/useCart'
+import { startBuyNowSession } from '../../cart/lib/buyNowCart'
 import { useCategorySlugMap } from '../../catalog/hooks/useCategorySlugMap'
 import { useProductById, useProducts } from '../../catalog/hooks/useProducts'
 import {
@@ -29,6 +30,7 @@ export default function ProductDetailPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { isAuthenticated } = useAuth()
+  const cartQuery = useCart()
   const addToCartMutation = useAddToCart()
   const { inWishlist, isPending: wishlistPending, toggle: toggleWishlist } = useToggleWishlist(id)
   const reviewsQuery = useProductReviews(id)
@@ -96,7 +98,7 @@ export default function ProductDetailPage() {
     navigate(PATHS.LOGIN, { state: { from: location.pathname } })
   }
 
-  const handleAddToCart = (redirectToCheckout = false) => {
+  const handleAddToCart = () => {
     if (!isAuthenticated) {
       requireLogin()
       return
@@ -108,7 +110,6 @@ export default function ProductDetailPage() {
       {
         onSuccess: () => {
           message.success(translate('product.detail.messages.addedToCart'))
-          if (redirectToCheckout) navigate(PATHS.CHECKOUT)
         },
       },
     )
@@ -120,6 +121,19 @@ export default function ProductDetailPage() {
       return
     }
     toggleWishlist()
+  }
+
+  const handleBuyNow = () => {
+    if (!isAuthenticated) {
+      requireLogin()
+      return
+    }
+    if (stock <= 0) {
+      return
+    }
+
+    startBuyNowSession(product.id, quantity, cartQuery.data)
+    navigate(PATHS.CHECKOUT)
   }
 
   const handleSubmitReview = () => {
@@ -180,8 +194,8 @@ export default function ProductDetailPage() {
                 cartPending={addToCartMutation.isPending}
                 onDecreaseQuantity={() => setQuantity((value) => Math.max(1, value - 1))}
                 onIncreaseQuantity={() => setQuantity((value) => Math.min(stock, value + 1))}
-                onAddToCart={() => handleAddToCart(false)}
-                onBuyNow={() => handleAddToCart(true)}
+                onAddToCart={handleAddToCart}
+                onBuyNow={handleBuyNow}
                 onToggleWishlist={handleToggleWishlist}
               />
             </div>
@@ -237,8 +251,8 @@ export default function ProductDetailPage() {
         inWishlist={inWishlist}
         wishlistPending={wishlistPending}
         cartPending={addToCartMutation.isPending}
-        onAddToCart={() => handleAddToCart(false)}
-        onBuyNow={() => handleAddToCart(true)}
+        onAddToCart={handleAddToCart}
+        onBuyNow={handleBuyNow}
         onToggleWishlist={handleToggleWishlist}
       />
     </div>

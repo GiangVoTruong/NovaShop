@@ -3,6 +3,7 @@ export const checkout = {
   title: 'Order',
   titleHighlight: 'checkout',
   backToCart: 'Back to cart',
+  backToProduct: 'Back to product',
   empty: {
     title: 'Your cart is empty',
     description: 'Add products to your cart before checkout.',

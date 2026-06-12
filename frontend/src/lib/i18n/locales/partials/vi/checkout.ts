@@ -3,6 +3,7 @@ export const checkout = {
   title: 'Thanh toán',
   titleHighlight: 'đơn hàng',
   backToCart: 'Quay lại giỏ hàng',
+  backToProduct: 'Quay lại sản phẩm',
   empty: {
     title: 'Giỏ hàng trống',
     description: 'Thêm sản phẩm vào giỏ trước khi thanh toán.',
