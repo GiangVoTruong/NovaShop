@@ -45,6 +45,9 @@ export const orders = {
   },
   messages: {
     cancelled: 'Order cancelled',
+    reorderSuccess: 'Items added to your cart',
+    reorderFailed: 'Could not reorder. Please try again.',
+    reorderEmpty: 'This order has no items to reorder',
   },
   vnpay: {
     payNow: 'Pay with VNPay',

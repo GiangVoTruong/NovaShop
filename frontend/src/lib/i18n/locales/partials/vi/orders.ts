@@ -45,6 +45,9 @@ export const orders = {
   },
   messages: {
     cancelled: 'Đã huỷ đơn hàng',
+    reorderSuccess: 'Đã thêm sản phẩm vào giỏ hàng',
+    reorderFailed: 'Không thể mua lại đơn hàng. Vui lòng thử lại.',
+    reorderEmpty: 'Đơn hàng không còn sản phẩm để mua lại',
   },
   vnpay: {
     payNow: 'Thanh toán VNPay',

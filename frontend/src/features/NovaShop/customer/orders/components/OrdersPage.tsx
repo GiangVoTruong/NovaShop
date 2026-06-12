@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Alert, Spin } from 'antd'
+import { Alert, Spin, message } from 'antd'
 import {
   ArrowRight,
   Clock,
@@ -19,7 +19,7 @@ import {
   ORDER_STATUS_ACCENT,
   ORDER_STATUS_GLOW,
 } from '../constants/orders.constants'
-import { useCancelOrder, useOrders } from '../hooks/useOrders'
+import { useCancelOrder, useOrders, useReorderOrder } from '../hooks/useOrders'
 import { usePaymentReturnFeedback } from '../hooks/usePaymentReturnFeedback'
 import {
   getOrderCode,
@@ -80,6 +80,7 @@ export default function OrdersPage() {
   const { t: translate } = useTranslation()
   const ordersQuery = useOrders()
   const cancelOrderMutation = useCancelOrder()
+  const reorderOrderMutation = useReorderOrder()
   const paymentFeedback = usePaymentReturnFeedback(() => {
     void ordersQuery.refetch()
   })
@@ -121,6 +122,22 @@ export default function OrdersPage() {
 
   const handleCancelOrder = (orderId: string) => {
     cancelOrderMutation.mutate(orderId)
+  }
+
+  const handleReorder = (order: ApiOrderResponse) => {
+    if (order.items.length === 0) {
+      message.warning(translate('orders.messages.reorderEmpty'))
+      return
+    }
+
+    reorderOrderMutation.mutate(order, {
+      onSuccess: () => {
+        message.success(translate('orders.messages.reorderSuccess'))
+      },
+      onError: () => {
+        message.error(translate('orders.messages.reorderFailed'))
+      },
+    })
   }
 
   if (ordersQuery.isLoading) {
@@ -367,7 +384,16 @@ export default function OrdersPage() {
                           {translate('orders.cancel')}
                         </Button>
                       )}
-                      <Button variant="outline" size="md" leftIcon={<RotateCcw className="size-4" />}>
+                      <Button
+                        variant="outline"
+                        size="md"
+                        leftIcon={<RotateCcw className="size-4" />}
+                        onClick={() => handleReorder(order)}
+                        loading={
+                          reorderOrderMutation.isPending &&
+                          reorderOrderMutation.variables?.id === order.id
+                        }
+                      >
                         {translate('orders.reorder')}
                       </Button>
                       <Link to={orderDetailPath(order.id)}>
