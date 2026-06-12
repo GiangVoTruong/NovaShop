@@ -13,8 +13,11 @@ export const cart = {
   increase: 'Increase',
   continueShopping: '← Continue shopping',
   clearAll: 'Clear all',
+  selectAll: 'Select all',
+  selectItem: 'Select item',
   summary: {
     title: 'Order summary',
+    selectedCount: '{{selected}}/{{total}} items selected',
     subtotal: 'Subtotal',
     shipping: 'Shipping',
     discount: 'Discount',
@@ -27,14 +30,14 @@ export const cart = {
     title: 'Coupon code',
     placeholder: 'Enter code (e.g. NOVA20)',
     apply: 'Apply',
+    discount: 'Discount {{amount}}',
     hint: 'Try code',
     hintSuffix: 'for 20% off',
   },
   messages: {
-    applied: 'Applied NOVA20 — 20% off',
-    invalid: 'Invalid coupon code',
     updateFailed: 'Could not update quantity',
     removeFailed: 'Could not remove item',
     clearFailed: 'Could not clear cart',
+    selectItems: 'Select at least one item to checkout',
   },
 } as const

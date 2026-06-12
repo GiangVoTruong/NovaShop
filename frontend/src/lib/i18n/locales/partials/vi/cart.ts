@@ -13,8 +13,11 @@ export const cart = {
   increase: 'Tăng',
   continueShopping: '← Tiếp tục mua sắm',
   clearAll: 'Xóa toàn bộ',
+  selectAll: 'Chọn tất cả',
+  selectItem: 'Chọn sản phẩm',
   summary: {
     title: 'Tóm tắt đơn hàng',
+    selectedCount: 'Đã chọn {{selected}}/{{total}} sản phẩm',
     subtotal: 'Tạm tính',
     shipping: 'Phí vận chuyển',
     discount: 'Giảm giá',
@@ -27,14 +30,14 @@ export const cart = {
     title: 'Mã giảm giá',
     placeholder: 'Nhập mã (vd: NOVA20)',
     apply: 'Áp dụng',
+    discount: 'Giảm {{amount}}',
     hint: 'Thử mã',
     hintSuffix: 'để giảm 20%',
   },
   messages: {
-    applied: 'Đã áp dụng mã NOVA20 — giảm 20%',
-    invalid: 'Mã giảm giá không hợp lệ',
     updateFailed: 'Không thể cập nhật số lượng',
     removeFailed: 'Không thể xóa sản phẩm',
     clearFailed: 'Không thể xóa giỏ hàng',
+    selectItems: 'Chọn ít nhất một sản phẩm để thanh toán',
   },
 } as const

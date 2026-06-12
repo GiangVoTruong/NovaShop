@@ -2,10 +2,17 @@ import { formatCurrency } from '@/features/NovaShop/shared/format'
 import Button from '@/features/NovaShop/shared/ui/Button'
 import EmptyState from '@/features/NovaShop/shared/ui/EmptyState'
 import { PATHS, productDetailPath } from '@/router/paths'
-import { Spin, message } from 'antd'
+import { Checkbox, Spin, message } from 'antd'
 import { ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import CouponInputSection from '../../checkout/components/CouponInputSection'
+import { useCheckoutCoupon } from '../../checkout/hooks/useCheckoutCoupon'
+import {
+  clearPartialCheckoutSession,
+  startPartialCheckoutSession,
+} from '../lib/partialCheckoutSession'
 import {
   useCart,
   useClearCart,
@@ -20,15 +27,56 @@ function toAmount(value: number | string): number {
 
 export default function CartPage() {
   const { t: translate } = useTranslation()
+  const navigate = useNavigate()
   const cartQuery = useCart()
   const updateItemMutation = useUpdateCartItem()
   const removeItemMutation = useRemoveCartItem()
   const clearCartMutation = useClearCart()
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(() => new Set())
 
   const cart = cartQuery.data
   const items = cart?.items ?? []
-  const itemCount = cart?.itemCount ?? 0
-  const totalAmount = toAmount(cart?.totalAmount ?? 0)
+  const itemIdsKey = useMemo(() => items.map((item) => item.id).join('|'), [items])
+
+  useEffect(() => {
+    setSelectedItemIds((previous) => {
+      if (previous.size === 0) {
+        return new Set(items.map((item) => item.id))
+      }
+
+      const next = new Set<string>()
+      for (const item of items) {
+        if (previous.has(item.id)) {
+          next.add(item.id)
+        }
+      }
+      for (const item of items) {
+        if (!previous.has(item.id)) {
+          next.add(item.id)
+        }
+      }
+      return next.size > 0 ? next : new Set(items.map((item) => item.id))
+    })
+  }, [itemIdsKey, items])
+
+  const selectedItems = items.filter((item) => selectedItemIds.has(item.id))
+  const selectedCount = selectedItems.length
+  const allSelected = items.length > 0 && selectedCount === items.length
+  const someSelected = selectedCount > 0 && !allSelected
+  const selectedTotal = selectedItems.reduce(
+    (sum, item) => sum + toAmount(item.subtotal),
+    0,
+  )
+
+  const {
+    couponCode,
+    setCouponCode,
+    appliedCoupon,
+    discountAmount,
+    finalAmount,
+    handleApplyCoupon,
+    isValidatingCoupon,
+  } = useCheckoutCoupon(selectedTotal)
 
   if (cartQuery.isLoading) {
     return (
@@ -57,6 +105,22 @@ export default function CartPage() {
     )
   }
 
+  const handleToggleItem = (itemId: string, checked: boolean) => {
+    setSelectedItemIds((previous) => {
+      const next = new Set(previous)
+      if (checked) {
+        next.add(itemId)
+      } else {
+        next.delete(itemId)
+      }
+      return next
+    })
+  }
+
+  const handleToggleSelectAll = (checked: boolean) => {
+    setSelectedItemIds(checked ? new Set(items.map((item) => item.id)) : new Set())
+  }
+
   const handleUpdateQuantity = (itemId: string, quantity: number, maxStock: number) => {
     const nextQuantity = Math.max(1, Math.min(maxStock, quantity))
     updateItemMutation.mutate(
@@ -79,6 +143,25 @@ export default function CartPage() {
     })
   }
 
+  const handleCheckout = () => {
+    if (selectedCount === 0) {
+      message.warning(translate('cart.messages.selectItems'))
+      return
+    }
+
+    if (!cart) {
+      return
+    }
+
+    clearPartialCheckoutSession()
+
+    if (selectedCount < items.length) {
+      startPartialCheckoutSession(selectedItems, cart)
+    }
+
+    navigate(PATHS.CHECKOUT)
+  }
+
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 xl:px-14">
       <header className="mb-8">
@@ -90,22 +173,41 @@ export default function CartPage() {
           <span className="text-gradient">{translate('cart.titleHighlight')}</span>
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          {translate('cart.subtitle', { count: itemCount })}
+          {translate('cart.subtitle', { count: items.length })}
         </p>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
         <div className="space-y-4">
+          <label className="customer-panel flex cursor-pointer items-center gap-3 rounded-2xl px-4 py-3">
+            <Checkbox
+              checked={allSelected}
+              indeterminate={someSelected}
+              onChange={(event) => handleToggleSelectAll(event.target.checked)}
+            />
+            <span className="text-sm font-semibold text-slate-700">
+              {translate('cart.selectAll')}
+            </span>
+          </label>
+
           {items.map((item) => {
             const unitPrice = toAmount(item.unitPrice)
             const subtotal = toAmount(item.subtotal)
             const imageUrl = item.imageUrl ?? ORDER_ITEM_PLACEHOLDER_IMAGE
+            const isSelected = selectedItemIds.has(item.id)
 
             return (
               <article
                 key={item.id}
                 className="customer-panel flex flex-col gap-4 rounded-3xl p-4 sm:flex-row sm:items-center sm:p-5"
               >
+                <Checkbox
+                  checked={isSelected}
+                  onChange={(event) => handleToggleItem(item.id, event.target.checked)}
+                  aria-label={translate('cart.selectItem')}
+                  className="self-start sm:self-center"
+                />
+
                 <Link
                   to={productDetailPath(item.productId)}
                   className="size-24 shrink-0 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200/80"
@@ -187,11 +289,39 @@ export default function CartPage() {
 
         <aside className="customer-panel h-fit rounded-3xl p-6 lg:sticky lg:top-24">
           <h2 className="text-lg font-extrabold text-slate-900">{translate('cart.summary.title')}</h2>
+          <p className="mt-1 text-xs text-slate-500">
+            {translate('cart.summary.selectedCount', {
+              selected: selectedCount,
+              total: items.length,
+            })}
+          </p>
+
+          <div className="mt-4">
+            <CouponInputSection
+              couponCode={couponCode}
+              onCouponCodeChange={setCouponCode}
+              appliedCoupon={appliedCoupon}
+              discountAmount={discountAmount}
+              onApply={handleApplyCoupon}
+              isApplying={isValidatingCoupon}
+              titleKey="cart.coupon.title"
+              placeholderKey="cart.coupon.placeholder"
+              applyKey="cart.coupon.apply"
+              discountKey="cart.coupon.discount"
+            />
+          </div>
+
           <dl className="mt-4 space-y-3 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-slate-500">{translate('cart.summary.subtotal')}</dt>
-              <dd className="font-bold text-slate-900">{formatCurrency(totalAmount)}</dd>
+              <dd className="font-bold text-slate-900">{formatCurrency(selectedTotal)}</dd>
             </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between gap-4">
+                <dt className="text-slate-500">{translate('cart.summary.discount')}</dt>
+                <dd className="font-bold text-emerald-600">-{formatCurrency(discountAmount)}</dd>
+              </div>
+            )}
             <div className="flex justify-between gap-4">
               <dt className="text-slate-500">{translate('cart.summary.shipping')}</dt>
               <dd className="font-bold text-emerald-600">{translate('cart.summary.free')}</dd>
@@ -199,16 +329,21 @@ export default function CartPage() {
             <div className="border-t border-slate-200 pt-3">
               <div className="flex justify-between gap-4">
                 <dt className="font-bold text-slate-900">{translate('cart.summary.total')}</dt>
-                <dd className="text-xl font-extrabold text-gradient">{formatCurrency(totalAmount)}</dd>
+                <dd className="text-xl font-extrabold text-gradient">{formatCurrency(finalAmount)}</dd>
               </div>
             </div>
           </dl>
           <p className="mt-3 text-xs text-slate-500">{translate('cart.summary.freeShippingNote')}</p>
-          <Link to={PATHS.CHECKOUT} className="mt-6 block">
-            <Button fullWidth glow rightIcon={<ArrowRight className="size-4" />}>
-              {translate('cart.summary.checkout')}
-            </Button>
-          </Link>
+          <Button
+            fullWidth
+            glow
+            rightIcon={<ArrowRight className="size-4" />}
+            className="mt-6"
+            disabled={selectedCount === 0}
+            onClick={handleCheckout}
+          >
+            {translate('cart.summary.checkout')}
+          </Button>
         </aside>
       </div>
     </div>
