@@ -1,11 +1,11 @@
 import type { CategorySlug } from '@/features/NovaShop/shared/types'
 import EmptyState from '@/features/NovaShop/shared/ui/EmptyState'
-import { PATHS } from '@/router/paths'
+import { useDebounce } from '@/hooks/useDebounce'
 import { Pagination, Spin } from 'antd'
 import { Filter, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useCategories } from '../../catalog/hooks/useCategories'
 import { useProducts } from '../../catalog/hooks/useProducts'
 import { parseListingMode, SORT_OPTIONS } from '../constants/product.constants'
@@ -21,6 +21,7 @@ import ProductCard from './ProductCard'
 import ProductFiltersSidebar from './ProductFiltersSidebar'
 
 const PAGE_SIZE = 12
+const SEARCH_DEBOUNCE_MS = 400
 
 function listingModeKey(mode: ReturnType<typeof parseListingMode>) {
   return mode === 'flash-sale' ? 'flashSale' : mode
@@ -28,14 +29,14 @@ function listingModeKey(mode: ReturnType<typeof parseListingMode>) {
 
 export default function ProductListPage() {
   const { t: translate } = useTranslation()
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const mode = parseListingMode(searchParams.get('mode'))
   const categoryParam = searchParams.get('cat') as CategorySlug | null
-  const keywordParam = searchParams.get('keyword')?.trim() ?? ''
   const filters = parseProductListFilters(searchParams)
   const modeKey = listingModeKey(mode)
-  const listingKey = buildProductListingKey(mode, categoryParam, keywordParam, filters)
+  const [keywordInput, setKeywordInput] = useState(() => searchParams.get('keyword')?.trim() ?? '')
+  const debouncedKeyword = useDebounce(keywordInput.trim(), SEARCH_DEBOUNCE_MS)
+  const listingKey = buildProductListingKey(mode, categoryParam, debouncedKeyword, filters)
   const usesClientFilter = hasClientOnlyFilters(filters)
   const [pagination, setPagination] = useState({ listingKey, page: 1 })
 
@@ -46,7 +47,7 @@ export default function ProductListPage() {
   const page = pagination.page
 
   const productsQuery = useProducts({
-    keyword: keywordParam || undefined,
+    keyword: debouncedKeyword || undefined,
     page: usesClientFilter ? 0 : page - 1,
     size: usesClientFilter ? PRODUCT_CLIENT_FILTER_FETCH_SIZE : PAGE_SIZE,
     category: categoryParam ?? undefined,
@@ -67,23 +68,10 @@ export default function ProductListPage() {
   const displayItems = usesClientFilter
     ? filteredItems.slice(startIndex, startIndex + PAGE_SIZE)
     : fetchedItems
-  const displayTotal = usesClientFilter
-    ? filteredItems.length
-    : (productsQuery.data?.total ?? 0)
+  const displayTotal = usesClientFilter ? filteredItems.length : productsQuery.data?.total ?? 0
 
-  const handleProductSearch = (event: React.SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const params = new URLSearchParams(searchParams)
-    const nextKeyword = String(new FormData(event.currentTarget).get('keyword') ?? '').trim()
-
-    if (nextKeyword) {
-      params.set('keyword', nextKeyword)
-    } else {
-      params.delete('keyword')
-    }
-
-    const query = params.toString()
-    navigate(query ? `${PATHS.PRODUCTS}?${query}` : PATHS.PRODUCTS)
+  const handleKeywordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setKeywordInput(event.target.value)
   }
 
   return (
@@ -107,16 +95,13 @@ export default function ProductListPage() {
         <ProductFiltersSidebar categories={categories} brandOptions={brandOptions} />
 
         <div className="min-w-0 flex-1 space-y-6">
-          <form
-            onSubmit={handleProductSearch}
-            className="customer-panel flex flex-col gap-3 rounded-3xl p-3 sm:flex-row sm:items-center sm:justify-between"
-          >
+          <div className="customer-panel flex flex-col gap-3 rounded-3xl p-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 sm:max-w-sm sm:flex-1">
               <Search className="size-4 text-slate-400" />
               <input
-                key={keywordParam}
                 name="keyword"
-                defaultValue={keywordParam}
+                value={keywordInput}
+                onChange={handleKeywordChange}
                 placeholder={translate('product.filters.searchPlaceholder')}
                 className="h-10 flex-1 bg-transparent text-sm focus:outline-none"
               />
@@ -140,7 +125,7 @@ export default function ProductListPage() {
                 <Filter className="size-4" />
               </button>
             </div>
-          </form>
+          </div>
 
           {productsQuery.isLoading ? (
             <div className="flex min-h-[240px] items-center justify-center">
