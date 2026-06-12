@@ -1,38 +1,78 @@
 # NovaShop
 
-Ứng dụng thương mại điện tử (DACN) — monorepo gồm **frontend React** và **backend Spring Boot**, kèm script SQL khởi tạo schema.
+Nền tảng thương mại điện tử full-stack — đồ án **DACN**.
 
-## Cấu trúc thư mục
+| | |
+|---|---|
+| **Website** | [https://novashop-frontend.onrender.com](https://novashop-frontend.onrender.com) |
+| **Repository** | [github.com/GiangVoTruong/NovaShop](https://github.com/GiangVoTruong/NovaShop) |
+| **API (production)** | `https://novashop-e4ir.onrender.com/api` |
+
+Monorepo gồm giao diện **React**, API **Spring Boot** và script khởi tạo **PostgreSQL**.
+
+---
+
+## Tính năng
+
+### Khách hàng
+
+- Duyệt sản phẩm, tìm kiếm debounce, lọc danh mục / thương hiệu / giá
+- Giỏ hàng — chọn sản phẩm thanh toán một phần, áp mã giảm giá
+- **Mua ngay** — checkout chỉ sản phẩm đang chọn, không gộp cả giỏ
+- Thêm vào giỏ / mua ngay trực tiếp trên thẻ sản phẩm
+- Thanh toán **COD**, **VNPay**, **Stripe**
+- Yêu thích, đánh giá, theo dõi đơn hàng, mua lại đơn cũ
+- Đăng nhập email, **Google OAuth**, quên / đặt lại mật khẩu
+- Thông báo realtime qua **WebSocket**
+- Trang tĩnh (hỗ trợ, chính sách, liên hệ…)
+- Đa ngôn ngữ **Tiếng Việt / English**
+
+### Quản trị
+
+- Dashboard, sản phẩm, đơn hàng, khách hàng, danh mục
+- Kho hàng, mã giảm giá, phân tích, cài đặt cửa hàng
+- Chế độ bảo trì, duyệt đánh giá, quản lý seller
+
+---
+
+## Cấu trúc dự án
+
+```
+NovaShop/
+├── frontend/          # React 19 + Vite + TypeScript
+├── backend/           # Spring Boot 4 + JPA
+├── db/
+│   └── schema.sql     # Khởi tạo schema PostgreSQL
+└── README.md
+```
 
 | Thư mục | Mô tả |
 |--------|--------|
-| `frontend/` | Giao diện khách & quản trị (Vite + React + TypeScript) |
-| `backend/` | REST API (Spring Boot) |
-| `db/` | `schema.sql` — khởi tạo schema PostgreSQL |
+| `frontend/` | Giao diện khách & admin |
+| `backend/` | REST API, WebSocket, Swagger |
+| `db/` | Script SQL khởi tạo database |
+
+---
 
 ## Công nghệ
 
-**Frontend**
+| Lớp | Stack |
+|-----|--------|
+| **Frontend** | React 19, TypeScript, Vite 8, Ant Design 6, Tailwind CSS 4, React Router 7, TanStack Query, i18next, Axios |
+| **Backend** | Java 21, Spring Boot 4, Spring Data JPA, PostgreSQL, WebSocket, springdoc-openapi, Lombok, MapStruct |
+| **Package manager (FE)** | [pnpm](https://pnpm.io) |
 
-- React 19, TypeScript, Vite 8  
-- Ant Design 6, Tailwind CSS 4  
-- React Router 7  
-- Quản lý gói: **pnpm**
-
-**Backend**
-
-- Java 21, Spring Boot 4  
-- Spring Data JPA, PostgreSQL  
-- Validation, WebSocket, springdoc-openapi (Swagger UI)  
-- Lombok, MapStruct  
+---
 
 ## Yêu cầu môi trường
 
-- **Node.js** (khuyến nghị LTS) và **pnpm**  
-- **JDK 21** và **Maven** (hoặc dùng `./mvnw` trong `backend/`)  
-- **PostgreSQL** (hoặc dịch vụ tương thích, ví dụ Supabase)
+- **Node.js** LTS + **pnpm**
+- **JDK 21** + **Maven** (hoặc `mvnw` trong `backend/`)
+- **PostgreSQL** (local, Supabase hoặc dịch vụ tương thích)
 
-## Cài đặt & chạy nhanh
+---
+
+## Chạy local
 
 ### 1. Frontend
 
@@ -42,49 +82,117 @@ pnpm install
 pnpm dev
 ```
 
-- Dev server mặc định của Vite: `http://localhost:5173`  
-- Build production: `pnpm build` — output trong `frontend/dist/`  
-- Lint: `pnpm lint`
+Dev server: [http://localhost:5173](http://localhost:5173)
+
+| Lệnh | Mô tả |
+|------|--------|
+| `pnpm dev` | Dev server + HMR |
+| `pnpm build` | Build production → `frontend/dist/` |
+| `pnpm lint` | ESLint |
+| `pnpm preview` | Xem thử bản build |
+
+**Biến môi trường** — copy `frontend/.env.example` → `frontend/.env`:
+
+```env
+# Gọi /api — Vite proxy sang backend local (mặc định localhost:8080)
+VITE_API_BASE_URL=/api
+
+# Không chạy BE local — proxy sang Render:
+# VITE_PROXY_TARGET=https://novashop-e4ir.onrender.com
+
+# Google Sign-In (tuỳ chọn)
+# VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+```
+
+Production build dùng `frontend/.env.production`:
+
+```env
+VITE_API_BASE_URL=https://novashop-e4ir.onrender.com/api
+```
+
+**Cấu trúc mã nguồn frontend:**
+
+```
+frontend/src/
+├── features/NovaShop/
+│   ├── customer/     # Trang khách
+│   ├── admin/        # Trang quản trị
+│   └── shared/       # UI, thông báo, format…
+├── hooks/
+├── lib/              # Axios, i18n, websocket
+├── router/paths.ts   # Hằng số route
+└── types/
+```
 
 ### 2. Backend
 
-1. Tạo database và chạy script trong `db/schema.sql` (SQL Editor hoặc `psql`).  
-2. Tạo `backend/.env` (file này **không** commit — đã có trong `.gitignore`):
+1. Tạo database và chạy `db/schema.sql`.
+2. Tạo `backend/.env` (**không commit**):
 
    ```env
-   SUPABASE_DB_PASSWORD=mat_khau_supabase_cua_ban
+   SUPABASE_DB_PASSWORD=mat_khau_database_cua_ban
    ```
 
-3. Chạy ứng dụng (từ thư mục `backend/` để đọc đúng `.env`):
+3. Chạy Spring Boot:
 
-```bash
-cd backend
-./mvnw spring-boot:run
-```
+   ```bash
+   cd backend
+   ./mvnw spring-boot:run
+   ```
 
-Trên Windows (PowerShell):
+   Windows (PowerShell):
 
-```powershell
-cd backend
-.\mvnw.cmd spring-boot:run
-```
+   ```powershell
+   cd backend
+   .\mvnw.cmd spring-boot:run
+   ```
 
-### 3. API tài liệu (Swagger)
+4. Mở **Swagger UI** theo log khởi động (thường `/swagger-ui.html` hoặc đường dẫn springdoc tương ứng).
 
-Sau khi backend chạy, mở UI OpenAPI (đường dẫn chính xác xem log khởi động Spring Boot; thường dạng `/swagger-ui.html` hoặc đường dẫn tương đương theo phiên bản springdoc).
+---
 
-## Git
+## Route chính (frontend)
+
+| Route | Trang |
+|-------|--------|
+| `/` | Trang chủ |
+| `/products` | Danh sách sản phẩm |
+| `/products/:id` | Chi tiết sản phẩm |
+| `/cart` | Giỏ hàng |
+| `/checkout` | Thanh toán |
+| `/orders` | Đơn hàng |
+| `/profile` | Hồ sơ |
+| `/admin` | Quản trị |
+
+Danh sách đầy đủ: `frontend/src/router/paths.ts`
+
+---
+
+## Deploy
+
+| Dịch vụ | URL |
+|---------|-----|
+| **Frontend** | [https://novashop-frontend.onrender.com](https://novashop-frontend.onrender.com) |
+| **Backend API** | `https://novashop-e4ir.onrender.com/api` |
+
+---
+
+## Clone
 
 ```bash
 git clone https://github.com/GiangVoTruong/NovaShop.git
 cd NovaShop
 ```
 
-## Lưu ý bảo mật
+---
 
-- Không commit `backend/.env`, `application-local.properties`, hoặc mật khẩu database.  
-- Chỉ dùng `application.properties` / biến môi trường phù hợp với môi trường deploy của bạn.
+## Bảo mật
+
+- Không commit `backend/.env`, mật khẩu database, secret OAuth / payment.
+- Chỉ dùng biến môi trường phù hợp từng môi trường (local / production).
+
+---
 
 ## Giấy phép
 
-Dự án phục vụ mục đích học tập / đồ án — quyền sử dụng do nhóm/lớp quy định.
+Dự án phục vụ mục đích học tập / đồ án — quyền sử dụng do nhóm hoặc lớp quy định.
