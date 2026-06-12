@@ -47,13 +47,13 @@ export default function AdminSidebar({
   return (
     <aside
       className={cx(
-        'flex h-full flex-col border-r border-slate-200 bg-white',
+        'flex h-full min-h-0 flex-col border-r border-slate-200 bg-white',
         collapsed ? 'w-[72px]' : 'w-64',
       )}
     >
       <div
         className={cx(
-          'flex items-center gap-3 border-b border-slate-200 px-4 py-5',
+          'flex shrink-0 items-center gap-3 border-b border-slate-200 px-4 py-5',
           collapsed && 'justify-center px-2',
         )}
       >
@@ -72,10 +72,10 @@ export default function AdminSidebar({
         )}
       </div>
 
-      <nav className="flex-1 space-y-4 overflow-y-auto p-3 no-scrollbar">
+      <nav className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3 no-scrollbar">
         {ADMIN_NAV_SECTIONS.map((section) => (
           <div key={section.labelKey}>
-            {!collapsed && (
+            {!collapsed && section.items.length > 0 && (
               <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-500/90">
                 {translate(section.labelKey)}
               </p>
@@ -108,23 +108,23 @@ export default function AdminSidebar({
       </nav>
 
       {!collapsed && (
-        <div className="space-y-3 border-t border-slate-200 px-4 py-4">
-          <div className="grid grid-cols-3 gap-2">
+        <div className="shrink-0 space-y-3 border-t border-slate-200 px-4 py-4">
+          <div className="space-y-2">
             {quickStats.map((stat) => (
               <div
                 key={stat.labelKey}
-                className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center"
+                className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
               >
+                <p className="text-[10px] leading-tight text-slate-500">
+                  {translate(stat.labelKey)}
+                </p>
                 <p
                   className={cx(
-                    'text-sm font-bold',
+                    'mt-0.5 truncate text-sm font-bold tabular-nums',
                     QUICK_STAT_TONE_CLASS[stat.tone],
                   )}
                 >
                   {stat.value}
-                </p>
-                <p className="mt-0.5 text-[9px] leading-tight text-slate-500/90">
-                  {translate(stat.labelKey)}
                 </p>
               </div>
             ))}
