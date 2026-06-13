@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
-import com.backend.security.JwtService;
-import com.backend.security.JwtUserPrincipal;
+import com.backend.features.auth.security.JwtService;
+import com.backend.features.auth.security.JwtUserPrincipal;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
