@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { MAX_REVIEWS_PER_PRODUCT } from '@/types/review.types'
 import { useAddToCart, useCart } from '../../cart/hooks/useCart'
 import { startBuyNowSession } from '../../cart/lib/buyNowCart'
 import { useCategorySlugMap } from '../../catalog/hooks/useCategorySlugMap'
@@ -29,7 +30,7 @@ export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const cartQuery = useCart()
   const addToCartMutation = useAddToCart()
   const { inWishlist, isPending: wishlistPending, toggle: toggleWishlist } = useToggleWishlist(id)
@@ -64,6 +65,13 @@ export default function ProductDetailPage() {
     [product, relatedQuery.data?.data],
   )
 
+  const reviews = reviewsQuery.data ?? []
+  const userReviewCount = useMemo(
+    () => (user ? reviews.filter((review) => review.userId === user.id).length : 0),
+    [reviews, user],
+  )
+  const canWriteReview = isAuthenticated && userReviewCount < MAX_REVIEWS_PER_PRODUCT
+
   if (productQuery.isLoading) {
     return <ProductDetailSkeleton />
   }
@@ -92,7 +100,6 @@ export default function ProductDetailPage() {
   const listPrice = getProductListPrice(product)
   const discount = getProductDiscountPercent(product)
   const stock = product.stock ?? 0
-  const reviews = reviewsQuery.data ?? []
 
   const requireLogin = () => {
     navigate(PATHS.LOGIN, { state: { from: location.pathname } })
@@ -149,7 +156,27 @@ export default function ProductDetailPage() {
           message.success(translate('product.detail.reviewsSection.success'))
           setReviewComment('')
         },
-        onError: () => message.error(translate('product.detail.reviewsSection.error')),
+        onError: (error: unknown) => {
+          const messageText =
+            error &&
+            typeof error === 'object' &&
+            'response' in error &&
+            error.response &&
+            typeof error.response === 'object' &&
+            'data' in error.response &&
+            error.response.data &&
+            typeof error.response.data === 'object' &&
+            'message' in error.response.data &&
+            typeof error.response.data.message === 'string'
+              ? error.response.data.message
+              : null
+
+          if (messageText?.includes('at most 3')) {
+            message.error(translate('product.detail.reviewsSection.limitReached', { max: MAX_REVIEWS_PER_PRODUCT }))
+            return
+          }
+          message.error(translate('product.detail.reviewsSection.error'))
+        },
       },
     )
   }
@@ -210,6 +237,9 @@ export default function ProductDetailPage() {
           reviewRating={reviewRating}
           reviewComment={reviewComment}
           reviewSubmitting={createReviewMutation.isPending}
+          canWriteReview={canWriteReview}
+          userReviewCount={userReviewCount}
+          maxReviews={MAX_REVIEWS_PER_PRODUCT}
           onReviewRatingChange={setReviewRating}
           onReviewCommentChange={setReviewComment}
           onSubmitReview={handleSubmitReview}

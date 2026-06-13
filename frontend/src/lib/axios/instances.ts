@@ -16,16 +16,32 @@ const apiBaseUrl =
 const ACCESS_TOKEN_KEY = 'novashop.accessToken'
 const REFRESH_TOKEN_KEY = 'novashop.refreshToken'
 
+const accessTokenListeners = new Set<() => void>()
+
+function notifyAccessTokenChange(): void {
+  accessTokenListeners.forEach((listener) => listener())
+}
+
+/** Subscribe token presence — dùng với useSyncExternalStore trong AuthProvider. */
+export function subscribeAccessToken(listener: () => void): () => void {
+  accessTokenListeners.add(listener)
+  return () => {
+    accessTokenListeners.delete(listener)
+  }
+}
+
 export function setTokens(accessToken: string, refreshToken?: string | null): void {
   localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
   if (refreshToken) {
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
   }
+  notifyAccessTokenChange()
 }
 
 export function clearTokens(): void {
   localStorage.removeItem(ACCESS_TOKEN_KEY)
   localStorage.removeItem(REFRESH_TOKEN_KEY)
+  notifyAccessTokenChange()
 }
 
 export function getAccessToken(): string | null {

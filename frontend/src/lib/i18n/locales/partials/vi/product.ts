@@ -120,6 +120,9 @@ export const product = {
       submit: 'Gửi đánh giá',
       success: 'Gửi đánh giá thành công',
       error: 'Không thể gửi đánh giá (cần mua và nhận hàng trước)',
+      limitReached: 'Bạn đã đánh giá sản phẩm này tối đa {{max}} lần.',
+      remaining: 'Đã dùng {{count}}/{{max}} lượt đánh giá',
+      shopReply: 'Phản hồi từ {{name}}',
     },
     messages: {
       addedToCart: 'Đã thêm vào giỏ hàng',

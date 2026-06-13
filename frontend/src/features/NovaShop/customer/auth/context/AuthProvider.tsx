@@ -1,7 +1,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useCallback, useMemo, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useSyncExternalStore, type ReactNode } from 'react'
 import authService from '@/features/NovaShop/customer/auth/services/authService'
-import { clearTokens, hasAccessToken, setTokens } from '@/lib/axios/instances'
+import {
+  clearTokens,
+  hasAccessToken,
+  setTokens,
+  subscribeAccessToken,
+} from '@/lib/axios/instances'
 import type { UserProfile } from '@/types/auth.types'
 import { AuthContext, type AuthContextValue, type LoginSessionInput } from './authContext'
 
@@ -19,7 +24,7 @@ async function fetchCurrentUser(): Promise<UserProfile> {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
-  const tokenPresent = hasAccessToken()
+  const tokenPresent = useSyncExternalStore(subscribeAccessToken, hasAccessToken, () => false)
 
   const profileQuery = useQuery({
     queryKey: AUTH_ME_QUERY_KEY,
@@ -30,7 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   const user = profileQuery.data ?? null
-  const isBootstrapping = tokenPresent && profileQuery.isPending
+  const isBootstrapping =
+    tokenPresent && !user && (profileQuery.isPending || profileQuery.isFetching)
 
   const refreshProfile = useCallback(async (): Promise<UserProfile | null> => {
     if (!hasAccessToken()) {
@@ -68,6 +74,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryClient.removeQueries({ queryKey: ['notification-inbox'] })
     queryClient.removeQueries({ queryKey: ['notifications', 'preferences'] })
   }, [queryClient])
+
+  useEffect(() => {
+    if (!tokenPresent || user || profileQuery.isFetching) {
+      return
+    }
+    void refreshProfile()
+  }, [tokenPresent, user, profileQuery.isFetching, refreshProfile])
 
   const value = useMemo<AuthContextValue>(
     () => ({

@@ -41,7 +41,7 @@ function HeaderCartLink() {
 export default function CustomerHeader() {
   const { t: translate } = useTranslation()
   const navigate = useNavigate()
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, isBootstrapping } = useAuth()
   const [searchKeyword, setSearchKeyword] = useState('')
 
   const handleSearchSubmit = (event: SubmitEvent<HTMLFormElement>) => {
@@ -133,7 +133,12 @@ export default function CustomerHeader() {
                   badgeClassName="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-linear-to-r from-fuchsia-500 to-purple-500 px-1 text-[10px] font-bold text-white ring-2 ring-white"
                 />
               ) : null}
-              {!isAuthenticated ? (
+              {isBootstrapping ? (
+                <span
+                  aria-hidden
+                  className="hidden h-10 w-[7.5rem] shrink-0 animate-pulse rounded-xl bg-slate-100 lg:block"
+                />
+              ) : !isAuthenticated ? (
                 <>
                   <Link
                     to={PATHS.LOGIN}

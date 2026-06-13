@@ -5,7 +5,8 @@ import { PATHS } from '@/router/paths'
 import LanguageSwitcher from '@/lib/i18n/LanguageSwitcher'
 import NotificationBell from '@/features/NovaShop/shared/notifications/components/NotificationBell'
 import { useAuth } from '@/features/NovaShop/customer/auth/hooks/useAuth'
-import Button from '../../../shared/ui/Button'
+import { BUTTON_SIZE_CLASS, BUTTON_VARIANT_CLASS } from '../../../shared/ui/button.constants'
+import { cx } from '../../../shared/ui/cx'
 import AdminGlobalSearch from './AdminGlobalSearch'
 
 interface AdminHeaderProps {
@@ -50,10 +51,17 @@ export default function AdminHeader({
       <AdminGlobalSearch />
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
-        <Link to={PATHS.HOME} className="hidden sm:block">
-          <Button variant="ghost" size="sm" leftIcon={<Store className="size-4" />}>
-            {t('admin.header.viewStore')}
-          </Button>
+        <Link
+          to={PATHS.HOME}
+          className={cx(
+            'hidden sm:inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl font-semibold tracking-tight transition-all duration-200',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/60 focus-visible:ring-offset-2',
+            BUTTON_VARIANT_CLASS.ghost,
+            BUTTON_SIZE_CLASS.sm,
+          )}
+        >
+          <Store className="size-4" />
+          {t('admin.header.viewStore')}
         </Link>
 
         <LanguageSwitcher className="grid size-10 shrink-0 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900" />

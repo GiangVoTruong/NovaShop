@@ -120,6 +120,9 @@ export const product = {
       submit: 'Submit review',
       success: 'Review submitted',
       error: 'Could not submit review (purchase and delivery required)',
+      limitReached: 'You have reached the maximum of {{max}} reviews for this product.',
+      remaining: '{{count}}/{{max}} reviews used',
+      shopReply: 'Reply from {{name}}',
     },
     messages: {
       addedToCart: 'Added to cart',

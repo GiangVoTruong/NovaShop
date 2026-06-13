@@ -19,6 +19,9 @@ interface ProductDetailTabsSectionProps {
   reviewRating: number
   reviewComment: string
   reviewSubmitting: boolean
+  canWriteReview: boolean
+  userReviewCount: number
+  maxReviews: number
   onReviewRatingChange: (rating: number) => void
   onReviewCommentChange: (comment: string) => void
   onSubmitReview: () => void
@@ -32,6 +35,9 @@ export default function ProductDetailTabsSection({
   reviewRating,
   reviewComment,
   reviewSubmitting,
+  canWriteReview,
+  userReviewCount,
+  maxReviews,
   onReviewRatingChange,
   onReviewCommentChange,
   onSubmitReview,
@@ -169,61 +175,90 @@ export default function ProductDetailTabsSection({
                     {review.comment && (
                       <p className="mt-3 text-sm leading-relaxed text-slate-600">{review.comment}</p>
                     )}
+                    {review.replyComment && (
+                      <div className="mt-4 rounded-xl border border-fuchsia-100 bg-fuchsia-50/60 px-4 py-3">
+                        <p className="text-xs font-semibold text-fuchsia-700">
+                          {translate('product.detail.reviewsSection.shopReply', {
+                            name: review.replyUserFullName ?? 'NovaShop',
+                          })}
+                        </p>
+                        {review.replyCreatedAt && (
+                          <p className="mt-0.5 text-[11px] text-fuchsia-600/70">
+                            {formatDate(review.replyCreatedAt)}
+                          </p>
+                        )}
+                        <p className="mt-2 text-sm leading-relaxed text-slate-700">{review.replyComment}</p>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
             )}
 
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-5">
-              <h3 className="text-sm font-bold text-slate-900">
-                {translate('product.detail.reviewsSection.writeTitle')}
-              </h3>
-
-              <div className="mt-4">
-                <p className="mb-2 text-xs font-medium text-slate-500">
-                  {translate('product.detail.reviewsSection.rating')}
-                </p>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((rating) => (
-                    <button
-                      key={rating}
-                      type="button"
-                      onClick={() => onReviewRatingChange(rating)}
-                      className="rounded-lg p-1 transition-transform hover:scale-110"
-                      aria-label={`${rating} ${translate('product.detail.reviewsSection.rating')}`}
-                    >
-                      <Star
-                        className={cx(
-                          'size-7',
-                          rating <= reviewRating
-                            ? 'fill-amber-400 text-amber-400'
-                            : 'fill-slate-200 text-slate-200',
-                        )}
-                      />
-                    </button>
-                  ))}
+            {canWriteReview ? (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-sm font-bold text-slate-900">
+                    {translate('product.detail.reviewsSection.writeTitle')}
+                  </h3>
+                  <p className="text-xs font-medium text-slate-500">
+                    {translate('product.detail.reviewsSection.remaining', {
+                      count: userReviewCount,
+                      max: maxReviews,
+                    })}
+                  </p>
                 </div>
+
+                <div className="mt-4">
+                  <p className="mb-2 text-xs font-medium text-slate-500">
+                    {translate('product.detail.reviewsSection.rating')}
+                  </p>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                      <button
+                        key={rating}
+                        type="button"
+                        onClick={() => onReviewRatingChange(rating)}
+                        className="rounded-lg p-1 transition-transform hover:scale-110"
+                        aria-label={`${rating} ${translate('product.detail.reviewsSection.rating')}`}
+                      >
+                        <Star
+                          className={cx(
+                            'size-7',
+                            rating <= reviewRating
+                              ? 'fill-amber-400 text-amber-400'
+                              : 'fill-slate-200 text-slate-200',
+                          )}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <textarea
+                  id="review-comment"
+                  name="comment"
+                  value={reviewComment}
+                  onChange={(event) => onReviewCommentChange(event.target.value)}
+                  placeholder={translate('product.detail.reviewsSection.commentPlaceholder')}
+                  rows={3}
+                  className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-fuchsia-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20"
+                />
+
+                <Button
+                  className="mt-4"
+                  glow
+                  loading={reviewSubmitting}
+                  onClick={onSubmitReview}
+                >
+                  {translate('product.detail.reviewsSection.submit')}
+                </Button>
               </div>
-
-              <textarea
-                id="review-comment"
-                name="comment"
-                value={reviewComment}
-                onChange={(event) => onReviewCommentChange(event.target.value)}
-                placeholder={translate('product.detail.reviewsSection.commentPlaceholder')}
-                rows={3}
-                className="mt-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-fuchsia-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/20"
-              />
-
-              <Button
-                className="mt-4"
-                glow
-                loading={reviewSubmitting}
-                onClick={onSubmitReview}
-              >
-                {translate('product.detail.reviewsSection.submit')}
-              </Button>
-            </div>
+            ) : userReviewCount >= maxReviews ? (
+              <p className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                {translate('product.detail.reviewsSection.limitReached', { max: maxReviews })}
+              </p>
+            ) : null}
           </div>
         )}
       </div>
