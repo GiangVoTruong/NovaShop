@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build && node scripts/copySpaFallback.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "serve dist -s -l tcp://0.0.0.0:${PORT:-4173}"
+    "start": "serve dist -s -l tcp://0.0.0.0:${PORT:-4173}",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@ant-design/charts": "^2.6.7",
@@ -31,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.60.0",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
