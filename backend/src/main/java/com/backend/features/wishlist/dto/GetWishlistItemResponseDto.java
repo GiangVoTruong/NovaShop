@@ -10,7 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import com.backend.features.product.Product;
+
 @Getter
 @Setter
 @NoArgsConstructor

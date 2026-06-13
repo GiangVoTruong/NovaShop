@@ -11,14 +11,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -42,13 +41,20 @@ class ReviewControllerTest {
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(reviewController)
-                .setMessageConverters(new MappingJackson2HttpMessageConverter())
-                .build();
-        objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
+    private MockMvc mockMvc() {
+        if (mockMvc == null) {
+            mockMvc = MockMvcBuilders.standaloneSetup(reviewController)
+                    .setMessageConverters(new JacksonJsonHttpMessageConverter())
+                    .build();
+            objectMapper = new ObjectMapper();
+            objectMapper.findAndRegisterModules();
+        }
+        return mockMvc;
+    }
+
+    private ObjectMapper objectMapper() {
+        mockMvc();
+        return objectMapper;
     }
 
     @Test
@@ -64,10 +70,10 @@ class ReviewControllerTest {
         when(reviewService.createReview(eq(PRODUCT_ID), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(response);
 
-        String body = objectMapper.writeValueAsString(
+        String body = objectMapper().writeValueAsString(
                 java.util.Map.of("rating", 5, "comment", "Excellent"));
 
-        mockMvc.perform(post("/api/products/{productId}/reviews", PRODUCT_ID)
+        mockMvc().perform(post("/api/products/{productId}/reviews", PRODUCT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
@@ -79,9 +85,9 @@ class ReviewControllerTest {
 
     @Test
     void createReview_returns400WhenRatingInvalid() throws Exception {
-        String body = objectMapper.writeValueAsString(java.util.Map.of("rating", 0));
+        String body = objectMapper().writeValueAsString(java.util.Map.of("rating", 0));
 
-        mockMvc.perform(post("/api/products/{productId}/reviews", PRODUCT_ID)
+        mockMvc().perform(post("/api/products/{productId}/reviews", PRODUCT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -89,7 +95,7 @@ class ReviewControllerTest {
 
     @Test
     void deleteReview_returns200() throws Exception {
-        mockMvc.perform(delete("/api/reviews/{id}", REVIEW_ID))
+        mockMvc().perform(delete("/api/reviews/{id}", REVIEW_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Xóa review thành công"));
 

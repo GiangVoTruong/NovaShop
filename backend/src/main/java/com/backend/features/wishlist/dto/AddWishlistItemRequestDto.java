@@ -5,7 +5,7 @@ import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import com.backend.features.product.Product;
+
 @Getter
 @Setter
 public class AddWishlistItemRequestDto {

@@ -7,8 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
-import com.backend.features.cart.Cart;
-import com.backend.features.coupon.Coupon;
+
 @Getter
 @Setter
 public class ValidateCouponRequestDto {

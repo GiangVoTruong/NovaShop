@@ -24,7 +24,7 @@ import com.backend.features.user.repository.UserRepository;
 import com.backend.features.auth.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
-import com.backend.features.product.Product;
+
 @Service
 @RequiredArgsConstructor
 public class ReviewService {

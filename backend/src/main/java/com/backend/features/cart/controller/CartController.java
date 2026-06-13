@@ -12,18 +12,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.common.dto.ApiResponse;
+import com.backend.common.dto.ApiResponses;
 import com.backend.features.cart.dto.AddCartItemRequestDto;
 import com.backend.features.cart.dto.GetCartResponseDto;
 import com.backend.features.cart.dto.UpdateCartItemRequestDto;
-import com.backend.common.dto.ApiResponse;
-import com.backend.common.dto.ApiResponses;
 import com.backend.features.cart.service.CartService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import com.backend.features.cart.Cart;
+
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
@@ -66,4 +66,3 @@ public class CartController {
         return ApiResponses.ok(cartService.removeItem(itemId), "Xóa sản phẩm khỏi giỏ hàng thành công");
     }
 }
-

@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.backend.features.cart.CartItem;
-import com.backend.features.product.Product;
+
 public interface CartItemRepository extends JpaRepository<CartItem, UUID> {
 
     List<CartItem> findByCartId(UUID cartId);

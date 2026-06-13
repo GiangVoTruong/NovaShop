@@ -12,8 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.backend.features.order.ShopOrder;
 import com.backend.features.order.enums.OrderStatus;
-import com.backend.features.order.OrderItem;
-import com.backend.features.product.Product;
+
 public interface OrderRepository extends JpaRepository<ShopOrder, UUID>, JpaSpecificationExecutor<ShopOrder> {
 
     long countByStatus(OrderStatus status);

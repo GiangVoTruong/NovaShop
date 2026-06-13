@@ -1,29 +1,27 @@
 package com.backend.controller;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
+import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.backend.features.cart.controller.CartController;
@@ -31,6 +29,7 @@ import com.backend.features.cart.dto.GetCartItemResponseDto;
 import com.backend.features.cart.dto.GetCartResponseDto;
 import com.backend.features.cart.service.CartService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 @ExtendWith(MockitoExtension.class)
 class CartControllerTest {
 
@@ -47,13 +46,20 @@ class CartControllerTest {
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(cartController)
-                .setMessageConverters(new MappingJackson2HttpMessageConverter())
-                .build();
-        objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
+    private MockMvc mockMvc() {
+        if (mockMvc == null) {
+            mockMvc = MockMvcBuilders.standaloneSetup(cartController)
+                    .setMessageConverters(new JacksonJsonHttpMessageConverter())
+                    .build();
+            objectMapper = new ObjectMapper();
+            objectMapper.findAndRegisterModules();
+        }
+        return mockMvc;
+    }
+
+    private ObjectMapper objectMapper() {
+        mockMvc();
+        return objectMapper;
     }
 
     private GetCartResponseDto sampleCartResponse() {
@@ -79,7 +85,7 @@ class CartControllerTest {
     void getMyCart_returns200() throws Exception {
         when(cartService.getMyCart()).thenReturn(sampleCartResponse());
 
-        mockMvc.perform(get("/api/cart"))
+        mockMvc().perform(get("/api/cart"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.id").value(CART_ID.toString()))
@@ -93,12 +99,12 @@ class CartControllerTest {
     void addItem_returns200WithValidRequest() throws Exception {
         when(cartService.addItem(any())).thenReturn(sampleCartResponse());
 
-        String body = objectMapper.writeValueAsString(
+        String body = objectMapper().writeValueAsString(
                 java.util.Map.of("productId", PRODUCT_ID.toString(), "quantity", 2));
 
-        mockMvc.perform(post("/api/cart/items")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        mockMvc().perform(post("/api/cart/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.totalAmount").value(160000));
@@ -108,12 +114,12 @@ class CartControllerTest {
 
     @Test
     void addItem_returns400WhenQuantityInvalid() throws Exception {
-        String body = objectMapper.writeValueAsString(
+        String body = objectMapper().writeValueAsString(
                 java.util.Map.of("productId", PRODUCT_ID.toString(), "quantity", 0));
 
-        mockMvc.perform(post("/api/cart/items")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        mockMvc().perform(post("/api/cart/items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
                 .andExpect(status().isBadRequest());
     }
 
@@ -121,11 +127,11 @@ class CartControllerTest {
     void updateItem_returns200() throws Exception {
         when(cartService.updateItem(eq(CART_ITEM_ID), any())).thenReturn(sampleCartResponse());
 
-        String body = objectMapper.writeValueAsString(java.util.Map.of("quantity", 3));
+        String body = objectMapper().writeValueAsString(java.util.Map.of("quantity", 3));
 
-        mockMvc.perform(put("/api/cart/items/{itemId}", CART_ITEM_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+        mockMvc().perform(put("/api/cart/items/{itemId}", CART_ITEM_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Cập nhật giỏ hàng thành công"));
 
@@ -142,7 +148,7 @@ class CartControllerTest {
                 .build();
         when(cartService.removeItem(CART_ITEM_ID)).thenReturn(emptyCart);
 
-        mockMvc.perform(delete("/api/cart/items/{itemId}", CART_ITEM_ID))
+        mockMvc().perform(delete("/api/cart/items/{itemId}", CART_ITEM_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.itemCount").value(0));
 

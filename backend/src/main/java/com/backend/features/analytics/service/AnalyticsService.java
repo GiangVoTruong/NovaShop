@@ -11,19 +11,19 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.backend.common.enums.UserRole;
 import com.backend.features.analytics.dto.AdminAnalyticsSummaryResponseDto;
 import com.backend.features.analytics.dto.GetAnalyticsOverviewResponseDto;
+import com.backend.features.auth.security.SecurityUtils;
 import com.backend.features.order.enums.OrderStatus;
-import com.backend.features.product.enums.ProductStatus;
-import com.backend.common.enums.UserRole;
 import com.backend.features.order.repository.OrderItemRepository;
 import com.backend.features.order.repository.OrderRepository;
+import com.backend.features.product.enums.ProductStatus;
 import com.backend.features.product.repository.ProductRepository;
 import com.backend.features.user.repository.UserRepository;
-import com.backend.features.auth.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
-import com.backend.features.product.Product;
+
 @Service
 @RequiredArgsConstructor
 public class AnalyticsService {

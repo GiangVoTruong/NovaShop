@@ -20,7 +20,7 @@ import com.backend.features.product.repository.ProductRepository;
 import com.backend.features.auth.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
-import com.backend.features.product.ProductImage;
+
 @Service
 @RequiredArgsConstructor
 public class InventoryService {

@@ -21,8 +21,7 @@ import com.backend.features.auth.security.JwtService;
 import com.backend.features.auth.security.JwtUserPrincipal;
 
 import lombok.RequiredArgsConstructor;
-import com.backend.features.notification.Notification;
-import com.backend.features.user.User;
+
 /**
  * Cấu hình WebSocket (STOMP) cho NovaShop.
  *

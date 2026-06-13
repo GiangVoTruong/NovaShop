@@ -55,3 +55,6 @@ db/
 
 # OS
 Thumbs.db
+
+# Playwright / e2e artifacts
+frontend/test-results/

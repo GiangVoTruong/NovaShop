@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import com.backend.features.payment.Payment;
+
 @RestController
 @RequestMapping("/api/payments/vnpay")
 @RequiredArgsConstructor

@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import com.backend.features.product.Category;
+
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor

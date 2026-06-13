@@ -12,38 +12,37 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.backend.common.enums.UserRole;
 import com.backend.common.util.ProductPriceUtils;
+import com.backend.features.auth.security.JwtUserPrincipal;
+import com.backend.features.cart.Cart;
+import com.backend.features.cart.CartItem;
 import com.backend.features.cart.dto.AddCartItemRequestDto;
 import com.backend.features.cart.dto.GetCartResponseDto;
 import com.backend.features.cart.dto.UpdateCartItemRequestDto;
-import com.backend.features.cart.Cart;
-import com.backend.features.cart.CartItem;
-import com.backend.features.product.Product;
-import com.backend.features.product.ProductImage;
-import com.backend.features.user.User;
-import com.backend.features.product.enums.ProductStatus;
-import com.backend.common.enums.UserRole;
 import com.backend.features.cart.repository.CartItemRepository;
 import com.backend.features.cart.repository.CartRepository;
+import com.backend.features.product.Product;
+import com.backend.features.product.ProductImage;
+import com.backend.features.product.enums.ProductStatus;
 import com.backend.features.product.repository.ProductImageRepository;
 import com.backend.features.product.repository.ProductRepository;
+import com.backend.features.user.User;
 import com.backend.features.user.repository.UserRepository;
-import com.backend.features.auth.security.JwtUserPrincipal;
-import com.backend.features.cart.service.CartService;
-@ExtendWith(MockitoExtension.class)
+
 class CartServiceTest {
 
     private static final UUID USER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
@@ -69,38 +68,13 @@ class CartServiceTest {
     @InjectMocks
     private CartService cartService;
 
-    private User user;
-    private Cart cart;
-    private Product product;
-
-    @BeforeEach
-    void setUpSecurityContext() {
-        JwtUserPrincipal principal = new JwtUserPrincipal(USER_ID, "customer@example.com", UserRole.CUSTOMER);
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(principal, null, List.of()));
-
-        user = User.builder().id(USER_ID).email("customer@example.com").build();
-        cart = Cart.builder().id(CART_ID).user(user).build();
-        product = Product.builder()
-                .id(PRODUCT_ID)
-                .name("Test Product")
-                .slug("test-product")
-                .price(new BigDecimal("100000"))
-                .discountPrice(new BigDecimal("80000"))
-                .stock(10)
-                .status(ProductStatus.ACTIVE)
-                .build();
-    }
-
-    @AfterEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
-    }
+    @RegisterExtension
+    private final CartTestFixture fixture = new CartTestFixture();
 
     @Test
     void getMyCart_createsCartWhenMissing() {
         when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.empty());
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(fixture.testUser));
         when(cartRepository.save(any(Cart.class))).thenAnswer(invocation -> {
             Cart savedCart = invocation.getArgument(0);
             savedCart.setId(CART_ID);
@@ -120,7 +94,7 @@ class CartServiceTest {
     @Test
     void getMyCart_returnsExistingCartWithItems() {
         CartItem cartItem = buildCartItem(CART_ITEM_ID, 2);
-        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(fixture.testCart));
         when(cartItemRepository.findDetailedByCartId(CART_ID)).thenReturn(List.of(cartItem));
         when(productImageRepository.findByProductIdAndIsPrimaryTrue(PRODUCT_ID))
                 .thenReturn(Optional.of(ProductImage.builder().url("https://cdn.example/img.jpg").build()));
@@ -142,8 +116,8 @@ class CartServiceTest {
         request.setProductId(PRODUCT_ID);
         request.setQuantity(3);
 
-        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(cart));
-        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(fixture.testCart));
+        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(fixture.testProduct));
         when(cartItemRepository.findByCartIdAndProductId(CART_ID, PRODUCT_ID)).thenReturn(Optional.empty());
         when(cartItemRepository.save(any(CartItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(cartItemRepository.findDetailedByCartId(CART_ID)).thenReturn(
@@ -154,8 +128,8 @@ class CartServiceTest {
         ArgumentCaptor<CartItem> captor = ArgumentCaptor.forClass(CartItem.class);
         verify(cartItemRepository).save(captor.capture());
         assertThat(captor.getValue().getQuantity()).isEqualTo(3);
-        assertThat(captor.getValue().getCart()).isEqualTo(cart);
-        assertThat(captor.getValue().getProduct()).isEqualTo(product);
+        assertThat(captor.getValue().getCart()).isEqualTo(fixture.testCart);
+        assertThat(captor.getValue().getProduct()).isEqualTo(fixture.testProduct);
         assertThat(response.getItemCount()).isEqualTo(3);
     }
 
@@ -167,8 +141,8 @@ class CartServiceTest {
 
         CartItem existingItem = buildCartItem(CART_ITEM_ID, 3);
 
-        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(cart));
-        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(fixture.testCart));
+        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(fixture.testProduct));
         when(cartItemRepository.findByCartIdAndProductId(CART_ID, PRODUCT_ID)).thenReturn(Optional.of(existingItem));
         when(cartItemRepository.save(existingItem)).thenReturn(existingItem);
         when(cartItemRepository.findDetailedByCartId(CART_ID)).thenReturn(
@@ -191,7 +165,7 @@ class CartServiceTest {
                 .status(ProductStatus.INACTIVE)
                 .build();
 
-        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(fixture.testCart));
         when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(inactiveProduct));
 
         assertThatThrownBy(() -> cartService.addItem(request))
@@ -208,8 +182,8 @@ class CartServiceTest {
         request.setProductId(PRODUCT_ID);
         request.setQuantity(11);
 
-        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(cart));
-        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
+        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(fixture.testCart));
+        when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(fixture.testProduct));
 
         assertThatThrownBy(() -> cartService.addItem(request))
                 .isInstanceOf(ResponseStatusException.class)
@@ -224,7 +198,7 @@ class CartServiceTest {
 
         CartItem cartItem = buildCartItem(CART_ITEM_ID, 2);
 
-        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(fixture.testCart));
         when(cartItemRepository.findById(CART_ITEM_ID)).thenReturn(Optional.of(cartItem));
         when(cartItemRepository.save(cartItem)).thenReturn(cartItem);
         when(cartItemRepository.findDetailedByCartId(CART_ID)).thenReturn(
@@ -241,7 +215,7 @@ class CartServiceTest {
         UpdateCartItemRequestDto request = new UpdateCartItemRequestDto();
         request.setQuantity(1);
 
-        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(fixture.testCart));
         when(cartItemRepository.findById(CART_ITEM_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> cartService.updateItem(CART_ITEM_ID, request))
@@ -255,15 +229,15 @@ class CartServiceTest {
         UpdateCartItemRequestDto request = new UpdateCartItemRequestDto();
         request.setQuantity(1);
 
-        Cart otherCart = Cart.builder().id(UUID.randomUUID()).user(user).build();
+        Cart otherCart = Cart.builder().id(UUID.randomUUID()).user(fixture.testUser).build();
         CartItem cartItem = CartItem.builder()
                 .id(CART_ITEM_ID)
                 .cart(otherCart)
-                .product(product)
+                .product(fixture.testProduct)
                 .quantity(1)
                 .build();
 
-        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(fixture.testCart));
         when(cartItemRepository.findById(CART_ITEM_ID)).thenReturn(Optional.of(cartItem));
 
         assertThatThrownBy(() -> cartService.updateItem(CART_ITEM_ID, request))
@@ -276,7 +250,7 @@ class CartServiceTest {
     void removeItem_deletesCartItem() {
         CartItem cartItem = buildCartItem(CART_ITEM_ID, 2);
 
-        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserId(USER_ID)).thenReturn(Optional.of(fixture.testCart));
         when(cartItemRepository.findById(CART_ITEM_ID)).thenReturn(Optional.of(cartItem));
         when(cartItemRepository.findDetailedByCartId(CART_ID)).thenReturn(List.of());
 
@@ -295,22 +269,53 @@ class CartServiceTest {
 
     @Test
     void resolveUnitPrice_prefersDiscountPrice() {
-        assertThat(ProductPriceUtils.resolveUnitPrice(product)).isEqualByComparingTo("80000");
+        assertThat(ProductPriceUtils.resolveUnitPrice(fixture.testProduct)).isEqualByComparingTo("80000");
     }
 
     @Test
     void resolveUnitPrice_fallsBackToRegularPrice() {
-        product.setDiscountPrice(null);
+        fixture.testProduct.setDiscountPrice(null);
 
-        assertThat(ProductPriceUtils.resolveUnitPrice(product)).isEqualByComparingTo("100000");
+        assertThat(ProductPriceUtils.resolveUnitPrice(fixture.testProduct)).isEqualByComparingTo("100000");
     }
 
     private CartItem buildCartItem(UUID itemId, int quantity) {
         return CartItem.builder()
                 .id(itemId)
-                .cart(cart)
-                .product(product)
+                .cart(fixture.testCart)
+                .product(fixture.testProduct)
                 .quantity(quantity)
                 .build();
+    }
+
+    private final class CartTestFixture implements BeforeEachCallback, AfterEachCallback {
+
+        private User testUser;
+        private Cart testCart;
+        private Product testProduct;
+
+        @Override
+        public void beforeEach(ExtensionContext extensionContext) {
+            JwtUserPrincipal principal = new JwtUserPrincipal(USER_ID, "customer@example.com", UserRole.CUSTOMER);
+            SecurityContextHolder.getContext().setAuthentication(
+                    new UsernamePasswordAuthenticationToken(principal, null, List.of()));
+
+            testUser = User.builder().id(USER_ID).email("customer@example.com").build();
+            testCart = Cart.builder().id(CART_ID).user(testUser).build();
+            testProduct = Product.builder()
+                    .id(PRODUCT_ID)
+                    .name("Test Product")
+                    .slug("test-product")
+                    .price(new BigDecimal("100000"))
+                    .discountPrice(new BigDecimal("80000"))
+                    .stock(10)
+                    .status(ProductStatus.ACTIVE)
+                    .build();
+        }
+
+        @Override
+        public void afterEach(ExtensionContext extensionContext) {
+            SecurityContextHolder.clearContext();
+        }
     }
 }

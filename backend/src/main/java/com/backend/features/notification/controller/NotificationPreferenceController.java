@@ -15,8 +15,7 @@ import com.backend.features.notification.service.NotificationPreferenceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import com.backend.features.notification.Notification;
-import com.backend.features.user.User;
+
 @RestController
 @RequestMapping("/api/users/me/notifications/preferences")
 @RequiredArgsConstructor

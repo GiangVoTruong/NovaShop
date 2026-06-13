@@ -26,7 +26,7 @@ import com.backend.features.auth.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 import com.backend.features.notification.service.NotificationService;
-import com.backend.features.review.Review;
+
 @Service
 @RequiredArgsConstructor
 public class SellerApplicationService {

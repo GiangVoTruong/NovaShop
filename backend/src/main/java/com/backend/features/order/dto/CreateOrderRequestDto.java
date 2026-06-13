@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import com.backend.features.user.Address;
+
 @Getter
 @Setter
 public class CreateOrderRequestDto {

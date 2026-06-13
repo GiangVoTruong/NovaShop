@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.backend.features.permission.UserPermission;
 import com.backend.features.permission.UserPermissionId;
-import com.backend.features.permission.Permission;
+
 public interface UserPermissionRepository extends JpaRepository<UserPermission, UserPermissionId> {
 
     @Query("""
