@@ -5,10 +5,10 @@ import type { ComponentType, ReactNode } from 'react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import useLogin from '../hooks/useLogin'
 import useGoogleLogin from '../hooks/useGoogleLogin'
-import GoogleSignInButton from './GoogleSignInButton'
+import useLogin from '../hooks/useLogin'
 import { getGoogleClientId } from '../lib/googleIdentity'
+import GoogleSignInButton from './GoogleSignInButton'
 
 export default function LoginPage() {
   const { t: translate } = useTranslation()
@@ -107,7 +107,7 @@ export default function LoginPage() {
                   type="email"
                   placeholder={translate('common.email')}
                   className="auth-input"
-                  defaultValue="minhanh@nova.shop"
+                  defaultValue="truonggianga427@gmail.com"
                 />
               </FieldGroup>
 
@@ -118,6 +118,7 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder={translate('common.password')}
                   className="auth-input pr-12"
+                  defaultValue="giangvt23"
                 />
                 <button
                   type="button"
@@ -163,7 +164,10 @@ export default function LoginPage() {
                   {translate('auth.continueWithGoogle')}
                 </Button>
               ) : (
-                <GoogleSignInButton onCredential={loginWithGoogle} disabled={isGooglePending || isPending} />
+                <GoogleSignInButton
+                  onCredential={loginWithGoogle}
+                  disabled={isGooglePending || isPending}
+                />
               )}
             </form>
 
