@@ -110,6 +110,8 @@ export const checkout = {
     success: '🎉 Order placed successfully!',
     failed: 'Could not place order. Please try again.',
     noAddress: 'Please select a shipping address',
+    cartRestoreFailed:
+      'Your order was placed, but we could not restore your cart. Open the cart page to retry.',
   },
   vnpay: {
     createFailed: 'Could not create VNPay payment link. You can retry from the order page.',

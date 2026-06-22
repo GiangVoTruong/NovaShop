@@ -4,16 +4,22 @@ import EmptyState from '@/features/NovaShop/shared/ui/EmptyState'
 import { PATHS, productDetailPath } from '@/router/paths'
 import { Checkbox, Spin, message } from 'antd'
 import { ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useQueryClient } from '@tanstack/react-query'
 import CouponInputSection from '../../checkout/components/CouponInputSection'
 import { useCheckoutCoupon } from '../../checkout/hooks/useCheckoutCoupon'
 import {
   clearPartialCheckoutSession,
+  readPartialCheckoutSession,
+  recoverOrphanedPartialCheckoutCart,
   startPartialCheckoutSession,
 } from '../lib/partialCheckoutSession'
+import { readBuyNowSession, recoverOrphanedBuyNowCart } from '../lib/buyNowCart'
+import { retryAsync } from '../lib/retryAsync'
 import {
+  CART_QUERY_KEY,
   useCart,
   useClearCart,
   useRemoveCartItem,
@@ -28,15 +34,39 @@ function toAmount(value: number | string): number {
 export default function CartPage() {
   const { t: translate } = useTranslation()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const cartQuery = useCart()
   const updateItemMutation = useUpdateCartItem()
   const removeItemMutation = useRemoveCartItem()
   const clearCartMutation = useClearCart()
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(() => new Set())
+  const cartRecoveryAttemptedRef = useRef(false)
 
   const cart = cartQuery.data
   const items = cart?.items ?? []
   const itemIdsKey = useMemo(() => items.map((item) => item.id).join('|'), [items])
+
+  useEffect(() => {
+    if (cartRecoveryAttemptedRef.current || !cartQuery.isSuccess || items.length > 0) {
+      return
+    }
+
+    const hasOrphanedBuyNowSession = readBuyNowSession() !== null
+    const hasOrphanedPartialSession = readPartialCheckoutSession() !== null
+    if (!hasOrphanedBuyNowSession && !hasOrphanedPartialSession) {
+      return
+    }
+
+    cartRecoveryAttemptedRef.current = true
+    void retryAsync(() =>
+      hasOrphanedBuyNowSession
+        ? recoverOrphanedBuyNowCart(queryClient, CART_QUERY_KEY)
+        : recoverOrphanedPartialCheckoutCart(queryClient, CART_QUERY_KEY),
+    ).catch((error) => {
+      console.error('[CartPage] recover orphaned checkout cart failed:', error)
+      message.warning(translate('checkout.messages.cartRestoreFailed'))
+    })
+  }, [cartQuery.isSuccess, items.length, queryClient, translate])
 
   useEffect(() => {
     setSelectedItemIds((previous) => {

@@ -182,3 +182,18 @@ export async function rollbackPartialCheckoutSync(
   clearPartialCheckoutSession()
   queryClient.setQueryData(cartQueryKey, restoredCart)
 }
+
+/** Restore unselected items left after checkout succeeded but finalize failed. */
+export async function recoverOrphanedPartialCheckoutCart(
+  queryClient: { setQueryData: (key: readonly string[], data: ApiCartResponse) => void },
+  cartQueryKey: readonly string[],
+): Promise<ApiCartResponse | null> {
+  if (!readPartialCheckoutSession()) {
+    return null
+  }
+
+  const restoredCart = await restoreUnselectedCartItems()
+  clearPartialCheckoutSession()
+  queryClient.setQueryData(cartQueryKey, restoredCart)
+  return restoredCart
+}

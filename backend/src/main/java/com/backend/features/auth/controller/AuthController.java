@@ -6,26 +6,26 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.common.dto.ApiResponse;
+import com.backend.common.dto.ApiResponses;
+import com.backend.common.dto.MessageResponseDto;
 import com.backend.features.auth.dto.AuthForgotPasswordRequestDto;
 import com.backend.features.auth.dto.AuthGoogleRequestDto;
 import com.backend.features.auth.dto.AuthLoginRequestDto;
-import com.backend.features.auth.dto.ChangePasswordRequestDto;
 import com.backend.features.auth.dto.AuthLoginResponseDto;
 import com.backend.features.auth.dto.AuthRefreshRequestDto;
 import com.backend.features.auth.dto.AuthRegisterRequestDto;
 import com.backend.features.auth.dto.AuthRegisterResponseDto;
-import com.backend.features.auth.dto.AuthResetPasswordRequestDto;
 import com.backend.features.auth.dto.AuthResendVerificationRequestDto;
+import com.backend.features.auth.dto.AuthResetPasswordRequestDto;
 import com.backend.features.auth.dto.AuthVerifyEmailRequestDto;
-import com.backend.common.dto.ApiResponse;
-import com.backend.common.dto.ApiResponses;
-import com.backend.common.dto.MessageResponseDto;
+import com.backend.features.auth.dto.ChangePasswordRequestDto;
 import com.backend.features.auth.service.AuthService;
 import com.backend.features.auth.service.PasswordResetService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -125,4 +125,3 @@ public class AuthController {
                 "Password reset successful");
     }
 }
-

@@ -48,6 +48,12 @@ class ReviewIntegrationTest {
 
     @Test
     void createUpToThreeReviews_andAdminReply() {
+        String email = IntegrationTestAuth.resolveTestUserEmail();
+        assumeTrue(email != null && !email.isBlank(), "Set TEST_USER_EMAIL to run review integration test");
+
+        testUser = IntegrationTestAuth.requireUser(userRepository, email);
+        IntegrationTestAuth.setSecurityContext(testUser);
+
         UUID productId = findReviewableProductId();
         assumeTrue(productId != null, "No delivered order product available for review test");
 
@@ -88,6 +94,7 @@ class ReviewIntegrationTest {
         IntegrationTestAuth.setSecurityContext(testUser);
         createdIds.forEach(reviewService::deleteReview);
         assertThat(reviewRepository.countByUserIdAndProductId(testUser.getId(), productId)).isZero();
+        IntegrationTestAuth.clearSecurityContext();
     }
 
     private void cleanupUserReviews(UUID productId) {

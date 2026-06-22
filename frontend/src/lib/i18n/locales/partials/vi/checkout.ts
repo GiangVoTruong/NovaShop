@@ -110,6 +110,8 @@ export const checkout = {
     success: '🎉 Đặt hàng thành công!',
     failed: 'Không thể đặt hàng. Vui lòng thử lại.',
     noAddress: 'Vui lòng chọn địa chỉ giao hàng',
+    cartRestoreFailed:
+      'Đơn hàng đã được tạo, nhưng không thể khôi phục giỏ hàng. Mở trang giỏ hàng để thử lại.',
   },
   vnpay: {
     createFailed: 'Không thể tạo liên kết VNPay. Bạn có thể thanh toán lại tại trang đơn hàng.',

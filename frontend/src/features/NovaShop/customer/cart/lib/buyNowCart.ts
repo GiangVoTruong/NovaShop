@@ -133,3 +133,18 @@ export async function rollbackBuyNowCartSync(
   clearBuyNowSession()
   queryClient.setQueryData(cartQueryKey, restoredCart)
 }
+
+/** Restore cart snapshot left after checkout succeeded but finalize failed. */
+export async function recoverOrphanedBuyNowCart(
+  queryClient: { setQueryData: (key: readonly string[], data: ApiCartResponse) => void },
+  cartQueryKey: readonly string[],
+): Promise<ApiCartResponse | null> {
+  if (!readBuyNowSession()) {
+    return null
+  }
+
+  const restoredCart = await restoreBuyNowCartSnapshot()
+  clearBuyNowSession()
+  queryClient.setQueryData(cartQueryKey, restoredCart)
+  return restoredCart
+}
