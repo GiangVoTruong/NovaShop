@@ -20,6 +20,7 @@ import {
   clearBuyNowSession,
   finalizeBuyNowAfterCheckout,
   readBuyNowSession,
+  recoverOrphanedBuyNowCart,
   rollbackBuyNowCartSync,
   syncBuyNowCartForCheckout,
 } from '../../cart/lib/buyNowCart'
@@ -27,9 +28,11 @@ import {
   clearPartialCheckoutSession,
   finalizePartialCheckoutAfterCheckout,
   readPartialCheckoutSession,
+  recoverOrphanedPartialCheckoutCart,
   rollbackPartialCheckoutSync,
   syncPartialCheckoutForCheckout,
 } from '../../cart/lib/partialCheckoutSession'
+import { retryAsync } from '../../cart/lib/retryAsync'
 import { useProductById } from '../../catalog/hooks/useProducts'
 import { getProductImages, getProductSalePrice } from '../../catalog/lib/productApi'
 import { useCheckout } from '../../orders/hooks/useOrders'
@@ -240,17 +243,25 @@ export default function CheckoutPage() {
         onSuccess: async (order) => {
           clearStoredCouponCode()
 
-          if (isBuyNowCheckout) {
+          if (isBuyNowCheckout || isPartialCheckout) {
             try {
-              await finalizeBuyNowAfterCheckout(queryClient, CART_QUERY_KEY)
+              await retryAsync(() =>
+                isBuyNowCheckout
+                  ? finalizeBuyNowAfterCheckout(queryClient, CART_QUERY_KEY)
+                  : finalizePartialCheckoutAfterCheckout(queryClient, CART_QUERY_KEY),
+              )
             } catch (error) {
-              console.error('[CheckoutPage] finalize buy now failed:', error)
-            }
-          } else if (isPartialCheckout) {
-            try {
-              await finalizePartialCheckoutAfterCheckout(queryClient, CART_QUERY_KEY)
-            } catch (error) {
-              console.error('[CheckoutPage] finalize partial checkout failed:', error)
+              console.error('[CheckoutPage] finalize checkout cart failed:', error)
+              try {
+                await retryAsync(() =>
+                  isBuyNowCheckout
+                    ? recoverOrphanedBuyNowCart(queryClient, CART_QUERY_KEY)
+                    : recoverOrphanedPartialCheckoutCart(queryClient, CART_QUERY_KEY),
+                )
+              } catch (recoveryError) {
+                console.error('[CheckoutPage] recover checkout cart failed:', recoveryError)
+                message.warning(translate('checkout.messages.cartRestoreFailed'))
+              }
             }
           }
 
